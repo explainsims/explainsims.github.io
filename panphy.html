@@ -746,15 +746,10 @@
         <p>Physics apps, tools, sims, and some random stuff.</p>
     </header>
 
-    <div class="section" id="tools" data-section="01">
-        <h2>Tools <span class="section-label">Explore</span></h2>
-        <p class="section-desc">Analyse data, create scientific documents, and explore sound with this collection of browser-based physics tools.</p>
+    <div class="section" id="panphy" data-section="01">
+        <h2>PanPhy <span class="section-label">Origins</span></h2>
+        <p class="section-desc">Tools and simulations ported from PanPhy Labs — the project that inspired this site.</p>
         <div class="grid">
-            <div class="card">
-                <h3>Markdown + LaTeX</h3>
-                <p>Write, preview, and present scientific documents with LaTeX support.</p>
-                <a href="/tools/markdown_editor.html">Open Editor</a>
-            </div>
             <div class="card">
                 <h3>Data Plotting &amp; Fitting</h3>
                 <p>Process data, plot graphs, add uncertainties, and run best-fit analysis.</p>
@@ -766,14 +761,24 @@
                 <a href="/tools/motion_tracker.html">Track Motion</a>
             </div>
             <div class="card">
-                <h3>Sound Analyzer</h3>
-                <p>Visualize live audio as a frequency spectrum and waveform.</p>
-                <a href="/tools/sound_analyzer.html">Analyze Sound</a>
+                <h3>Wave Superposition</h3>
+                <p>Learn how waves interact.</p>
+                <a href="/simulations/superposition.html">Launch Sim</a>
             </div>
             <div class="card">
-                <h3>Tone Generator</h3>
-                <p>Dual-channel sine wave mixing.</p>
-                <a href="/tools/tone_generator.html">Generate Tone</a>
+                <h3>Lorentz Transform</h3>
+                <p>Learn how spacetime transforms between inertial frames.</p>
+                <a href="/simulations/lorentz.html">Launch Sim</a>
+            </div>
+            <div class="card">
+                <h3>Exam Timer</h3>
+                <p>Manage exam times with an automatic extra-time timer.</p>
+                <a href="/for_teachers/timer.html">Open Timer</a>
+            </div>
+            <div class="card">
+                <h3>Camera Visualizer</h3>
+                <p>Project your device camera to the big screen, then snap &amp; sketch.</p>
+                <a href="/for_teachers/visualizer.html">Use Camera</a>
             </div>
         </div>
     </div>
@@ -1215,16 +1220,6 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/tools/markdown_editor.html': [
-                '/tools/markdown_editor.html',
-                '/tools/markdown_editor/css/markdown_editor.css',
-                '/tools/markdown_editor/js/main.js',
-                'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
-                'https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js',
-                'https://cdn.jsdelivr.net/npm/dompurify@2.3.4/dist/purify.min.js',
-                'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js'
-            ],
             '/tools/panphyplot.html': [
                 '/tools/panphyplot.html',
                 '/tools/panphyplot/js/main.js',
@@ -1237,8 +1232,13 @@
                 '/tools/motion_tracker.html',
                 'https://cdn.jsdelivr.net/npm/chart.js'
             ],
-            '/tools/sound_analyzer.html': ['/tools/sound_analyzer.html'],
-            '/tools/tone_generator.html': ['/tools/tone_generator.html']
+            '/simulations/superposition.html': ['/simulations/superposition.html'],
+            '/simulations/lorentz.html': ['/simulations/lorentz.html'],
+            '/for_teachers/timer.html': [
+                '/for_teachers/timer.html',
+                '/for_teachers/timer_beep.mp3'
+            ],
+            '/for_teachers/visualizer.html': ['/for_teachers/visualizer.html']
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(
