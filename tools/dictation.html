@@ -973,11 +973,28 @@
             document.getElementById('rawContent').textContent = display.trim();
         };
 
+        recognition.onstart = function () {
+            statusEl.textContent = 'Listening…';
+        };
+
         recognition.onerror = function (e) {
-            // no-speech is routine silence — ignore it and let onend handle restart
-            if (e.error === 'no-speech' || e.error === 'aborted') return;
-            statusEl.textContent = 'Microphone error (' + e.error + '). Try again.';
-            stopRecording();
+            // Fatal — mic genuinely unavailable; stop and tell the user
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+                statusEl.textContent = 'Microphone permission denied. Allow mic access and try again.';
+                stopRecording();
+                return;
+            }
+            if (e.error === 'audio-capture') {
+                statusEl.textContent = 'No microphone found. Connect one and try again.';
+                stopRecording();
+                return;
+            }
+            // Non-fatal — show a helpful message; onend will restart automatically
+            if (e.error === 'no-speech')  { statusEl.textContent = 'Listening… (no speech yet)'; return; }
+            if (e.error === 'aborted')    { return; } // we called stop() — onend handles restart logic
+            if (e.error === 'network')    { statusEl.textContent = 'Network hiccup — reconnecting…'; return; }
+            // Unknown error — log it but keep going
+            statusEl.textContent = 'Notice: ' + e.error + ' — continuing…';
         };
 
         recognition.onend = function () {
@@ -990,11 +1007,10 @@
                 try {
                     recognition.start();
                 } catch (e) {
-                    // Still failed — show message but keep isRecording true so user
-                    // can try stopping cleanly rather than getting a stuck UI
-                    statusEl.textContent = 'Paused (tap stop to finish).';
+                    // Threw — likely already restarted internally; just wait for next onend
+                    // Do NOT call stopRecording() here
                 }
-            }, 300);
+            }, 500);
         };
     }
 
