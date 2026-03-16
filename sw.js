@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-03-16T23:00:00Z';
+const BUILD_ID = '2026-03-16T23:30:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -9,7 +9,7 @@ const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/tools.html',
-  '/simulations.html',
+  '/appcm.html',
   '/teachers.html',
   '/fun.html',
   '/panphy.html',

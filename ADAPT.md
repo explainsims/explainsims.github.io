@@ -62,7 +62,7 @@ Read these files before beginning any adaptation:
 | `README.md` | Project philosophy and overview |
 | `sw.js` | Service Worker — you will edit this |
 | `index.html` | Landing page — `FEATURED_POOL` powers the Featured section |
-| `simulations.html` (AP PCM) | Gallery page — add a card to the correct AP PCM unit here |
+| `appcm.html` (AP PCM) | Gallery page — add a card to the correct AP PCM unit here |
 | `sitemap.xml` | Sitemap — you will add the new URL |
 | Any existing simulation | Reference for the target structure and style |
 
@@ -505,11 +505,11 @@ Use snake_case for filenames.
 
 ### 7b. Add a tile card to the gallery page
 
-> **Site structure note (updated March 2026):** The site is now multi-page. Each category has its own gallery page — `/simulations.html` (now called **AP PCM**), `/tools.html`, `/teachers.html`, `/fun.html`, `/panphy.html`. Cards are added to the relevant gallery page, **not** `index.html` directly. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool.
+> **Site structure note (updated March 2026):** The site is now multi-page. Each category has its own gallery page — `/appcm.html` (now called **AP PCM**), `/tools.html`, `/teachers.html`, `/fun.html`, `/panphy.html`. Cards are added to the relevant gallery page, **not** `index.html` directly. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool.
 >
-> **AP PCM structure:** `/simulations.html` is organised into 7 AP Physics C: Mechanics units. When adding a simulation, the user will specify which unit it belongs to. Each unit is a `.unit-block` div with `id="unitN"` and a `.grid` inside it.
+> **AP PCM structure:** `/appcm.html` is organised into 7 AP Physics C: Mechanics units. When adding a simulation, the user will specify which unit it belongs to. Each unit is a `.unit-block` div with `id="unitN"` and a `.grid` inside it.
 
-**7b-i — For AP PCM simulations.** Open `/simulations.html` and find the correct unit block (unit1–unit7). Add a card inside that unit's `.grid` div:
+**7b-i — For AP PCM simulations.** Open `/appcm.html` and find the correct unit block (unit1–unit7). Add a card inside that unit's `.grid` div:
 
 ```html
 <!-- Example: Unit 7 Oscillations -->
@@ -551,7 +551,7 @@ var FEATURED_POOL = {
 
 ### 7c. Add to `OFFLINE_CARD_REQUIREMENTS` in the gallery page
 
-Find the `OFFLINE_CARD_REQUIREMENTS` object in the `<script>` section at the bottom of the relevant gallery page (e.g. **`/simulations.html`** for AP PCM sims — not `index.html`). Add an entry:
+Find the `OFFLINE_CARD_REQUIREMENTS` object in the `<script>` section at the bottom of the relevant gallery page (e.g. **`/appcm.html`** for AP PCM sims — not `index.html`). Add an entry:
 
 ```javascript
 '/simulations/your_simulation.html': ['/simulations/your_simulation.html'],
@@ -619,7 +619,7 @@ Then check:
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | Page doesn't load offline | Missing from `ASSETS_TO_CACHE` or `BUILD_ID` not bumped | Add to `sw.js` and bump `BUILD_ID` |
-| Offline pill missing on gallery page | Not added to `OFFLINE_CARD_REQUIREMENTS` in gallery page | Add entry to `/simulations.html` (or relevant gallery page) |
+| Offline pill missing on gallery page | Not added to `OFFLINE_CARD_REQUIREMENTS` in gallery page | Add entry to `/appcm.html` (or relevant gallery page) |
 | Back button missing | New sim created before March 2026 convention or forgotten | Add chevron-left `history.back()` button after the home icon |
 | Canvas is blank in dark mode | Hardcoded colours instead of CSS variables | Use `getCSSVar()` for all canvas colours |
 | Slider doesn't update canvas | Event listener missing or wrong | Use `'input'` event, not `'change'` |
@@ -662,7 +662,7 @@ Use this checklist for every simulation you adapt:
 ### Site Integration
 - [ ] File placed in correct directory
 - [ ] Back button (`history.back()`) added to the right of the home icon in the banner
-- [ ] For AP PCM sims: card added to the correct unit block (`unit1`–`unit7`) inside `/simulations.html`
+- [ ] For AP PCM sims: card added to the correct unit block (`unit1`–`unit7`) inside `/appcm.html`
 - [ ] For other tabs: card added to the relevant gallery page (`/tools.html`, `/teachers.html`, etc.)
 - [ ] Entry added to `FEATURED_POOL` in `index.html` (appropriate category key — don't add empty arrays)
 - [ ] Added to `OFFLINE_CARD_REQUIREMENTS` in the relevant gallery page
