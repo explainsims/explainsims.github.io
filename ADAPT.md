@@ -61,7 +61,8 @@ Read these files before beginning any adaptation:
 | `CLAUDE.md` | Full AI assistant guide with all conventions, patterns, and rules |
 | `README.md` | Project philosophy and overview |
 | `sw.js` | Service Worker — you will edit this |
-| `index.html` | Landing page — you will add a card here |
+| `index.html` | Landing page — add an entry to `FEATURED_POOL` here |
+| `simulations.html` (or relevant gallery page) | Gallery page — you will add a card here |
 | `sitemap.xml` | Sitemap — you will add the new URL |
 | Any existing simulation | Reference for the target structure and style |
 
@@ -228,9 +229,9 @@ Use this skeleton as your starting point:
     <!-- Banner header -->
     <header class="banner">
         <div class="banner-logo">
-            <a href="https://panphy.github.io/">
-                <img src="/assets/panphy.png" alt="PanPhy logo">
-            </a>
+            <a href="/" class="banner-logo" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <!-- Back button (required — added March 2026) -->
+            <button onclick="history.back()" title="Go back" aria-label="Go back" style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
         </div>
         <div class="banner-title">Your Simulation Title</div>
         <div class="banner-actions">
@@ -503,9 +504,11 @@ simulations/your_simulation.html
 
 Use snake_case for filenames.
 
-### 7b. Add a tile card to `index.html`
+### 7b. Add a tile card to the gallery page
 
-Find the Simulations section (`<div class="section" id="simulations">`) and add a card:
+> **Site structure note (updated March 2026):** The site is now multi-page. Each category has its own gallery page — `/simulations.html`, `/tools.html`, `/teachers.html`, `/fun.html`. Cards are added to the relevant gallery page, **not** `index.html`. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool; add your card there too (see step 7b-ii).
+
+**7b-i.** Open `/simulations.html` and add a card inside the `.grid` div:
 
 ```html
 <div class="card">
@@ -515,9 +518,15 @@ Find the Simulations section (`<div class="section" id="simulations">`) and add 
 </div>
 ```
 
-### 7c. Add to `OFFLINE_CARD_REQUIREMENTS` in `index.html`
+**7b-ii.** Open `index.html` and find the `FEATURED_POOL` object in the Featured section script. Add an entry to the `sims` array:
 
-Find the `OFFLINE_CARD_REQUIREMENTS` object in the `<script>` section at the bottom of `index.html`. Add an entry:
+```javascript
+{ t: 'Your Simulation Title', d: 'One-sentence description.', h: '/simulations/your_simulation.html', c: 'Launch Sim' }
+```
+
+### 7c. Add to `OFFLINE_CARD_REQUIREMENTS` in the gallery page
+
+Find the `OFFLINE_CARD_REQUIREMENTS` object in the `<script>` section at the bottom of **`/simulations.html`** (not `index.html`). Add an entry:
 
 ```javascript
 '/simulations/your_simulation.html': ['/simulations/your_simulation.html'],
@@ -585,6 +594,8 @@ Then check:
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | Page doesn't load offline | Missing from `ASSETS_TO_CACHE` or `BUILD_ID` not bumped | Add to `sw.js` and bump `BUILD_ID` |
+| Offline pill missing on gallery page | Not added to `OFFLINE_CARD_REQUIREMENTS` in gallery page | Add entry to `/simulations.html` (or relevant gallery page) |
+| Back button missing | New sim created before March 2026 convention or forgotten | Add chevron-left `history.back()` button after the home icon |
 | Canvas is blank in dark mode | Hardcoded colours instead of CSS variables | Use `getCSSVar()` for all canvas colours |
 | Slider doesn't update canvas | Event listener missing or wrong | Use `'input'` event, not `'change'` |
 | Layout breaks on mobile | Missing responsive breakpoints | Add `@media (max-width: 960px)` rules |
@@ -625,8 +636,10 @@ Use this checklist for every simulation you adapt:
 
 ### Site Integration
 - [ ] File placed in correct directory
-- [ ] Card added to `index.html` Simulations section
-- [ ] Added to `OFFLINE_CARD_REQUIREMENTS` in `index.html`
+- [ ] Back button (`history.back()`) added to the right of the home icon in the banner
+- [ ] Card added to the relevant gallery page (`/simulations.html`, `/tools.html`, etc.)
+- [ ] Entry added to `FEATURED_POOL` in `index.html` Featured section script
+- [ ] Added to `OFFLINE_CARD_REQUIREMENTS` in the relevant gallery page (e.g. `/simulations.html`)
 - [ ] Added to `ASSETS_TO_CACHE` in `sw.js`
 - [ ] `BUILD_ID` bumped in `sw.js`
 - [ ] URL added to `sitemap.xml`
@@ -637,8 +650,9 @@ Use this checklist for every simulation you adapt:
 - [ ] All controls function properly
 - [ ] Responsive layout at all breakpoints
 - [ ] Works offline after first visit
-- [ ] Card appears on landing page
-- [ ] Offline pill shows "Offline ready" on landing page
+- [ ] Back button navigates to the previous gallery page
+- [ ] Card appears on gallery page and may appear in Featured section on home page
+- [ ] Offline pill shows "Offline ready" on the gallery page
 
 ---
 
