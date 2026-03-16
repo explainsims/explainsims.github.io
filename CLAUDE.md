@@ -50,18 +50,14 @@
 │   ├── sound_analyzer.html
 │   └── tone_generator.html
 │
-├── simulations/            # Physics simulations
+├── appcm/                  # AP Physics C: Mechanics simulations (AP PCM tab)
 │   ├── superposition.html
-│   ├── standing_wave.html
-│   ├── interference.html   # Two-source wave interference (3D ripple tank)
-│   ├── states.html         # States of matter particle model
+│   ├── physical_pendulum.html
 │   ├── lorentz.html
-│   ├── lorentz_learn.html  # Lorentz sim learning companion
-│   ├── collision.html      # 3D collision sim (entry point)
-│   └── collision/          # Modular JS/CSS/assets for Collision sim
-│       ├── app.js
-│       ├── styles.css
-│       └── collision_assets/  # MediaPipe models & WASM
+│   └── lorentz_learn.html  # Lorentz sim learning companion
+│
+│   # Each tab has its own directory. Future non-AP PCM simulations
+│   # go in the directory named after their tab (name TBD).
 │
 ├── fun/                    # Interactive games
 │   ├── dodge.html          # Asteroid Storm (requires network for leaderboard)
@@ -101,7 +97,7 @@ Not every HTML file in the repo is currently treated as a published page.
   - `misc/gcse_phy/phy_flashcard_ss.html`
   - `misc/ising_model.html`
   - `misc/phyclub_showcase.html`
-  - `simulations/lorentz_backup.html`
+  - `appcm/lorentz_backup.html`
 - Unlisted/internal pages should remain outside SW registration and pre-cache unless intentionally promoted
 
 If you promote an unlisted page to production, do all of the following:
@@ -279,7 +275,7 @@ Then open `http://localhost:8000` in a browser.
 ### Adding a New Tool/Page
 1. Unless explicitly requested to publish/list on `index.html`, create new HTML in `/beta`
 2. For `/beta` pages, do not include `<script src="/assets/sw-register.js" defer></script>` and do not add `/beta/*` paths to `sw.js` `ASSETS_TO_CACHE`
-3. If it will be published, create/move it in the appropriate public directory (`tools/`, `simulations/`, etc.)
+3. If it will be published, create/move it in the appropriate public directory (`appcm/` for AP PCM sims, `tools/`, `for_teachers/`, `fun/`, or a future tab directory)
 4. If it will be published from `index.html`, include `<script src="/assets/sw-register.js" defer></script>` in `<head>`
 5. Use the standard theming CSS variables
 6. If published, add to `sw.js` `ASSETS_TO_CACHE` array and bump `BUILD_ID`

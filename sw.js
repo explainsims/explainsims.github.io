@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-03-16T23:30:00Z';
+const BUILD_ID = '2026-03-17T00:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -40,10 +40,10 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/chart.js',
 
   // Simulations
-  '/simulations/superposition.html',
-  '/simulations/physical_pendulum.html',
-  '/simulations/lorentz.html',
-  '/simulations/lorentz_learn.html',
+  '/appcm/superposition.html',
+  '/appcm/physical_pendulum.html',
+  '/appcm/lorentz.html',
+  '/appcm/lorentz_learn.html',
 
   // For Teachers
   '/for_teachers/timer.html',

@@ -68,9 +68,9 @@ Read these files before beginning any adaptation:
 
 The most useful reference simulations to study (in order of complexity):
 
-1. **`simulations/superposition.html`** — Simplest. Canvas-based, single-file, no external deps.
-2. **`simulations/physical_pendulum.html`** — Canvas-based with sliders, educational readouts, and dual-pendulum display.
-3. **`simulations/lorentz.html`** — Complex canvas with interactive spacetime diagrams.
+1. **`appcm/superposition.html`** — Simplest. Canvas-based, single-file, no external deps.
+2. **`appcm/physical_pendulum.html`** — Canvas-based with sliders, educational readouts, and dual-pendulum display.
+3. **`appcm/lorentz.html`** — Complex canvas with interactive spacetime diagrams.
 
 ---
 
@@ -495,13 +495,22 @@ Once the simulation HTML file is complete, you need to register it with the site
 
 ### 7a. Place the file
 
-Put the HTML file in the correct directory:
+Each tab has its own directory. Put the HTML file in the directory that matches the tab it belongs to:
+
+| Tab | Directory |
+|-----|-----------|
+| AP PCM (AP Physics C: Mechanics) | `appcm/` |
+| Tools | `tools/` |
+| For Teachers | `for_teachers/` |
+| Fun | `fun/` |
+| PanPhy | *(top-level or as named)* |
+| Other future tabs | named after the tab once finalized |
+
+Use snake_case for filenames. Example for an AP PCM sim:
 
 ```
-simulations/your_simulation.html
+appcm/your_simulation.html
 ```
-
-Use snake_case for filenames.
 
 ### 7b. Add a tile card to the gallery page
 
@@ -520,7 +529,7 @@ Use snake_case for filenames.
         <div class="card">
             <h3>Your Simulation Title</h3>
             <p>One-sentence description of what the simulation does.</p>
-            <a href="/simulations/your_simulation.html">Launch Sim</a>
+            <a href="/appcm/your_simulation.html">Launch Sim</a>
         </div>
     </div>
 </div>
@@ -543,7 +552,7 @@ The units and their IDs are:
 var FEATURED_POOL = {
     sims: [
         // Add AP PCM sims here
-        { t: 'Your Simulation Title', d: 'One-sentence description.', h: '/simulations/your_simulation.html', c: 'Launch Sim' }
+        { t: 'Your Simulation Title', d: 'One-sentence description.', h: '/appcm/your_simulation.html', c: 'Launch Sim' }
     ]
     // Only add other category keys (tools, fun, panphy, teachers) once they have apps
 };
@@ -554,14 +563,14 @@ var FEATURED_POOL = {
 Find the `OFFLINE_CARD_REQUIREMENTS` object in the `<script>` section at the bottom of the relevant gallery page (e.g. **`/appcm.html`** for AP PCM sims — not `index.html`). Add an entry:
 
 ```javascript
-'/simulations/your_simulation.html': ['/simulations/your_simulation.html'],
+'/appcm/your_simulation.html': ['/appcm/your_simulation.html'],
 ```
 
 If your simulation uses external CDN libraries, list them too:
 
 ```javascript
-'/simulations/your_simulation.html': [
-    '/simulations/your_simulation.html',
+'/appcm/your_simulation.html': [
+    '/appcm/your_simulation.html',
     'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js'
 ],
 ```
@@ -572,7 +581,7 @@ Open `sw.js` and add the page path to the `ASSETS_TO_CACHE` array in the Simulat
 
 ```javascript
 // Simulations
-'/simulations/your_simulation.html',
+'/appcm/your_simulation.html',
 ```
 
 If the simulation has external CDN dependencies, add those URLs too (they must match exactly what's in the HTML `<script src="...">`).
@@ -589,7 +598,7 @@ The `BUILD_ID` format is ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. Always update this wh
 
 ```xml
 <url>
-    <loc>https://panphy.github.io/simulations/your_simulation.html</loc>
+    <loc>https://panphy.github.io/appcm/your_simulation.html</loc>
 </url>
 ```
 
@@ -606,7 +615,7 @@ python3 -m http.server 8000
 
 Then check:
 
-1. **Page loads** — `http://localhost:8000/simulations/your_simulation.html`
+1. **Page loads** — `http://localhost:8000/appcm/your_simulation.html`
 2. **Theme toggle** — Light/dark switch works, canvas colours update
 3. **Simulation runs** — Animation plays, physics looks correct
 4. **Controls work** — Sliders, buttons, toggles, drag interactions
@@ -640,7 +649,7 @@ Use this checklist for every simulation you adapt:
 - [ ] Confirmed which dependencies are actually unused
 
 ### Rewrite
-- [ ] Created single `.html` file in `simulations/`
+- [ ] Created single `.html` file in the correct tab directory (see §7a)
 - [ ] Converted React state to plain variables
 - [ ] Converted React effects to direct function calls
 - [ ] Converted JSX event handlers to `addEventListener`
