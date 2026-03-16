@@ -813,8 +813,28 @@
 
         <div class="unit-block" id="unit2">
             <h3 class="unit-heading">Unit 2 <span class="section-label">Force and Translational Dynamics</span></h3>
-            <div class="grid"></div>
-            <p class="unit-no-sims">No simulations yet.</p>
+            <div class="grid">
+                <div class="card">
+                    <h3>Elevator Physics Simulator</h3>
+                    <p>Explore Newton's 2nd law through an elevator's motion — apparent weight, free-body diagrams, and staged up/down/free-fall sequences.</p>
+                    <a href="/appcm/elevator_physics.html">Launch Sim</a>
+                </div>
+                <div class="card">
+                    <h3>Conical Pendulum Interactive Lab</h3>
+                    <p>Adjust string length, mass, and angle to see how tension, centripetal force, velocity, and period change in a conical pendulum.</p>
+                    <a href="/appcm/conical_pendulum.html">Launch Sim</a>
+                </div>
+                <div class="card">
+                    <h3>Gravitas — Gravitational Force Simulator</h3>
+                    <p>Explore Newton's law of gravitation, the Shell Theorem, gravitational field strength, and test your knowledge with a built-in quiz.</p>
+                    <a href="/appcm/gravitas.html">Launch Sim</a>
+                </div>
+                <div class="card">
+                    <h3>Banked Track Physics Simulator</h3>
+                    <p>Investigate circular motion on a banked curve — visualise forces, calculate ideal/min/max speeds, and see full derivations.</p>
+                    <a href="/appcm/banked_track.html">Launch Sim</a>
+                </div>
+            </div>
         </div>
 
         <div class="unit-block" id="unit3">
@@ -1288,7 +1308,11 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/appcm/physical_pendulum.html': ['/appcm/physical_pendulum.html']
+            '/appcm/physical_pendulum.html': ['/appcm/physical_pendulum.html'],
+            '/appcm/elevator_physics.html': ['/appcm/elevator_physics.html'],
+            '/appcm/conical_pendulum.html': ['/appcm/conical_pendulum.html'],
+            '/appcm/gravitas.html': ['/appcm/gravitas.html'],
+            '/appcm/banked_track.html': ['/appcm/banked_track.html'],
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(

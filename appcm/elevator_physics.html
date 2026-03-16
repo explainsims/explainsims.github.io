@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#E8F3FD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('elevator-physics-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#15243E');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Elevator Physics Simulator</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
+
+            --brand-primary: #1A56DB;
+            --brand-secondary: #1D4ED8;
+            --brand-accent: #D97706;
+
+            --card-bg: #FFFFFF;
+            --card-border: #C5DCF0;
+            --card-shadow: 0 4px 16px rgba(26,86,219,0.06);
+
+            --canvas-bg: #FFFFFF;
+            --slider-track: #C5DCF0;
+            --slider-thumb: #1A56DB;
+
+            --nav-bg: rgba(255,255,255,0.92);
+            --nav-border: rgba(30,80,160,0.10);
+
+            --shaft-bg: #D5E8F7;
+            --shaft-border: #C5DCF0;
+            --car-bg: #E8F3FD;
+            --car-border: #1A56DB;
+            --person-color: #1A56DB;
+            --scale-color: #4A6380;
+            --arrow-n: #16A34A;
+            --arrow-mg: #DC2626;
+            --readout-bg: #F0F7FF;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
+            --brand-primary: #F6C90E;
+            --brand-secondary: #EAB308;
+            --brand-accent: #60A5FA;
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            --canvas-bg: #15243E;
+            --slider-track: #2A4270;
+            --slider-thumb: #F6C90E;
+            --nav-bg: rgba(21,36,62,0.90);
+            --nav-border: rgba(255,255,255,0.08);
+            --shaft-bg: #0F1A2E;
+            --shaft-border: #2A4270;
+            --car-bg: #1C2F52;
+            --car-border: #F6C90E;
+            --person-color: #60A5FA;
+            --scale-color: #8BB3D4;
+            --arrow-n: #4ADE80;
+            --arrow-mg: #F87171;
+            --readout-bg: #1C2F52;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html.offline-font { --font-sans: system-ui, sans-serif; --font-display: system-ui, sans-serif; --font-mono: 'Courier New', monospace; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Banner */
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; padding: 6px; border-radius: 8px;
+            transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 24px 16px;
+        }
+
+        .sim-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 960px) {
+            .sim-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+
+        /* Sliders */
+        .slider-group { margin-bottom: 16px; }
+        .slider-label {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.875rem; font-weight: 500; color: var(--text-main); margin-bottom: 6px;
+        }
+        .slider-label span { font-family: var(--font-mono); font-size: 0.8rem; color: var(--brand-primary); }
+        input[type="range"] {
+            width: 100%; height: 6px; appearance: none; -webkit-appearance: none;
+            background: var(--slider-track); border-radius: 3px; cursor: pointer; outline: none;
+        }
+        input[type="range"]:disabled { opacity: 0.45; cursor: not-allowed; }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            background: var(--slider-thumb); border-radius: 50%; cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; background: var(--slider-thumb);
+            border-radius: 50%; cursor: pointer; border: none;
+        }
+
+        /* Buttons */
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .btn {
+            padding: 10px 14px; border: none; border-radius: 10px;
+            font-weight: 700; font-size: 0.9rem; cursor: pointer;
+            transition: background 0.15s, opacity 0.15s; font-family: var(--font-sans);
+        }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-up { background: #16A34A; color: #fff; }
+        .btn-up:not(:disabled):hover { background: #15803D; }
+        .btn-down { background: #2563EB; color: #fff; }
+        .btn-down:not(:disabled):hover { background: #1D4ED8; }
+        .btn-cable { grid-column: 1 / -1; background: #DC2626; color: #fff; }
+        .btn-cable:not(:disabled):hover { background: #B91C1C; }
+        .btn-continue { width: 100%; background: #7C3AED; color: #fff; grid-column: 1 / -1; }
+        .btn-continue:not(:disabled):hover { background: #6D28D9; }
+        .btn-reset { background: var(--card-border); color: var(--text-main); }
+        .btn-reset:hover { background: var(--slider-track); }
+
+        /* Stage display */
+        .stage-info {
+            display: none;
+            padding-top: 12px;
+            margin-top: 12px;
+            border-top: 1px solid var(--card-border);
+            text-align: center;
+        }
+        .stage-info.visible { display: block; }
+        .stage-title {
+            font-weight: 700; font-size: 1rem; color: var(--brand-accent);
+            margin-bottom: 4px;
+        }
+        .stage-name {
+            font-weight: 600; font-size: 0.875rem; color: var(--text-main); margin-bottom: 8px;
+        }
+        .stage-description {
+            font-size: 0.8rem; color: var(--text-secondary);
+            background: var(--readout-bg);
+            border-radius: 8px; padding: 10px;
+            min-height: 56px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px;
+        }
+        .emergency-label {
+            font-weight: 800; font-size: 1.2rem; color: #DC2626;
+            animation: pulse 1s ease-in-out infinite;
+            display: none;
+        }
+        .emergency-label.visible { display: block; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* Equation display */
+        .eq-title {
+            font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+            color: var(--brand-primary); margin-bottom: 8px;
+        }
+        .eq-box {
+            background: var(--readout-bg); border: 1px solid var(--card-border);
+            border-radius: 8px; padding: 10px 14px;
+            font-family: var(--font-mono); font-size: 0.9rem;
+            color: var(--brand-accent); margin-bottom: 10px;
+        }
+        .eq-steps { list-style: none; }
+        .eq-steps li {
+            display: flex; align-items: flex-start; gap: 8px;
+            font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-main);
+            padding: 3px 0;
+        }
+        .eq-steps li::before { content: '»'; color: var(--brand-primary); flex-shrink: 0; }
+
+        /* Visualization panel */
+        .viz-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Elevator shaft */
+        .shaft {
+            position: relative;
+            width: 180px; height: 360px;
+            background: var(--shaft-bg);
+            border: 2px solid var(--shaft-border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        /* Rail lines */
+        .shaft::before, .shaft::after {
+            content: ''; position: absolute; top: 0; bottom: 0;
+            width: 4px; background: var(--shaft-border); opacity: 0.5;
+        }
+        .shaft::before { left: 8px; }
+        .shaft::after { right: 8px; }
+
+        .elevator-car {
+            position: absolute;
+            width: 100%; height: 25%;
+            background: var(--car-bg);
+            border-top: 2px solid var(--car-border);
+            border-bottom: 2px solid var(--car-border);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end;
+            padding-bottom: 4px;
+            transition: top 2500ms ease-in-out;
+        }
+        .person-svg { color: var(--person-color); }
+        .scale-bar {
+            width: 60%; height: 5px;
+            background: var(--scale-color);
+            border-radius: 3px 3px 0 0;
+            opacity: 0.8;
+        }
+
+        /* Readout and FBD */
+        .bottom-row {
+            display: flex; gap: 16px; width: 100%;
+            justify-content: center;
+        }
+        .readout-box {
+            flex: 1; max-width: 160px;
+            padding: 12px; background: var(--readout-bg);
+            border: 1px solid var(--card-border); border-radius: 10px;
+            text-align: center;
+        }
+        .readout-label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .readout-value {
+            font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700;
+            color: var(--brand-accent);
+        }
+        .fbd-container {
+            flex: 1; max-width: 120px;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 8px;
+        }
+        .fbd-label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .fbd-inner {
+            position: relative; width: 80px; height: 140px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .fbd-n-arrow {
+            position: absolute; bottom: 50%;
+            left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .fbd-n-line { width: 2px; background: var(--arrow-n); }
+        .fbd-n-head {
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 9px solid var(--arrow-n);
+        }
+        .fbd-n-lbl { position: absolute; top: -18px; font-weight: 700; font-size: 0.75rem; color: var(--arrow-n); }
+        .fbd-dot { width: 10px; height: 10px; background: var(--brand-primary); border-radius: 50%; z-index: 1; }
+        .fbd-mg-arrow {
+            position: absolute; top: 50%;
+            left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .fbd-mg-line { width: 2px; height: 48px; background: var(--arrow-mg); }
+        .fbd-mg-head {
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 9px solid var(--arrow-mg);
+        }
+        .fbd-mg-lbl { position: absolute; bottom: -18px; font-weight: 700; font-size: 0.75rem; color: var(--arrow-mg); }
+
+        footer {
+            text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-secondary);
+            border-top: 1px solid var(--card-border);
+        }
+        footer a { color: var(--brand-primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .elevator-car { transition: none; }
+            .emergency-label { animation: none; }
+        }
+        @media (pointer: coarse) {
+            .btn { min-height: 44px; }
+            input[type="range"] { height: 10px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Elevator Physics Simulator</div>
+        <div class="banner-actions">
+            <div class="theme-toggle">
+                <button id="theme-button" aria-label="Toggle Light/Dark Theme">&#9728;&#65039;</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="sim-grid">
+            <!-- Left column: controls + equations -->
+            <div>
+                <!-- Controls card -->
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-title">Controls</div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            Mass of Person
+                            <span id="mass-display">70.0 kg</span>
+                        </div>
+                        <input type="range" id="mass-slider" min="40" max="120" step="0.5" value="70">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            Acceleration Magnitude
+                            <span id="accel-display">2.00 m/s²</span>
+                        </div>
+                        <input type="range" id="accel-slider" min="0.5" max="5" step="0.05" value="2">
+                    </div>
+
+                    <!-- Stage info (shown during simulation) -->
+                    <div class="stage-info" id="stage-info">
+                        <div class="stage-title">Simulation in Progress</div>
+                        <div class="emergency-label" id="emergency-label">Emergency!</div>
+                        <div class="stage-name" id="stage-name"></div>
+                        <div class="stage-description" id="stage-desc"></div>
+                        <div class="btn-grid">
+                            <button class="btn btn-continue" id="continue-btn">Continue</button>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons (shown when idle) -->
+                    <div class="btn-grid" id="action-buttons">
+                        <button class="btn btn-up" id="btn-up">Go Up Sequence</button>
+                        <button class="btn btn-down" id="btn-down">Go Down Sequence</button>
+                        <button class="btn btn-cable" id="btn-cable">Broken Cable!</button>
+                    </div>
+                </div>
+
+                <!-- Equation display card -->
+                <div class="card">
+                    <div class="eq-title" id="eq-title">At Rest or Constant Velocity</div>
+                    <div class="eq-box" id="eq-formula">ΣF = N − mg = 0</div>
+                    <ul class="eq-steps" id="eq-steps">
+                        <li>Since acceleration (a) is 0, the net force is 0.</li>
+                        <li>N = mg</li>
+                        <li id="eq-step-calc">N = 70.0 kg × 9.8 m/s²</li>
+                        <li id="eq-step-result">N = 686.0 N</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Right column: visualization -->
+            <div class="card viz-panel">
+                <div class="card-title" style="text-align:center;">Visualization</div>
+
+                <!-- Elevator shaft -->
+                <div class="shaft">
+                    <div class="elevator-car" id="elevator-car" style="top:75%;">
+                        <svg class="person-svg" width="44" height="44" viewBox="0 0 44 44" fill="currentColor">
+                            <!-- Head -->
+                            <circle cx="22" cy="8" r="6"/>
+                            <!-- Body -->
+                            <rect x="16" y="16" width="12" height="14" rx="4"/>
+                            <!-- Legs -->
+                            <rect x="14" y="28" width="6" height="10" rx="3"/>
+                            <rect x="24" y="28" width="6" height="10" rx="3"/>
+                        </svg>
+                        <div class="scale-bar"></div>
+                    </div>
+                </div>
+
+                <div class="bottom-row">
+                    <!-- Apparent weight readout -->
+                    <div class="readout-box">
+                        <div class="readout-label">Apparent Weight</div>
+                        <div class="readout-value" id="apparent-weight">686.0 N</div>
+                    </div>
+
+                    <!-- Free body diagram -->
+                    <div class="fbd-container">
+                        <div class="fbd-label">Free-Body Diagram</div>
+                        <div class="fbd-inner">
+                            <!-- Normal force arrow (up) -->
+                            <div class="fbd-n-arrow" id="fbd-n-arrow">
+                                <div class="fbd-n-head"></div>
+                                <span class="fbd-n-lbl">N</span>
+                                <div class="fbd-n-line" id="fbd-n-line" style="height:48px;"></div>
+                            </div>
+                            <!-- Object dot -->
+                            <div class="fbd-dot"></div>
+                            <!-- Gravity arrow (down) -->
+                            <div class="fbd-mg-arrow" id="fbd-mg-arrow">
+                                <div class="fbd-mg-line" id="fbd-mg-line"></div>
+                                <div class="fbd-mg-head"></div>
+                                <span class="fbd-mg-lbl">mg</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; <a href="/">PanPhy Labs</a> |
+        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+    </footer>
+
+    <script>
+        // ─── Constants ───────────────────────────────────────────────────────────
+        const GRAVITY = 9.8;
+        const TRANSITION_DURATION = 2500;
+
+        // ─── State ────────────────────────────────────────────────────────────────
+        const STATE = {
+            IDLE: 'IDLE',
+            ACCELERATING_UP: 'ACCELERATING_UP',
+            CONSTANT_VELOCITY_UP: 'CONSTANT_VELOCITY_UP',
+            DECELERATING_UP: 'DECELERATING_UP',
+            ACCELERATING_DOWN: 'ACCELERATING_DOWN',
+            CONSTANT_VELOCITY_DOWN: 'CONSTANT_VELOCITY_DOWN',
+            DECELERATING_DOWN: 'DECELERATING_DOWN',
+            FREE_FALL: 'FREE_FALL',
+        };
+
+        let mass = 70;
+        let acceleration = 2.0;
+        let elevatorState = STATE.IDLE;
+        let elevatorPosition = 75; // % from top
+        let isSimulating = false;
+        let isEmergency = false;
+        let currentSequence = [];
+        let currentStageIndex = -1;
+
+        // ─── DOM refs ─────────────────────────────────────────────────────────────
+        const massSlider = document.getElementById('mass-slider');
+        const accelSlider = document.getElementById('accel-slider');
+        const massDisplay = document.getElementById('mass-display');
+        const accelDisplay = document.getElementById('accel-display');
+        const elevatorCar = document.getElementById('elevator-car');
+        const apparentWeightEl = document.getElementById('apparent-weight');
+        const fbd_n_line = document.getElementById('fbd-n-line');
+        const stageInfoEl = document.getElementById('stage-info');
+        const actionButtonsEl = document.getElementById('action-buttons');
+        const emergencyLabelEl = document.getElementById('emergency-label');
+        const stageNameEl = document.getElementById('stage-name');
+        const stageDescEl = document.getElementById('stage-desc');
+        const continueBtn = document.getElementById('continue-btn');
+        const btnUp = document.getElementById('btn-up');
+        const btnDown = document.getElementById('btn-down');
+        const btnCable = document.getElementById('btn-cable');
+        const eqTitle = document.getElementById('eq-title');
+        const eqFormula = document.getElementById('eq-formula');
+        const eqSteps = document.getElementById('eq-steps');
+
+        // ─── Physics ─────────────────────────────────────────────────────────────
+        function calcNormalForce(state) {
+            switch (state) {
+                case STATE.IDLE:
+                case STATE.CONSTANT_VELOCITY_UP:
+                case STATE.CONSTANT_VELOCITY_DOWN:
+                    return mass * GRAVITY;
+                case STATE.ACCELERATING_UP:
+                case STATE.DECELERATING_DOWN:
+                    return mass * (GRAVITY + acceleration);
+                case STATE.DECELERATING_UP:
+                case STATE.ACCELERATING_DOWN:
+                    return mass * (GRAVITY - acceleration);
+                case STATE.FREE_FALL:
+                    return 0;
+                default:
+                    return mass * GRAVITY;
+            }
+        }
+
+        function getPhysicsDetails(state) {
+            const g = GRAVITY;
+            const mg = (mass * g).toFixed(1);
+            const ma = (mass * acceleration).toFixed(1);
+            switch (state) {
+                case STATE.IDLE:
+                case STATE.CONSTANT_VELOCITY_UP:
+                case STATE.CONSTANT_VELOCITY_DOWN:
+                    return {
+                        title: 'At Rest or Constant Velocity',
+                        formula: 'ΣF = N − mg = 0',
+                        steps: [
+                            'Since acceleration (a) is 0, the net force is 0.',
+                            'N = mg',
+                            `N = ${mass.toFixed(1)} kg × ${g} m/s²`,
+                            `N = ${mg} N`,
+                        ]
+                    };
+                case STATE.ACCELERATING_UP:
+                case STATE.DECELERATING_DOWN:
+                    return {
+                        title: 'Accelerating Upwards',
+                        formula: 'ΣF = N − mg = +ma',
+                        steps: [
+                            'N = mg + ma',
+                            'N = m(g + a)',
+                            `N = ${mass.toFixed(1)} kg × (${g} + ${acceleration.toFixed(2)}) m/s²`,
+                            `N = ${(mass * (g + acceleration)).toFixed(1)} N`,
+                        ]
+                    };
+                case STATE.DECELERATING_UP:
+                case STATE.ACCELERATING_DOWN:
+                    return {
+                        title: 'Accelerating Downwards',
+                        formula: 'ΣF = N − mg = −ma',
+                        steps: [
+                            'N = mg − ma',
+                            'N = m(g − a)',
+                            `N = ${mass.toFixed(1)} kg × (${g} − ${acceleration.toFixed(2)}) m/s²`,
+                            `N = ${(mass * (g - acceleration)).toFixed(1)} N`,
+                        ]
+                    };
+                case STATE.FREE_FALL:
+                    return {
+                        title: 'Free Fall (Cable Broken)',
+                        formula: 'ΣF = N − mg = −mg',
+                        steps: [
+                            `The elevator accelerates down at g = ${g} m/s².`,
+                            'N = mg − mg',
+                            'N = 0 N',
+                            "The person is 'weightless' — scale reads zero.",
+                        ]
+                    };
+                default:
+                    return { title: 'Select a scenario', formula: '', steps: [] };
+            }
+        }
+
+        // ─── UI update ────────────────────────────────────────────────────────────
+        function updateUI() {
+            const N = calcNormalForce(elevatorState);
+            const trueWeight = mass * GRAVITY;
+            const ratio = trueWeight > 0 ? N / trueWeight : 0;
+            const BASE_ARROW = 48;
+
+            apparentWeightEl.textContent = N.toFixed(1) + ' N';
+            fbd_n_line.style.height = Math.max(0, BASE_ARROW * ratio) + 'px';
+
+            // Equation display
+            const details = getPhysicsDetails(elevatorState);
+            eqTitle.textContent = details.title;
+            eqFormula.textContent = details.formula;
+            eqSteps.innerHTML = details.steps.map(s => `<li>${s}</li>`).join('');
+
+            // Elevator position
+            elevatorCar.style.top = elevatorPosition + '%';
+        }
+
+        function setSimulatingState(sim) {
+            isSimulating = sim;
+            massSlider.disabled = sim;
+            accelSlider.disabled = sim;
+            btnUp.disabled = sim;
+            btnDown.disabled = sim;
+            btnCable.disabled = sim;
+            stageInfoEl.classList.toggle('visible', sim);
+            actionButtonsEl.style.display = sim ? 'none' : 'grid';
+        }
+
+        function showStage(stageIndex) {
+            if (stageIndex < 0 || stageIndex >= currentSequence.length) return;
+            const stage = currentSequence[stageIndex];
+            currentStageIndex = stageIndex;
+            elevatorState = stage.state;
+            elevatorPosition = stage.position;
+
+            stageNameEl.textContent = `Stage ${stageIndex + 1} of ${currentSequence.length}: ${stage.name}`;
+            stageDescEl.textContent = stage.description;
+            emergencyLabelEl.classList.toggle('visible', isEmergency);
+
+            const isLast = stageIndex === currentSequence.length - 1;
+            continueBtn.textContent = isLast ? 'Finish & Reset' : 'Continue →';
+
+            updateUI();
+        }
+
+        function handleReset() {
+            isEmergency = false;
+            currentStageIndex = -1;
+            currentSequence = [];
+            elevatorState = STATE.IDLE;
+            elevatorPosition = 75;
+            setSimulatingState(false);
+            stageInfoEl.classList.remove('visible');
+            actionButtonsEl.style.display = 'grid';
+            emergencyLabelEl.classList.remove('visible');
+            updateUI();
+        }
+
+        // ─── Button handlers ──────────────────────────────────────────────────────
+        btnUp.addEventListener('click', function () {
+            if (isSimulating) return;
+            isEmergency = false;
+            elevatorState = STATE.IDLE;
+            elevatorPosition = 75;
+            elevatorCar.style.top = '75%';
+            updateUI();
+
+            const upSequence = [
+                { state: STATE.IDLE, position: 75, name: 'At Rest (Bottom)', description: 'The elevator is stationary. Apparent weight equals true weight.' },
+                { state: STATE.ACCELERATING_UP, position: 55, name: 'Accelerating Up', description: 'The upward acceleration makes the person feel heavier.' },
+                { state: STATE.CONSTANT_VELOCITY_UP, position: 15, name: 'Constant Velocity Up', description: 'With no acceleration, apparent weight returns to equal true weight.' },
+                { state: STATE.DECELERATING_UP, position: 5, name: 'Decelerating Up', description: 'Downward acceleration to slow down makes the person feel lighter.' },
+                { state: STATE.IDLE, position: 5, name: 'At Rest (Top)', description: 'The elevator is stopped. Apparent weight equals true weight.' },
+            ];
+            setTimeout(function () {
+                currentSequence = upSequence;
+                setSimulatingState(true);
+                showStage(0);
+            }, 100);
+        });
+
+        btnDown.addEventListener('click', function () {
+            if (isSimulating) return;
+            isEmergency = false;
+            setSimulatingState(true);
+            elevatorState = STATE.IDLE;
+            elevatorPosition = 5;
+            elevatorCar.style.top = '5%';
+            updateUI();
+
+            const downSequence = [
+                { state: STATE.IDLE, position: 5, name: 'At Rest (Top)', description: 'The elevator is stationary. Apparent weight equals true weight.' },
+                { state: STATE.ACCELERATING_DOWN, position: 25, name: 'Accelerating Down', description: 'Downward acceleration makes the person feel lighter.' },
+                { state: STATE.CONSTANT_VELOCITY_DOWN, position: 65, name: 'Constant Velocity Down', description: 'With no acceleration, apparent weight returns to equal true weight.' },
+                { state: STATE.DECELERATING_DOWN, position: 75, name: 'Decelerating Down', description: 'Upward acceleration to stop makes the person feel heavier.' },
+                { state: STATE.IDLE, position: 75, name: 'At Rest (Bottom)', description: 'The elevator is stopped. Apparent weight equals true weight.' },
+            ];
+            setTimeout(function () {
+                currentSequence = downSequence;
+                showStage(0);
+            }, TRANSITION_DURATION);
+        });
+
+        btnCable.addEventListener('click', function () {
+            if (isSimulating) return;
+            isEmergency = true;
+            const emergencySequence = [
+                { state: STATE.IDLE, position: 5, name: 'Moving to Top', description: 'The elevator rises to the top of the shaft before the cable snaps.' },
+                { state: STATE.FREE_FALL, position: 75, name: 'Cable Snaps!', description: 'The cable breaks! The elevator and its occupant are in free fall. The apparent weight is zero.' },
+            ];
+            currentSequence = emergencySequence;
+            setSimulatingState(true);
+            showStage(0);
+        });
+
+        continueBtn.addEventListener('click', function () {
+            const next = currentStageIndex + 1;
+            if (next < currentSequence.length) {
+                showStage(next);
+            } else {
+                handleReset();
+            }
+        });
+
+        // ─── Slider listeners ─────────────────────────────────────────────────────
+        massSlider.addEventListener('input', function () {
+            mass = parseFloat(this.value);
+            massDisplay.textContent = mass.toFixed(1) + ' kg';
+            updateUI();
+        });
+
+        accelSlider.addEventListener('input', function () {
+            acceleration = parseFloat(this.value);
+            accelDisplay.textContent = acceleration.toFixed(2) + ' m/s²';
+            updateUI();
+        });
+
+        // ─── Theme toggle ─────────────────────────────────────────────────────────
+        const themeButton = document.getElementById('theme-button');
+        const DARK_KEY = 'elevator-physics-dark';
+        const LIGHT_KEY = 'elevator-physics-light';
+
+        function updateAppChromeTheme(theme) {
+            const tc = document.querySelector('meta[name="theme-color"]');
+            const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            const dark = theme === 'dark';
+            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+        }
+        function updateButtonEmoji(theme) {
+            themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+        }
+
+        const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', initTheme);
+        updateAppChromeTheme(initTheme);
+        updateButtonEmoji(initTheme);
+
+        window.addEventListener('pageshow', function () {
+            updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+        });
+
+        themeButton.addEventListener('click', function () {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') {
+                localStorage.setItem(DARK_KEY, 'true');
+                localStorage.removeItem(LIGHT_KEY);
+            } else {
+                localStorage.setItem(LIGHT_KEY, 'true');
+                localStorage.removeItem(DARK_KEY);
+            }
+            updateAppChromeTheme(next);
+            updateButtonEmoji(next);
+        });
+
+        // ─── Offline font fallback ────────────────────────────────────────────────
+        function updateOfflineFontState() {
+            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
+        }
+        window.addEventListener('online', updateOfflineFontState);
+        window.addEventListener('offline', updateOfflineFontState);
+        updateOfflineFontState();
+
+        // ─── Initial render ───────────────────────────────────────────────────────
+        updateUI();
+    </script>
+
+    <!-- Brave iOS gradient text fix -->
+    <script>
+    (function () {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+
+</html>
