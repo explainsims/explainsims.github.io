@@ -750,6 +750,11 @@
         <h2>Tools <span class="section-label">Explore</span></h2>
         <p class="section-desc">Analyse data, create scientific documents, and explore sound with this collection of browser-based physics tools.</p>
         <div class="grid">
+            <div class="card">
+                <h3>Voice Dictation</h3>
+                <p>Record your voice and get an instant transcript — no API key needed. Uses the browser's built-in speech recognition to transcribe and auto-polish your notes.</p>
+                <a href="/tools/dictation.html">Launch Tool</a>
+            </div>
         </div>
     </div>
 
@@ -1190,6 +1195,7 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
+            '/tools/dictation.html': ['/tools/dictation.html'],
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(

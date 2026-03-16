@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-03-16T12:00:00Z';
+const BUILD_ID = '2026-03-16T14:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -20,6 +20,7 @@ const ASSETS_TO_CACHE = [
   '/assets/sw-register.js',
 
   // Tools
+  '/tools/dictation.html',
   '/tools/panphyplot.html',
   '/tools/panphyplot/css/panphyplot.css',
   '/tools/panphyplot/js/curve-fitting.js',
