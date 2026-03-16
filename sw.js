@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-03-16T20:00:00Z';
+const BUILD_ID = '2026-03-16T21:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -50,6 +50,9 @@ const ASSETS_TO_CACHE = [
   '/appcm/conical_pendulum.html',
   '/appcm/gravitas.html',
   '/appcm/banked_track.html',
+  '/appcm/cons_energy_systems.html',
+  '/appcm/cons_spring_energy_systems.html',
+  '/appcm/power.html',
 
   // For Teachers
   '/for_teachers/timer.html',

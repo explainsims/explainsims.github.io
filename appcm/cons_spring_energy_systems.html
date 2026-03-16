@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#E8F3FD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <script>
+    (function() {
+      if (localStorage.getItem('cons-spring-energy-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#15243E');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+
+    <title>Work &amp; Energy: Spring System Explorer</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
+            --brand-primary: #1A56DB;
+            --brand-secondary: #1D4ED8;
+            --brand-accent: #D97706;
+            --card-bg: #FFFFFF;
+            --card-border: #C5DCF0;
+            --card-shadow: 0 4px 16px rgba(26,86,219,0.06);
+            --canvas-bg: #FFFFFF;
+            --slider-track: #C5DCF0;
+            --slider-thumb: #1A56DB;
+            --nav-bg: rgba(255,255,255,0.92);
+            --nav-border: rgba(30,80,160,0.10);
+            --readout-bg: #E8F3FD;
+            --readout-border: #C5DCF0;
+            --section-heading: #1A56DB;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
+            --brand-primary: #F6C90E;
+            --brand-secondary: #EAB308;
+            --brand-accent: #60A5FA;
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            --canvas-bg: #15243E;
+            --slider-track: #2A4270;
+            --slider-thumb: #F6C90E;
+            --nav-bg: rgba(21,36,62,0.90);
+            --nav-border: rgba(255,255,255,0.08);
+            --readout-bg: #1C2F52;
+            --readout-border: #2A4270;
+            --section-heading: #F6C90E;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html.offline-font {
+            --font-sans: system-ui, sans-serif;
+            --font-display: system-ui, sans-serif;
+            --font-mono: 'Courier New', monospace;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Banner */
+        .banner {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 56px;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .banner-logo {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .banner-logo a img {
+            width: 32px;
+            height: 32px;
+            display: block;
+        }
+
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            text-align: center;
+            flex: 1;
+            padding: 0 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        #theme-button {
+            background: none;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-main);
+            transition: background 0.2s;
+        }
+
+        #theme-button:hover { background: var(--readout-bg); }
+
+        /* Main layout */
+        .main-content {
+            flex: 1;
+            max-width: 1280px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 960px) {
+            .main-content {
+                grid-template-columns: 8fr 4fr;
+                padding: 20px;
+                gap: 20px;
+            }
+        }
+
+        .left-col { display: flex; flex-direction: column; gap: 16px; }
+        .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 16px;
+            overflow: hidden;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--section-heading);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+        }
+
+        /* SVG Canvas */
+        .svg-wrap {
+            width: 100%;
+            aspect-ratio: 600 / 400;
+            overflow: hidden;
+            border-radius: 10px;
+            background: var(--canvas-bg);
+            border: 1px solid var(--card-border);
+            cursor: default;
+        }
+
+        .svg-wrap svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Lab Guide */
+        .lab-guide {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 16px;
+        }
+
+        .lab-system-name {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--section-heading);
+            margin-bottom: 6px;
+        }
+
+        .lab-explanation {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .lab-equation {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            background: var(--readout-bg);
+            border: 1px solid var(--readout-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.6;
+        }
+
+        /* Energy Bar Chart */
+        .energy-chart-area {
+            position: relative;
+            height: 200px;
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+            padding: 0 4px;
+        }
+
+        .chart-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .chart-section-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            height: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .chart-bars-wrap {
+            position: relative;
+            height: 160px;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+        }
+
+        .chart-zero-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 60%;
+            height: 1px;
+            background: var(--card-border);
+        }
+
+        .bar-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            position: relative;
+        }
+
+        .bar-label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            text-align: center;
+            font-family: var(--font-mono);
+        }
+
+        .bar-outer {
+            width: 28px;
+            height: 160px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .bar-inner {
+            position: absolute;
+            width: 100%;
+            border-radius: 3px;
+            transition: height 0.05s linear, top 0.05s linear;
+            min-height: 1px;
+        }
+
+        .zero-ref-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--card-border);
+            top: 60%;
+        }
+
+        .dotted-ref {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            border-top: 1px dashed var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        /* Controls */
+        .controls-card { padding: 14px; }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 36px;
+        }
+
+        .btn:active { transform: scale(0.96); }
+
+        .btn-play {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .btn-play.running {
+            background: #d97706;
+            color: #fff;
+        }
+
+        .btn-reset {
+            background: var(--readout-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+        }
+
+        .time-readout {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            background: var(--readout-bg);
+            border: 1px solid var(--readout-border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: var(--text-secondary);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .system-select {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.84rem;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .slider-group {
+            margin-bottom: 8px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+
+        .slider-label {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .slider-value {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 5px;
+            border-radius: 3px;
+            background: var(--slider-track);
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--slider-thumb);
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--slider-thumb);
+            cursor: pointer;
+            border: none;
+        }
+
+        @media (pointer: coarse) {
+            input[type="range"]::-webkit-slider-thumb { width: 22px; height: 22px; }
+            input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; }
+            .btn { min-height: 44px; padding: 10px 16px; }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--card-border);
+            margin-top: auto;
+        }
+
+        footer a { color: var(--brand-primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bar-inner { transition: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Work &amp; Energy: Spring System Explorer</div>
+        <div class="banner-actions">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme">&#9728;&#65039;</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <!-- Left column: SVG canvas + lab guide -->
+        <div class="left-col">
+            <div class="card" style="padding:12px;">
+                <div class="svg-wrap" id="svg-wrap">
+                    <svg id="sim-svg" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Ramp group (transform updated each frame) -->
+                        <g id="ramp-group">
+                            <!-- Ramp fill polygon -->
+                            <polygon id="ramp-fill" points="" fill="#94a3b8" opacity="0.2"/>
+                            <!-- Ramp surface -->
+                            <line id="ramp-surface" x1="0" y1="0" x2="500" y2="0" stroke="#94a3b8" stroke-width="3"/>
+                            <!-- Wall -->
+                            <line id="wall-line" x1="0" y1="0" x2="0" y2="-100" stroke="#0D1B2A" stroke-width="5"/>
+                            <!-- Hatch marks on wall -->
+                            <line x1="-10" y1="-10" x2="0" y2="0" stroke="#0D1B2A" stroke-width="1.5"/>
+                            <line x1="-10" y1="-30" x2="0" y2="-20" stroke="#0D1B2A" stroke-width="1.5"/>
+                            <line x1="-10" y1="-50" x2="0" y2="-40" stroke="#0D1B2A" stroke-width="1.5"/>
+                            <line x1="-10" y1="-70" x2="0" y2="-60" stroke="#0D1B2A" stroke-width="1.5"/>
+                            <line x1="-10" y1="-90" x2="0" y2="-80" stroke="#0D1B2A" stroke-width="1.5"/>
+                            <!-- Equilibrium marker -->
+                            <line id="eq-marker" x1="200" y1="-60" x2="200" y2="10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
+                            <text id="eq-label" x="200" y="-65" text-anchor="middle" font-size="11" fill="#64748b" font-family="Inter,sans-serif">Eq</text>
+                            <!-- Spring path -->
+                            <path id="spring-path" d="" fill="none" stroke="#1A56DB" stroke-width="2"/>
+                            <!-- Block -->
+                            <rect id="block-rect" x="170" y="-62" width="60" height="60" rx="6" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+                            <text id="block-label" x="200" y="-28" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="bold" fill="white" font-family="Inter,sans-serif">m</text>
+                        </g>
+                        <!-- Force vectors (in global SVG coords) -->
+                        <g id="force-vectors">
+                            <line id="fv-gravity" x1="0" y1="0" x2="0" y2="0" stroke="#10b981" stroke-width="2.5" marker-end="url(#arrow-green)"/>
+                            <line id="fv-normal" x1="0" y1="0" x2="0" y2="0" stroke="#334155" stroke-width="2.5" marker-end="url(#arrow-dark)"/>
+                            <line id="fv-spring" x1="0" y1="0" x2="0" y2="0" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+                            <line id="fv-friction" x1="0" y1="0" x2="0" y2="0" stroke="#8b5cf6" stroke-width="2.5" marker-end="url(#arrow-violet)"/>
+                        </g>
+                        <!-- Legend -->
+                        <g id="legend-box">
+                            <rect x="478" y="10" width="112" height="96" rx="6" fill="white" fill-opacity="0.88" stroke="#C5DCF0" stroke-width="1"/>
+                            <line x1="486" y1="28" x2="504" y2="28" stroke="#10b981" stroke-width="2.5"/>
+                            <text x="508" y="32" font-size="11" fill="#334155" font-family="Inter,sans-serif">Gravity</text>
+                            <line x1="486" y1="48" x2="504" y2="48" stroke="#334155" stroke-width="2.5"/>
+                            <text x="508" y="52" font-size="11" fill="#334155" font-family="Inter,sans-serif">Normal</text>
+                            <line x1="486" y1="68" x2="504" y2="68" stroke="#3b82f6" stroke-width="2.5"/>
+                            <text x="508" y="72" font-size="11" fill="#334155" font-family="Inter,sans-serif">Spring</text>
+                            <line x1="486" y1="88" x2="504" y2="88" stroke="#8b5cf6" stroke-width="2.5"/>
+                            <text x="508" y="92" font-size="11" fill="#334155" font-family="Inter,sans-serif">Friction</text>
+                        </g>
+                        <!-- Drag hint -->
+                        <text id="drag-hint" x="300" y="380" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="Inter,sans-serif">Drag the block to set position, then press Simulate</text>
+                        <!-- Arrow markers -->
+                        <defs>
+                            <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+                            </marker>
+                            <marker id="arrow-dark" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L8,3 z" fill="#334155"/>
+                            </marker>
+                            <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/>
+                            </marker>
+                            <marker id="arrow-violet" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L8,3 z" fill="#8b5cf6"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Lab Guide -->
+            <div class="lab-guide">
+                <div class="lab-system-name" id="lab-system-name">System: Block Only</div>
+                <div class="lab-explanation" id="lab-explanation">The block is the system. All forces from outside (spring, gravity along ramp, friction) do work on it. Apply the work-energy theorem.</div>
+                <div class="lab-equation" id="lab-equation">ΔK = Ws + Wg + Wf
+ K − K₀ = Ws + Wg + Wf</div>
+            </div>
+        </div>
+
+        <!-- Right column: energy bars + controls -->
+        <div class="right-col">
+            <!-- Energy Bar Chart -->
+            <div class="card">
+                <div class="card-title">Energy Accounting</div>
+                <div class="energy-chart-area" id="energy-chart-area">
+                    <!-- built by JS -->
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="card controls-card">
+                <div class="card-title">Controls</div>
+                <div class="controls-row">
+                    <button class="btn btn-play" id="btn-play">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                        Simulate
+                    </button>
+                    <button class="btn btn-reset" id="btn-reset" title="Reset">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.05"/></svg>
+                        Reset
+                    </button>
+                    <div class="time-readout" id="time-readout">t = 0.00 s</div>
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        <div class="slider-row">
+                            <span class="slider-label">System Boundary</span>
+                        </div>
+                    </label>
+                    <select class="system-select" id="system-select">
+                        <option value="0">Block</option>
+                        <option value="1">Block + Spring</option>
+                        <option value="2">Block + Earth</option>
+                        <option value="3">Block + Surface + Spring</option>
+                        <option value="4">Block + Surface + Spring + Earth (ALL)</option>
+                    </select>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label">Mass (m)</span>
+                        <span class="slider-value" id="val-mass">2.0 kg</span>
+                    </div>
+                    <input type="range" id="slider-mass" min="0.5" max="10" step="0.1" value="2.0">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label">Spring constant (k)</span>
+                        <span class="slider-value" id="val-k">20 N/m</span>
+                    </div>
+                    <input type="range" id="slider-k" min="5" max="100" step="1" value="20">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label">Friction (μ)</span>
+                        <span class="slider-value" id="val-mu">0.10</span>
+                    </div>
+                    <input type="range" id="slider-mu" min="0" max="0.2" step="0.01" value="0.1">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label">Ramp angle (θ)</span>
+                        <span class="slider-value" id="val-theta">30°</span>
+                    </div>
+                    <input type="range" id="slider-theta" min="0" max="30" step="1" value="30">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; <a href="/">PanPhy Labs</a> |
+        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+    </footer>
+
+    <script>
+    // ─── Theme toggle ───────────────────────────────────────────────────────────
+    const themeButton = document.getElementById('theme-button');
+    const DARK_THEME_KEY = 'cons-spring-energy-dark';
+    const LIGHT_THEME_KEY = 'cons-spring-energy-light';
+
+    const _initTheme = localStorage.getItem(DARK_THEME_KEY)
+        ? 'dark'
+        : localStorage.getItem(LIGHT_THEME_KEY)
+            ? 'light'
+            : 'light';
+
+    document.documentElement.setAttribute('data-theme', _initTheme);
+    updateAppChromeTheme(_initTheme);
+    updateButtonEmoji(_initTheme);
+
+    function updateAppChromeTheme(theme) {
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        const appleStatusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        const isDark = theme === 'dark';
+        if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#15243E' : '#E8F3FD');
+        if (appleStatusBarMeta) appleStatusBarMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
+    }
+
+    window.addEventListener('pageshow', function() {
+        updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+    });
+
+    function updateButtonEmoji(theme) {
+        themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+    }
+
+    themeButton.addEventListener('click', function() {
+        const theme = document.documentElement.getAttribute('data-theme');
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem(DARK_THEME_KEY, 'true');
+            localStorage.removeItem(LIGHT_THEME_KEY);
+            updateAppChromeTheme('dark');
+            updateButtonEmoji('dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem(LIGHT_THEME_KEY, 'true');
+            localStorage.removeItem(DARK_THEME_KEY);
+            updateAppChromeTheme('light');
+            updateButtonEmoji('light');
+        }
+        // Update legend text color after theme change
+        updateLegendColors();
+    });
+
+    function updateOfflineFontState() {
+        document.documentElement.classList.toggle('offline-font', !navigator.onLine);
+    }
+    window.addEventListener('online', updateOfflineFontState);
+    window.addEventListener('offline', updateOfflineFontState);
+    updateOfflineFontState();
+
+    // ─── Physics constants ───────────────────────────────────────────────────────
+    const GRAVITY = 9.81;
+    const L0 = 1.0;           // natural spring length (m)
+    const PHYSICS_DT = 0.005; // fixed time step (s)
+    const MAX_STEPS = 20;
+
+    // Drawing constants
+    const PADDING = 50;
+    const SCALE = 200;         // px per meter
+    const RAMP_LENGTH = 2.5;   // visual ramp length (m)
+    const BLOCK_SIZE = 60;     // px
+
+    // ─── Simulation state ────────────────────────────────────────────────────────
+    let mass = 2.0;
+    let k = 20.0;
+    let mu = 0.1;
+    let theta = 30;   // degrees
+
+    // Dynamic state
+    let x = -0.5;     // position from equilibrium (m)
+    let v = 0;
+    let thermalEnergy = 0;
+    let simTime = 0;
+
+    // Energy snapshot (taken at release / first play)
+    let snapshot = null;   // { K0, Us0, Ug0, Eth0, x0 }
+
+    // Animation
+    let isPlaying = false;
+    let rafId = null;
+    let prevTimestamp = null;
+    let accumulator = 0;
+
+    // Drag state
+    let isDragging = false;
+
+    // System selection (0..4)
+    let systemIndex = 0;
+
+    // ─── DOM refs ────────────────────────────────────────────────────────────────
+    const svgEl = document.getElementById('sim-svg');
+    const rampGroup = document.getElementById('ramp-group');
+    const rampFill = document.getElementById('ramp-fill');
+    const rampSurface = document.getElementById('ramp-surface');
+    const eqMarker = document.getElementById('eq-marker');
+    const eqLabel = document.getElementById('eq-label');
+    const springPath = document.getElementById('spring-path');
+    const blockRect = document.getElementById('block-rect');
+    const blockLabel = document.getElementById('block-label');
+    const fvGravity = document.getElementById('fv-gravity');
+    const fvNormal = document.getElementById('fv-normal');
+    const fvSpring = document.getElementById('fv-spring');
+    const fvFriction = document.getElementById('fv-friction');
+    const dragHint = document.getElementById('drag-hint');
+
+    const btnPlay = document.getElementById('btn-play');
+    const btnReset = document.getElementById('btn-reset');
+    const timeReadout = document.getElementById('time-readout');
+    const systemSelect = document.getElementById('system-select');
+    const labSystemName = document.getElementById('lab-system-name');
+    const labExplanation = document.getElementById('lab-explanation');
+    const labEquation = document.getElementById('lab-equation');
+
+    // ─── Energy chart DOM (built once) ──────────────────────────────────────────
+    const chartArea = document.getElementById('energy-chart-area');
+
+    // Bar elements keyed by name
+    const bars = {};
+
+    function buildEnergyChart() {
+        chartArea.innerHTML = '';
+
+        // Helper: create a bar column
+        function makeBarCol(id, label, color, sectionEl) {
+            const outer = document.createElement('div');
+            outer.className = 'bar-outer';
+
+            const zeroLine = document.createElement('div');
+            zeroLine.className = 'zero-ref-line';
+            outer.appendChild(zeroLine);
+
+            const inner = document.createElement('div');
+            inner.className = 'bar-inner';
+            inner.id = 'bar-' + id;
+            inner.style.background = color;
+            inner.style.height = '0px';
+            inner.style.top = '60%';
+            outer.appendChild(inner);
+
+            const barLabel = document.createElement('div');
+            barLabel.className = 'bar-label';
+            barLabel.textContent = label;
+
+            const col = document.createElement('div');
+            col.className = 'bar-col';
+            col.appendChild(outer);
+            col.appendChild(barLabel);
+            sectionEl.appendChild(col);
+            bars[id] = inner;
+        }
+
+        // Internal section
+        const internalSection = document.createElement('div');
+        internalSection.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;';
+        const internalLabel = document.createElement('div');
+        internalLabel.className = 'chart-section-label';
+        internalLabel.textContent = 'Internal System';
+        internalSection.appendChild(internalLabel);
+        const internalBars = document.createElement('div');
+        internalBars.style.cssText = 'display:flex;align-items:flex-end;gap:4px;justify-content:center;';
+        makeBarCol('K', 'K', '#f59e0b', internalBars);
+        makeBarCol('Us', 'Us', '#3b82f6', internalBars);
+        makeBarCol('Ug', 'Ug', '#10b981', internalBars);
+        makeBarCol('Eth', 'Eth', '#8b5cf6', internalBars);
+        internalSection.appendChild(internalBars);
+        chartArea.appendChild(internalSection);
+
+        // Total section
+        const totalSection = document.createElement('div');
+        totalSection.style.cssText = 'width:64px;display:flex;flex-direction:column;align-items:center;flex-shrink:0;';
+        const totalLabel = document.createElement('div');
+        totalLabel.className = 'chart-section-label';
+        totalLabel.textContent = 'Total';
+        totalSection.appendChild(totalLabel);
+        const totalBars = document.createElement('div');
+        totalBars.style.cssText = 'display:flex;align-items:flex-end;gap:4px;justify-content:center;position:relative;';
+
+        const totOuter = document.createElement('div');
+        totOuter.className = 'bar-outer';
+        const totZero = document.createElement('div');
+        totZero.className = 'zero-ref-line';
+        totOuter.appendChild(totZero);
+        // Dotted reference for initial total
+        const dotRef = document.createElement('div');
+        dotRef.className = 'dotted-ref';
+        dotRef.id = 'total-dotted-ref';
+        dotRef.style.top = '60%';
+        totOuter.appendChild(dotRef);
+        const totInner = document.createElement('div');
+        totInner.className = 'bar-inner';
+        totInner.id = 'bar-Total';
+        totInner.style.background = '#475569';
+        totInner.style.height = '0px';
+        totInner.style.top = '60%';
+        totOuter.appendChild(totInner);
+        const totLabel2 = document.createElement('div');
+        totLabel2.className = 'bar-label';
+        totLabel2.textContent = 'E_sys';
+        const totCol = document.createElement('div');
+        totCol.className = 'bar-col';
+        totCol.appendChild(totOuter);
+        totCol.appendChild(totLabel2);
+        totalBars.appendChild(totCol);
+        bars['Total'] = totInner;
+        totalSection.appendChild(totalBars);
+        chartArea.appendChild(totalSection);
+
+        // External work section
+        const extSection = document.createElement('div');
+        extSection.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;';
+        const extLabel = document.createElement('div');
+        extLabel.className = 'chart-section-label';
+        extLabel.textContent = 'External Work';
+        extSection.appendChild(extLabel);
+        const extBars = document.createElement('div');
+        extBars.style.cssText = 'display:flex;align-items:flex-end;gap:4px;justify-content:center;';
+        makeBarCol('Wg', 'Wg', '#22c55e', extBars);
+        makeBarCol('Ws', 'Ws', '#22c55e', extBars);
+        makeBarCol('Wf', 'Wf', '#ef4444', extBars);
+        extSection.appendChild(extBars);
+        chartArea.appendChild(extSection);
+    }
+
+    buildEnergyChart();
+
+    // ─── Physics helpers ─────────────────────────────────────────────────────────
+    function computeForces(xPos, vel) {
+        const thetaRad = theta * Math.PI / 180;
+        const Fg_x = mass * GRAVITY * Math.sin(thetaRad);
+        const Fs = -k * xPos;
+        const Fn = mass * GRAVITY * Math.cos(thetaRad);
+        const Fk_mag = mu * Fn;
+        const F_driving = Fg_x + Fs;
+
+        let F_friction = 0;
+        let isStatic = false;
+
+        if (Math.abs(vel) > 0.001) {
+            F_friction = -Math.sign(vel) * Fk_mag;
+        } else {
+            if (Math.abs(F_driving) <= Fk_mag) {
+                isStatic = true;
+                F_friction = -F_driving;
+            } else {
+                F_friction = -Math.sign(F_driving) * Fk_mag;
+            }
+        }
+
+        const F_net = F_driving + F_friction;
+        return { Fg_x, Fs, Fn, F_friction, F_net, isStatic };
+    }
+
+    function physicsStep() {
+        const { Fs, Fn, F_friction, F_net, isStatic } = computeForces(x, v);
+        if (!isStatic) {
+            const a = F_net / mass;
+            const newV = v + a * PHYSICS_DT;
+            const newX = x + newV * PHYSICS_DT;
+            const dEth = Math.abs(F_friction * newV * PHYSICS_DT);
+            v = newV;
+            x = newX;
+            thermalEnergy += dEth;
+        } else {
+            v = 0;
+        }
+        simTime += PHYSICS_DT;
+    }
+
+    function computeEnergies() {
+        const thetaRad = theta * Math.PI / 180;
+        const K = 0.5 * mass * v * v;
+        const Us = 0.5 * k * x * x;
+        const h = -x * Math.sin(thetaRad);
+        const Ug = mass * GRAVITY * h;
+        const Eth = thermalEnergy;
+        return { K, Us, Ug, Eth };
+    }
+
+    function takeSnapshot() {
+        const { K, Us, Ug, Eth } = computeEnergies();
+        snapshot = { K0: K, Us0: Us, Ug0: Ug, Eth0: Eth };
+    }
+
+    function resetSim() {
+        x = -0.5;
+        v = 0;
+        thermalEnergy = 0;
+        simTime = 0;
+        snapshot = null;
+        accumulator = 0;
+        prevTimestamp = null;
+    }
+
+    // ─── SVG rendering ───────────────────────────────────────────────────────────
+    function getOriginY() {
+        return 250 + (theta / 30) * 100;
+    }
+
+    function updateRampTransform() {
+        const originY = getOriginY();
+        rampGroup.setAttribute('transform', `translate(${PADDING}, ${originY}) rotate(${-theta})`);
+    }
+
+    function updateRampGeometry() {
+        // Surface line
+        const rampPx = RAMP_LENGTH * SCALE;
+        rampSurface.setAttribute('x2', rampPx);
+
+        // Ramp fill polygon (trapezoid below ramp, in rotated coords)
+        const originY = getOriginY();
+        // The fill is a triangle/polygon below the ramp surface
+        // In the rotated frame: (0,0) to (rampPx,0) to (rampPx,60) to (0,60)
+        rampFill.setAttribute('points', `0,0 ${rampPx},0 ${rampPx},60 0,60`);
+    }
+
+    function buildSpringPath(currentLen) {
+        const nCoils = 12;
+        const amplitude = 20;
+        const startX = 0;
+        const stubLen = 10;
+        const endX = currentLen;
+        const coilWidth = (endX - stubLen * 2) / nCoils;
+
+        let d = `M 0,0 L ${stubLen},0 `;
+        for (let i = 0; i < nCoils; i++) {
+            const cx = stubLen + i * coilWidth;
+            const nx = cx + coilWidth;
+            const sign = (i % 2 === 0) ? 1 : -1;
+            const midX = cx + coilWidth / 2;
+            d += `L ${midX.toFixed(1)},${(sign * amplitude).toFixed(1)} L ${nx.toFixed(1)},0 `;
+        }
+        d += `L ${endX.toFixed(1)},0`;
+        return d;
+    }
+
+    function updateSVG() {
+        updateRampTransform();
+        updateRampGeometry();
+
+        const currentLen = (L0 + x) * SCALE;
+        // Clamp to avoid degenerate spring
+        const safeLen = Math.max(currentLen, 12);
+
+        // Spring
+        springPath.setAttribute('d', buildSpringPath(safeLen));
+
+        // Block
+        const bx = safeLen - BLOCK_SIZE / 2;
+        const by = -(BLOCK_SIZE / 2 + 2) - BLOCK_SIZE;
+        blockRect.setAttribute('x', bx);
+        blockRect.setAttribute('y', by + BLOCK_SIZE); // center properly
+        // Block rect: top-left = (currentLen - BLOCK_SIZE/2, -(BLOCK_SIZE+2))
+        blockRect.setAttribute('x', safeLen - BLOCK_SIZE / 2);
+        blockRect.setAttribute('y', -(BLOCK_SIZE + 2));
+        blockLabel.setAttribute('x', safeLen);
+        blockLabel.setAttribute('y', -(BLOCK_SIZE / 2 + 2));
+
+        // Force vectors (global SVG coords)
+        const originY = getOriginY();
+        const angleRad = -theta * Math.PI / 180;
+        const dist = safeLen;
+        const blockCx = PADDING + dist * Math.cos(angleRad);
+        const blockCy = originY + dist * Math.sin(angleRad) - (BLOCK_SIZE / 2) * Math.cos(-angleRad);
+
+        const { Fs, Fn, F_friction } = computeForces(x, v);
+        const FG = mass * GRAVITY;
+        const fScale = 1.5;
+
+        // Gravity: straight down
+        const gLen = FG * fScale;
+        fvGravity.setAttribute('x1', blockCx); fvGravity.setAttribute('y1', blockCy);
+        fvGravity.setAttribute('x2', blockCx); fvGravity.setAttribute('y2', blockCy + gLen);
+
+        // Normal: perpendicular to ramp (angle = -theta - 90 deg from horizontal)
+        const normalAngle = angleRad - Math.PI / 2;
+        const nLen = Fn * fScale;
+        fvNormal.setAttribute('x1', blockCx); fvNormal.setAttribute('y1', blockCy);
+        fvNormal.setAttribute('x2', blockCx + nLen * Math.cos(normalAngle));
+        fvNormal.setAttribute('y2', blockCy + nLen * Math.sin(normalAngle));
+
+        // Spring force: along ramp direction
+        const sLen = Fs * fScale;
+        fvSpring.setAttribute('x1', blockCx); fvSpring.setAttribute('y1', blockCy);
+        fvSpring.setAttribute('x2', blockCx + sLen * Math.cos(angleRad));
+        fvSpring.setAttribute('y2', blockCy + sLen * Math.sin(angleRad));
+
+        // Friction: along ramp direction
+        if (Math.abs(F_friction) > 0.1) {
+            const ffLen = F_friction * fScale;
+            fvFriction.setAttribute('x1', blockCx); fvFriction.setAttribute('y1', blockCy);
+            fvFriction.setAttribute('x2', blockCx + ffLen * Math.cos(angleRad));
+            fvFriction.setAttribute('y2', blockCy + ffLen * Math.sin(angleRad));
+            fvFriction.style.display = '';
+        } else {
+            fvFriction.style.display = 'none';
+        }
+
+        // Update SVG colors for theme
+        updateSVGColors();
+    }
+
+    function updateSVGColors() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const wallColor = isDark ? '#EEF5FD' : '#0D1B2A';
+        const wallLine = document.getElementById('wall-line');
+        if (wallLine) {
+            wallLine.setAttribute('stroke', wallColor);
+            // Also update hatch marks
+            rampGroup.querySelectorAll('line[x1="-10"]').forEach(l => l.setAttribute('stroke', wallColor));
+        }
+        // Legend background
+        const legendRect = document.querySelector('#legend-box rect');
+        if (legendRect) {
+            legendRect.setAttribute('fill', isDark ? '#1C2F52' : 'white');
+            legendRect.setAttribute('stroke', isDark ? '#2A4270' : '#C5DCF0');
+        }
+        // Legend text
+        document.querySelectorAll('#legend-box text').forEach(t => {
+            t.setAttribute('fill', isDark ? '#EEF5FD' : '#334155');
+        });
+        // Eq label
+        const eqLbl = document.getElementById('eq-label');
+        if (eqLbl) eqLbl.setAttribute('fill', isDark ? '#8BB3D4' : '#64748b');
+        const eqMkr = document.getElementById('eq-marker');
+        if (eqMkr) eqMkr.setAttribute('stroke', isDark ? '#8BB3D4' : '#64748b');
+        // Drag hint
+        const dh = document.getElementById('drag-hint');
+        if (dh) dh.setAttribute('fill', isDark ? '#4A6380' : '#94a3b8');
+        // Normal force arrow
+        fvNormal.setAttribute('stroke', isDark ? '#94a3b8' : '#334155');
+        const darkMarker = document.getElementById('arrow-dark');
+        if (darkMarker) darkMarker.querySelector('path').setAttribute('fill', isDark ? '#94a3b8' : '#334155');
+    }
+
+    function updateLegendColors() {
+        updateSVGColors();
+    }
+
+    // ─── Energy bar chart update ─────────────────────────────────────────────────
+    function setBar(id, value, scaleLimit) {
+        const bar = bars[id];
+        if (!bar) return;
+        const zeroFrac = 0.6;  // zero line at 60% from top
+        const halfH = 96;      // pixels above/below zero (total 160, split 96/64)
+
+        if (scaleLimit <= 0) {
+            bar.style.height = '0px';
+            bar.style.top = (zeroFrac * 160) + 'px';
+            return;
+        }
+
+        const frac = Math.min(Math.abs(value) / scaleLimit, 1.0);
+        const px = frac * halfH;
+
+        if (value >= 0) {
+            // Positive: bar grows upward from zero line
+            bar.style.height = px + 'px';
+            bar.style.top = (zeroFrac * 160 - px) + 'px';
+            bar.style.borderRadius = '3px 3px 0 0';
+        } else {
+            // Negative: bar hangs downward from zero line
+            bar.style.height = px + 'px';
+            bar.style.top = (zeroFrac * 160) + 'px';
+            bar.style.borderRadius = '0 0 3px 3px';
+        }
+    }
+
+    function updateEnergyChart(energies, workTerms, scaleLimit) {
+        const { K, Us, Ug, Eth } = energies;
+        const { Wg, Ws, Wf } = workTerms;
+
+        // Determine which internal energies are visible for this system
+        const vis = getSystemVisibility();
+
+        setBar('K',   vis.K   ? K   : 0, scaleLimit);
+        setBar('Us',  vis.Us  ? Us  : 0, scaleLimit);
+        setBar('Ug',  vis.Ug  ? Ug  : 0, scaleLimit);
+        setBar('Eth', vis.Eth ? Eth : 0, scaleLimit);
+
+        // Total E_sys
+        let Esys = 0;
+        if (vis.K)   Esys += K;
+        if (vis.Us)  Esys += Us;
+        if (vis.Ug)  Esys += Ug;
+        if (vis.Eth) Esys += Eth;
+        setBar('Total', Esys, scaleLimit);
+
+        // Dotted reference at initial total
+        if (snapshot) {
+            let Esys0 = snapshot.K0;
+            if (vis.Us)  Esys0 += snapshot.Us0;
+            if (vis.Ug)  Esys0 += snapshot.Ug0;
+            if (vis.Eth) Esys0 += snapshot.Eth0;
+            const dotRef = document.getElementById('total-dotted-ref');
+            if (dotRef && scaleLimit > 0) {
+                const frac = Math.min(Math.abs(Esys0) / scaleLimit, 1.0);
+                const px = frac * 96;
+                dotRef.style.top = (0.6 * 160 - (Esys0 >= 0 ? px : -px)) + 'px';
+            }
+        }
+
+        // External work bars
+        const visExt = getSystemExternalWork();
+        setBar('Wg', visExt.Wg ? Wg : 0, scaleLimit);
+        setBar('Ws', visExt.Ws ? Ws : 0, scaleLimit);
+        setBar('Wf', visExt.Wf ? Wf : 0, scaleLimit);
+
+        // Color Wg/Ws by sign
+        const wgBar = bars['Wg'];
+        const wsBar = bars['Ws'];
+        if (wgBar) wgBar.style.background = Wg >= 0 ? '#22c55e' : '#ef4444';
+        if (wsBar) wsBar.style.background = Ws >= 0 ? '#22c55e' : '#ef4444';
+    }
+
+    // ─── System visibility definitions ───────────────────────────────────────────
+    const SYSTEMS = [
+        {
+            name: 'System: Block Only',
+            explanation: 'The block is the system. Spring force, gravity along ramp, and friction all do work on it from outside. Apply the work-energy theorem.',
+            internal: { K: true, Us: false, Ug: false, Eth: false },
+            external: { Wg: true, Ws: true, Wf: true }
+        },
+        {
+            name: 'System: Block + Spring',
+            explanation: 'The spring is now internal. Spring potential energy is stored inside the system. Only gravity and friction do external work.',
+            internal: { K: true, Us: true, Ug: false, Eth: false },
+            external: { Wg: true, Ws: false, Wf: true }
+        },
+        {
+            name: 'System: Block + Earth',
+            explanation: 'Earth is now internal. Gravitational PE is stored in the system. Only the spring and friction do external work.',
+            internal: { K: true, Us: false, Ug: true, Eth: false },
+            external: { Wg: false, Ws: true, Wf: true }
+        },
+        {
+            name: 'System: Block + Surface + Spring',
+            explanation: 'Including the surface means friction dissipation stays inside. Thermal energy grows internally. Only gravity (via ramp height) does external work.',
+            internal: { K: true, Us: true, Ug: false, Eth: true },
+            external: { Wg: true, Ws: false, Wf: false }
+        },
+        {
+            name: 'System: Everything (Isolated)',
+            explanation: 'With all components inside, no external work is done. Total mechanical + thermal energy is conserved. ΔE_sys = 0.',
+            internal: { K: true, Us: true, Ug: true, Eth: true },
+            external: { Wg: false, Ws: false, Wf: false }
+        }
+    ];
+
+    function getSystemVisibility() { return SYSTEMS[systemIndex].internal; }
+    function getSystemExternalWork() { return SYSTEMS[systemIndex].external; }
+
+    // ─── Lab guide update ─────────────────────────────────────────────────────────
+    function updateLabGuide(energies, workTerms) {
+        const { K, Us, Ug, Eth } = energies;
+        const { Wg, Ws, Wf } = workTerms;
+        const sys = SYSTEMS[systemIndex];
+        labSystemName.textContent = sys.name;
+        labExplanation.textContent = sys.explanation;
+
+        const snap = snapshot || { K0: K, Us0: Us, Ug0: Ug, Eth0: Eth };
+        const dK   = K  - snap.K0;
+        const dUs  = Us - snap.Us0;
+        const dUg  = Ug - snap.Ug0;
+        const dEth = Eth - snap.Eth0;
+
+        function fmt(val) { return (val >= 0 ? '+' : '') + val.toFixed(2) + ' J'; }
+        function fmtAbs(val) { return val.toFixed(2) + ' J'; }
+
+        let eq = '';
+        switch (systemIndex) {
+            case 0:
+                eq = `ΔK = Ws + Wg + Wf\n` +
+                     ` ${fmt(dK)} = ${fmt(Ws)} + ${fmt(Wg)} + ${fmt(Wf)}\n` +
+                     ` (check: ${fmt(dK)} ≈ ${fmt(Ws + Wg + Wf)})`;
+                break;
+            case 1:
+                eq = `ΔK + ΔUs = Wg + Wf\n` +
+                     ` ${fmt(dK)} + ${fmt(dUs)} = ${fmt(Wg)} + ${fmt(Wf)}\n` +
+                     ` ${fmt(dK + dUs)} ≈ ${fmt(Wg + Wf)}`;
+                break;
+            case 2:
+                eq = `ΔK + ΔUg = Ws + Wf\n` +
+                     ` ${fmt(dK)} + ${fmt(dUg)} = ${fmt(Ws)} + ${fmt(Wf)}\n` +
+                     ` ${fmt(dK + dUg)} ≈ ${fmt(Ws + Wf)}`;
+                break;
+            case 3:
+                eq = `ΔK + ΔUs + ΔEth = Wg\n` +
+                     ` ${fmt(dK)} + ${fmt(dUs)} + ${fmt(dEth)} = ${fmt(Wg)}\n` +
+                     ` ${fmt(dK + dUs + dEth)} ≈ ${fmt(Wg)}`;
+                break;
+            case 4:
+                eq = `ΔE_sys = 0  (isolated system)\n` +
+                     ` ΔK + ΔUs + ΔUg + ΔEth = 0\n` +
+                     ` ${fmt(dK)} + ${fmt(dUs)} + ${fmt(dUg)} + ${fmt(dEth)}\n` +
+                     ` = ${fmt(dK + dUs + dUg + dEth)}`;
+                break;
+        }
+        labEquation.textContent = eq;
+    }
+
+    // ─── Main render loop ─────────────────────────────────────────────────────────
+    function render(timestamp) {
+        if (!isPlaying) return;
+
+        if (prevTimestamp !== null) {
+            const dt = Math.min((timestamp - prevTimestamp) / 1000, 0.1);
+            accumulator += dt;
+
+            let steps = 0;
+            while (accumulator >= PHYSICS_DT && steps < MAX_STEPS) {
+                physicsStep();
+                accumulator -= PHYSICS_DT;
+                steps++;
+            }
+
+            if (steps >= MAX_STEPS) {
+                accumulator = 0;
+            }
+        }
+
+        prevTimestamp = timestamp;
+
+        // Energies
+        const energies = computeEnergies();
+        const workTerms = computeWorkTerms(energies);
+        const scaleLimit = computeScaleLimit(energies);
+
+        updateSVG();
+        updateEnergyChart(energies, workTerms, scaleLimit);
+        updateLabGuide(energies, workTerms);
+        timeReadout.textContent = `t = ${simTime.toFixed(2)} s`;
+
+        rafId = requestAnimationFrame(render);
+    }
+
+    function computeWorkTerms(energies) {
+        const snap = snapshot || { K0: energies.K, Us0: energies.Us, Ug0: energies.Ug, Eth0: energies.Eth };
+        const Wg = snap.Ug0 - energies.Ug;
+        const Ws = snap.Us0 - energies.Us;
+        const Wf = -energies.Eth;
+        return { Wg, Ws, Wf };
+    }
+
+    function computeScaleLimit(energies) {
+        // Based on snapshot initial energies
+        const snap = snapshot;
+        if (!snap) {
+            const total = energies.K + Math.abs(energies.Ug) + energies.Us;
+            return Math.max(total * 1.3, 1);
+        }
+        const maxE = snap.K0 + Math.abs(snap.Ug0) + snap.Us0 + 1;
+        return Math.max(maxE * 1.3, 1);
+    }
+
+    // ─── Static frame draw (when not playing) ────────────────────────────────────
+    function drawStatic() {
+        const energies = computeEnergies();
+        const workTerms = computeWorkTerms(energies);
+        const scaleLimit = computeScaleLimit(energies);
+        updateSVG();
+        updateEnergyChart(energies, workTerms, scaleLimit);
+        updateLabGuide(energies, workTerms);
+        timeReadout.textContent = `t = ${simTime.toFixed(2)} s`;
+    }
+
+    // ─── Controls ─────────────────────────────────────────────────────────────────
+    btnPlay.addEventListener('click', function() {
+        if (isPlaying) {
+            // Pause
+            isPlaying = false;
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = null;
+            btnPlay.classList.remove('running');
+            btnPlay.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Simulate`;
+        } else {
+            // Play
+            if (!snapshot) takeSnapshot();
+            isPlaying = true;
+            prevTimestamp = null;
+            accumulator = 0;
+            btnPlay.classList.add('running');
+            btnPlay.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`;
+            dragHint.style.display = 'none';
+            rafId = requestAnimationFrame(render);
+        }
+    });
+
+    btnReset.addEventListener('click', function() {
+        if (isPlaying) {
+            isPlaying = false;
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = null;
+            btnPlay.classList.remove('running');
+            btnPlay.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Simulate`;
+        }
+        resetSim();
+        dragHint.style.display = '';
+        drawStatic();
+    });
+
+    systemSelect.addEventListener('change', function() {
+        systemIndex = parseInt(this.value);
+        drawStatic();
+    });
+
+    // Sliders
+    document.getElementById('slider-mass').addEventListener('input', function() {
+        mass = parseFloat(this.value);
+        document.getElementById('val-mass').textContent = mass.toFixed(1) + ' kg';
+        onParamChange();
+    });
+
+    document.getElementById('slider-k').addEventListener('input', function() {
+        k = parseFloat(this.value);
+        document.getElementById('val-k').textContent = k.toFixed(0) + ' N/m';
+        onParamChange();
+    });
+
+    document.getElementById('slider-mu').addEventListener('input', function() {
+        mu = parseFloat(this.value);
+        document.getElementById('val-mu').textContent = mu.toFixed(2);
+        onParamChange();
+    });
+
+    document.getElementById('slider-theta').addEventListener('input', function() {
+        theta = parseFloat(this.value);
+        document.getElementById('val-theta').textContent = theta.toFixed(0) + '°';
+        onParamChange();
+    });
+
+    function onParamChange() {
+        if (isPlaying) {
+            isPlaying = false;
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = null;
+            btnPlay.classList.remove('running');
+            btnPlay.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Simulate`;
+        }
+        // Reset to initial state
+        x = -0.5;
+        v = 0;
+        thermalEnergy = 0;
+        simTime = 0;
+        snapshot = null;
+        accumulator = 0;
+        prevTimestamp = null;
+        dragHint.style.display = '';
+        drawStatic();
+    }
+
+    // ─── Drag interaction ─────────────────────────────────────────────────────────
+    svgEl.addEventListener('pointerdown', function(e) {
+        if (isPlaying) return;
+
+        // Get block center in SVG coords
+        const pt = getSVGPoint(e);
+        if (!pt) return;
+
+        const originY = getOriginY();
+        const angleRad = -theta * Math.PI / 180;
+        const dist = (L0 + x) * SCALE;
+        const blockCxSVG = PADDING + dist * Math.cos(angleRad);
+        const blockCySVG = originY + dist * Math.sin(angleRad);
+
+        const dx = pt.x - blockCxSVG;
+        const dy = pt.y - blockCySVG;
+        const distToPt = Math.sqrt(dx * dx + dy * dy);
+
+        if (distToPt <= 1.5 * BLOCK_SIZE) {
+            isDragging = true;
+            svgEl.setPointerCapture(e.pointerId);
+            dragHint.style.display = 'none';
+            e.preventDefault();
+        }
+    });
+
+    svgEl.addEventListener('pointermove', function(e) {
+        if (!isDragging) return;
+
+        const pt = getSVGPoint(e);
+        if (!pt) return;
+
+        const originY = getOriginY();
+        const rampStartX = PADDING;
+        const rampStartY = originY;
+        const angleRad = -theta * Math.PI / 180;
+
+        // Project mouse onto ramp axis
+        const relX = pt.x - rampStartX;
+        const relY = pt.y - rampStartY;
+        const projection = relX * Math.cos(angleRad) + relY * Math.sin(angleRad);
+
+        let newX = projection / SCALE - L0;
+        // Clamp
+        if (newX < -L0 + 0.1) newX = -L0 + 0.1;
+        if (newX > 1.5) newX = 1.5;
+
+        x = newX;
+        v = 0;
+        drawStatic();
+        e.preventDefault();
+    });
+
+    svgEl.addEventListener('pointerup', function(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        svgEl.releasePointerCapture(e.pointerId);
+        // Take snapshot at release
+        thermalEnergy = 0;
+        v = 0;
+        takeSnapshot();
+        drawStatic();
+    });
+
+    svgEl.addEventListener('pointerleave', function(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        thermalEnergy = 0;
+        v = 0;
+        takeSnapshot();
+        drawStatic();
+    });
+
+    function getSVGPoint(e) {
+        const ctm = svgEl.getScreenCTM();
+        if (!ctm) return null;
+        const inv = ctm.inverse();
+        return {
+            x: inv.a * e.clientX + inv.c * e.clientY + inv.e,
+            y: inv.b * e.clientX + inv.d * e.clientY + inv.f
+        };
+    }
+
+    // ─── Initial draw ─────────────────────────────────────────────────────────────
+    drawStatic();
+    updateSVGColors();
+
+    </script>
+
+    <!-- Brave iOS gradient text fix -->
+    <script>
+    (function() {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function(el) {
+            el.classList.add('gradient-text');
+        });
+    })();
+    </script>
+</body>
+
+</html>
