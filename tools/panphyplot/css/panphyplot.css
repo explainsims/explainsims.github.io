@@ -4,27 +4,27 @@
 	--font-body: 'Manrope', sans-serif;
 	--font-display: 'DM Serif Display', serif;
 	--font-mono: 'IBM Plex Mono', monospace;
-	--bg-color: #F8F6F1;
-	--bg-pattern: #EDE9E0;
-	--text-main: #1B1B1B;
-	--text-secondary: #6B6560;
-	--brand-primary: #C2410C;
-	--brand-secondary: #EA580C;
-	--brand-accent: #0D9488;
-	--brand-accent-strong: #0F766E;
+	--bg-color: #E8F3FD;
+	--bg-pattern: #D5E8F7;
+	--text-main: #0D1B2A;
+	--text-secondary: #4A6380;
+	--brand-primary: #1A56DB;
+	--brand-secondary: #1D4ED8;
+	--brand-accent: #D97706;
+	--brand-accent-strong: #B45309;
 	--card-bg: #ffffff;
-	--card-border: #E8E4DD;
+	--card-border: #C5DCF0;
 	--card-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 	--soft-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
 	--tab-bg: #F0ECE4;
-	--tab-active-bg: #0F766E;
-	--tab-active-border: #0F766E;
+	--tab-active-bg: #1A56DB;
+	--tab-active-border: #1A56DB;
 	--muted-bg: #F0ECE4;
 	--border-color: #E8E4DD;
 	--input-border: #D8D3CB;
-	--input-focus: rgba(194, 65, 12, 0.3);
-	--nav-bg: rgba(248, 246, 241, 0.92);
-	--nav-border: #E8E4DD;
+	--input-focus: rgba(26, 86, 219, 0.3);
+	--nav-bg: rgba(255, 255, 255, 0.92);
+	--nav-border: #C5DCF0;
 
 	/* Semantic button colors - Light theme */
 	--btn-create: #2D8C5F;
@@ -49,27 +49,27 @@
 }
 
 [data-theme="dark"] {
-	--bg-color: #111110;
-	--bg-pattern: #1A1A18;
-	--text-main: #EDEBE8;
-	--text-secondary: #9C9890;
-	--brand-primary: #FB923C;
-	--brand-secondary: #F97316;
-	--brand-accent: #5EEAD4;
-	--brand-accent-strong: #2DD4BF;
-	--card-bg: #1A1A19;
-	--card-border: #2A2A28;
+	--bg-color: #15243E;
+	--bg-pattern: #1C2F52;
+	--text-main: #EEF5FD;
+	--text-secondary: #8BB3D4;
+	--brand-primary: #F6C90E;
+	--brand-secondary: #EAB308;
+	--brand-accent: #60A5FA;
+	--brand-accent-strong: #EAB308;
+	--card-bg: #1C2F52;
+	--card-border: #2A4270;
 	--card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-	--soft-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-	--tab-bg: #222220;
-	--tab-active-bg: #5EEAD4;
-	--tab-active-border: #5EEAD4;
-	--muted-bg: #222220;
-	--border-color: #2A2A28;
-	--input-border: #3A3A36;
-	--input-focus: rgba(251, 146, 60, 0.3);
-	--nav-bg: rgba(17, 17, 16, 0.9);
-	--nav-border: rgba(255, 255, 255, 0.06);
+	--soft-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+	--tab-bg: #1C2F52;
+	--tab-active-bg: #F6C90E;
+	--tab-active-border: #F6C90E;
+	--muted-bg: #1C2F52;
+	--border-color: #2A4270;
+	--input-border: #2A4270;
+	--input-focus: rgba(246, 201, 14, 0.3);
+	--nav-bg: rgba(21, 36, 62, 0.90);
+	--nav-border: rgba(255, 255, 255, 0.08);
 
 	/* Semantic button colors - Dark theme */
 	--btn-create: #4ADE80;
