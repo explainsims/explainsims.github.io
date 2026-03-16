@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#E8F3FD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('gravitas-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#15243E');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Gravitas — Gravitational Force Simulator</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
+
+            --brand-primary: #1A56DB;
+            --brand-secondary: #1D4ED8;
+            --brand-accent: #D97706;
+
+            --card-bg: #FFFFFF;
+            --card-border: #C5DCF0;
+            --card-shadow: 0 4px 16px rgba(26,86,219,0.06);
+
+            --slider-track: #C5DCF0;
+            --slider-thumb: #1A56DB;
+
+            --nav-bg: rgba(255,255,255,0.92);
+            --nav-border: rgba(30,80,160,0.10);
+
+            --readout-bg: #F0F7FF;
+            --chart-grid: rgba(0,0,0,0.08);
+            --chart-line: #D97706;
+            --chart-dot: #2563EB;
+            --planet-color: #EA580C;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
+            --brand-primary: #F6C90E;
+            --brand-secondary: #EAB308;
+            --brand-accent: #60A5FA;
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            --slider-track: #2A4270;
+            --slider-thumb: #F6C90E;
+            --nav-bg: rgba(21,36,62,0.90);
+            --nav-border: rgba(255,255,255,0.08);
+            --readout-bg: #1C2F52;
+            --chart-grid: rgba(255,255,255,0.07);
+            --chart-line: #F6C90E;
+            --chart-dot: #60A5FA;
+            --planet-color: #FB923C;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html.offline-font { --font-sans: system-ui, sans-serif; --font-display: system-ui, sans-serif; --font-mono: 'Courier New', monospace; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display); font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 700; color: var(--text-main); letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; }
+        #theme-button {
+            background: none; border: none; cursor: pointer; font-size: 1.2rem;
+            padding: 6px; border-radius: 8px; transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        .main-content {
+            flex: 1; max-width: 1100px; margin: 0 auto;
+            width: 100%; padding: 24px 16px;
+            display: flex; flex-direction: column; gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 24px;
+            box-shadow: var(--card-shadow);
+        }
+        .card-title {
+            font-family: var(--font-display); font-size: 1.15rem; font-weight: 700;
+            color: var(--brand-accent); margin-bottom: 4px;
+        }
+        .card-subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; }
+
+        /* Sliders */
+        .slider-group { margin-bottom: 20px; }
+        .slider-label {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.875rem; font-weight: 500; color: var(--text-main); margin-bottom: 6px;
+        }
+        .slider-label span {
+            font-family: var(--font-mono); font-size: 0.8rem; color: var(--brand-accent);
+            background: var(--readout-bg); padding: 2px 8px; border-radius: 5px;
+        }
+        input[type="range"] {
+            width: 100%; height: 6px; appearance: none; -webkit-appearance: none;
+            background: var(--slider-track); border-radius: 3px; cursor: pointer; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            background: var(--slider-thumb); border-radius: 50%; cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; background: var(--slider-thumb);
+            border-radius: 50%; cursor: pointer; border: none;
+        }
+
+        /* Calculator layout */
+        .calc-grid {
+            display: grid; grid-template-columns: 1fr; gap: 24px;
+        }
+        @media (min-width: 760px) {
+            .calc-grid { grid-template-columns: 1fr 1fr; align-items: center; }
+        }
+
+        .force-readout {
+            text-align: center; padding: 16px;
+            background: var(--readout-bg); border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+        .force-label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .force-value {
+            font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700;
+            color: var(--brand-accent); line-height: 1.2;
+        }
+        .force-formula { font-size: 0.7rem; font-family: var(--font-mono); color: var(--text-secondary); margin-top: 6px; }
+
+        .sphere-viz {
+            display: flex; align-items: center; justify-content: center;
+            gap: 16px; padding: 16px; margin-bottom: 16px;
+            min-height: 80px;
+        }
+        .sphere {
+            border-radius: 50%; flex-shrink: 0;
+            transition: width 0.2s, height 0.2s;
+        }
+        .sphere-m1 { background: radial-gradient(circle at 35% 35%, #93C5FD, #2563EB); }
+        .sphere-m2 { background: radial-gradient(circle at 35% 35%, #86EFAC, #16A34A); }
+
+        /* Field explorer */
+        .field-btn-group {
+            display: flex; gap: 10px; margin-bottom: 16px;
+        }
+        .field-btn {
+            flex: 1; padding: 8px 14px; border: 2px solid var(--card-border);
+            background: var(--readout-bg); color: var(--text-main);
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+            transition: background 0.15s, border-color 0.15s; font-family: var(--font-sans);
+        }
+        .field-btn.active { background: var(--brand-accent); color: #fff; border-color: var(--brand-accent); }
+        [data-theme="dark"] .field-btn.active { color: #0D1B2A; }
+
+        .field-layout {
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        @media (min-width: 640px) {
+            .field-layout { flex-direction: row; align-items: flex-start; }
+        }
+
+        .field-viz {
+            flex: 1; min-height: 200px; position: relative;
+            background: var(--readout-bg); border: 1px solid var(--card-border);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .field-chart-wrap { flex: 1.5; }
+
+        canvas { display: block; }
+
+        .field-readout {
+            padding: 12px; background: var(--readout-bg);
+            border: 1px solid var(--card-border); border-radius: 8px; margin-top: 10px;
+        }
+        .field-readout-value { font-family: var(--font-mono); font-weight: 700; color: var(--brand-accent); }
+        .field-readout-text { font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; }
+
+        /* Quiz */
+        .quiz-progress { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; }
+        .quiz-question { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+        .quiz-img { max-width: 240px; border-radius: 8px; margin-bottom: 12px; background: var(--readout-bg); }
+        .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        @media (max-width: 480px) { .quiz-options { grid-template-columns: 1fr; } }
+        .quiz-opt {
+            padding: 10px 14px; background: var(--readout-bg);
+            border: 1px solid var(--card-border); border-radius: 8px;
+            cursor: pointer; text-align: left; font-size: 0.875rem;
+            font-family: var(--font-sans); color: var(--text-main);
+            transition: background 0.15s;
+        }
+        .quiz-opt:not(:disabled):hover { background: var(--card-border); }
+        .quiz-opt:disabled { cursor: not-allowed; }
+        .quiz-opt.correct { background: rgba(22,163,74,0.2); border-color: #16A34A; }
+        .quiz-opt.wrong { background: rgba(220,38,38,0.2); border-color: #DC2626; }
+        .quiz-opt.selected { outline: 2px solid var(--brand-accent); }
+        .quiz-feedback {
+            padding: 12px 16px; border-radius: 8px; margin-top: 8px;
+            font-size: 0.875rem;
+        }
+        .quiz-feedback.correct-fb { background: rgba(22,163,74,0.1); border: 1px solid #16A34A; }
+        .quiz-feedback.wrong-fb { background: rgba(220,38,38,0.1); border: 1px solid #DC2626; }
+        .quiz-feedback-title { font-weight: 700; margin-bottom: 4px; }
+        .quiz-next-btn {
+            margin-top: 10px; padding: 8px 18px;
+            background: var(--card-border); color: var(--text-main);
+            border: none; border-radius: 8px; cursor: pointer;
+            font-weight: 700; font-family: var(--font-sans);
+        }
+        .quiz-next-btn:hover { background: var(--slider-track); }
+        .quiz-finish { text-align: center; padding: 24px 0; }
+        .quiz-score { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; }
+        .quiz-retry-btn {
+            padding: 10px 24px; background: var(--brand-accent); color: #fff;
+            border: none; border-radius: 8px; cursor: pointer;
+            font-weight: 700; font-size: 0.9rem; font-family: var(--font-sans);
+        }
+        [data-theme="dark"] .quiz-retry-btn { color: #0D1B2A; }
+
+        /* Key concepts */
+        .kc-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media (min-width: 640px) { .kc-grid { grid-template-columns: 1fr 1fr; } }
+        .kc-section-title { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+        .kc-section-title.red { color: #DC2626; }
+        .kc-section-title.normal { color: var(--text-main); }
+        .accordion { border: 1px solid var(--card-border); border-radius: 8px; overflow: hidden; }
+        .acc-item { border-bottom: 1px solid var(--card-border); }
+        .acc-item:last-child { border-bottom: none; }
+        .acc-btn {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; padding: 12px 16px;
+            background: none; border: none; cursor: pointer; text-align: left;
+            font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .acc-btn:hover { background: var(--readout-bg); }
+        .acc-chevron { transition: transform 0.2s; flex-shrink: 0; }
+        .acc-chevron.open { transform: rotate(180deg); }
+        .acc-body {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 16px; font-size: 0.82rem; color: var(--text-secondary);
+        }
+        .acc-body.open { max-height: 200px; padding: 0 16px 12px; }
+
+        footer {
+            text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-secondary);
+            border-top: 1px solid var(--card-border);
+        }
+        footer a { color: var(--brand-primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (pointer: coarse) {
+            input[type="range"] { height: 10px; }
+            .field-btn, .quiz-opt { min-height: 44px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Gravitas — Gravitational Force Simulator</div>
+        <div class="banner-actions">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme">&#9728;&#65039;</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+
+        <!-- ── Section 1: Universal Gravitation Calculator ── -->
+        <div class="card">
+            <div class="card-title">Universal Gravitation Calculator</div>
+            <div class="card-subtitle">Calculate the gravitational force between two objects using Newton's Law.</div>
+            <div class="calc-grid">
+                <div>
+                    <div class="slider-group">
+                        <div class="slider-label">Mass of Object 1 (m₁) <span id="m1-display">1.00 × 10²⁴ kg</span></div>
+                        <input type="range" id="m1-slider" min="1" max="30" step="0.1" value="24">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">Mass of Object 2 (m₂) <span id="m2-display">1.00 × 10²² kg</span></div>
+                        <input type="range" id="m2-slider" min="1" max="30" step="0.1" value="22">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">Distance (r) <span id="r-display">3.16 × 10⁸ m</span></div>
+                        <input type="range" id="r-slider" min="1" max="12" step="0.1" value="8.5">
+                    </div>
+                </div>
+                <div>
+                    <div class="sphere-viz" id="sphere-viz">
+                        <div class="sphere sphere-m1" id="sphere1" style="width:48px;height:48px;"></div>
+                        <div class="sphere sphere-m2" id="sphere2" style="width:33px;height:33px;"></div>
+                    </div>
+                    <div class="force-readout">
+                        <div class="force-label">Gravitational Force (F<sub>g</sub>)</div>
+                        <div class="force-value" id="force-value">— N</div>
+                        <div class="force-formula">F<sub>g</sub> = G × (m₁ × m₂) / r²</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 2: Gravitational Field Explorer ── -->
+        <div class="card">
+            <div class="card-title">Gravitational Field Explorer</div>
+            <div class="card-subtitle">Explore how field strength changes with distance (Newton's Shell Theorem).</div>
+            <div class="field-btn-group">
+                <button class="field-btn active" id="btn-solid" onclick="setObjectType('solid')">Uniform Solid Sphere</button>
+                <button class="field-btn" id="btn-shell" onclick="setObjectType('shell')">Thin Spherical Shell</button>
+            </div>
+            <div class="field-layout">
+                <div class="field-viz" id="field-viz">
+                    <canvas id="field-viz-canvas" width="220" height="220"></canvas>
+                </div>
+                <div class="field-chart-wrap">
+                    <canvas id="field-chart" height="200"></canvas>
+                    <div class="slider-group" style="margin-top:12px;">
+                        <div class="slider-label">Test Mass Distance (r) <span id="field-dist-display">1.50 R</span></div>
+                        <input type="range" id="field-dist-slider" min="0" max="3" step="0.01" value="1.5">
+                    </div>
+                    <div class="field-readout">
+                        <div>Field Strength (g): <span class="field-readout-value" id="field-strength-value">—</span></div>
+                        <div class="field-readout-text" id="field-explanation"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 3: Quiz ── -->
+        <div class="card">
+            <div class="card-title">Knowledge Check</div>
+            <div class="card-subtitle">Test your understanding of the key concepts.</div>
+            <div id="quiz-container"></div>
+        </div>
+
+        <!-- ── Section 4: Key Concepts ── -->
+        <div class="card">
+            <div class="card-title">Key Concepts &amp; Common Misconceptions</div>
+            <div class="kc-grid">
+                <div>
+                    <div class="kc-section-title normal">Key Takeaways</div>
+                    <div class="accordion" id="takeaways-accordion"></div>
+                </div>
+                <div>
+                    <div class="kc-section-title red">Common Misconceptions</div>
+                    <div class="accordion" id="misconceptions-accordion"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; <a href="/">PanPhy Labs</a> |
+        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+    </footer>
+
+    <script>
+        // ─── Constants ───────────────────────────────────────────────────────────
+        const G_CONST = 6.6743e-11;
+        const M_EARTH = 5.972e24;
+        const R_NORM = 1;
+
+        // ─── Utility ─────────────────────────────────────────────────────────────
+        function getCSSVar(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        function fmtSci(n) {
+            if (!isFinite(n) || isNaN(n)) return '…';
+            const parts = n.toExponential(2).split('e');
+            const exp = parseInt(parts[1]);
+            const man = parseFloat(parts[0]).toFixed(2);
+            return `${man} × 10<sup>${exp}</sup>`;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // SECTION 1: Universal Gravitation Calculator
+        // ─────────────────────────────────────────────────────────────────────────
+        let logM1 = 24, logM2 = 22, logR = 8.5;
+
+        function updateCalc() {
+            const m1 = Math.pow(10, logM1);
+            const m2 = Math.pow(10, logM2);
+            const r  = Math.pow(10, logR);
+            const force = (G_CONST * m1 * m2) / (r * r);
+
+            document.getElementById('m1-display').innerHTML = fmtSci(m1) + ' kg';
+            document.getElementById('m2-display').innerHTML = fmtSci(m2) + ' kg';
+            document.getElementById('r-display').innerHTML  = fmtSci(r)  + ' m';
+            document.getElementById('force-value').innerHTML = fmtSci(force) + ' N';
+
+            // Sphere sizes
+            const s1 = Math.max(16, 2 * logM1);
+            const s2 = Math.max(12, 1.5 * logM2);
+            const sp1 = document.getElementById('sphere1');
+            const sp2 = document.getElementById('sphere2');
+            sp1.style.width = s1 + 'px'; sp1.style.height = s1 + 'px';
+            sp2.style.width = s2 + 'px'; sp2.style.height = s2 + 'px';
+        }
+
+        document.getElementById('m1-slider').addEventListener('input', function () {
+            logM1 = parseFloat(this.value); updateCalc();
+        });
+        document.getElementById('m2-slider').addEventListener('input', function () {
+            logM2 = parseFloat(this.value); updateCalc();
+        });
+        document.getElementById('r-slider').addEventListener('input', function () {
+            logR = parseFloat(this.value); updateCalc();
+        });
+
+        updateCalc();
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // SECTION 2: Gravitational Field Explorer
+        // ─────────────────────────────────────────────────────────────────────────
+        let objectType = 'solid';
+        let fieldDist = 1.5;
+        const maxField = G_CONST * M_EARTH / (R_NORM * R_NORM);
+
+        function fieldStrengthAt(r_norm, type) {
+            const r = r_norm * R_NORM;
+            if (type === 'solid') {
+                if (r < R_NORM) return (G_CONST * M_EARTH * r) / Math.pow(R_NORM, 3);
+                return (G_CONST * M_EARTH) / (r * r);
+            } else {
+                if (r < R_NORM) return 0;
+                return (G_CONST * M_EARTH) / (r * r);
+            }
+        }
+
+        function setObjectType(type) {
+            objectType = type;
+            document.getElementById('btn-solid').classList.toggle('active', type === 'solid');
+            document.getElementById('btn-shell').classList.toggle('active', type === 'shell');
+            drawFieldChart();
+            drawFieldViz();
+            updateFieldReadout();
+        }
+
+        // Draw field vs distance chart on canvas
+        function drawFieldChart() {
+            const canvas = document.getElementById('field-chart');
+            const W = canvas.offsetWidth || 400;
+            const H = 200;
+            canvas.width = W * (window.devicePixelRatio || 1);
+            canvas.height = H * (window.devicePixelRatio || 1);
+            canvas.style.width = W + 'px';
+            canvas.style.height = H + 'px';
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const pad = { top: 10, right: 20, bottom: 36, left: 44 };
+            const cw = W - pad.left - pad.right;
+            const ch = H - pad.top - pad.bottom;
+
+            ctx.clearRect(0, 0, W, H);
+
+            const gridColor = getCSSVar('--chart-grid');
+            const textColor = getCSSVar('--text-secondary');
+            const lineColor = getCSSVar('--chart-line');
+            const dotColor  = getCSSVar('--chart-dot');
+
+            // Grid
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = pad.top + ch * (1 - i / 5);
+                ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cw, y); ctx.stroke();
+            }
+            for (let i = 0; i <= 3; i++) {
+                const x = pad.left + cw * i / 3;
+                ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ch); ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = textColor;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ch); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(pad.left, pad.top + ch); ctx.lineTo(pad.left + cw, pad.top + ch); ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = textColor; ctx.font = '10px ' + getCSSVar('--font-mono');
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const y = pad.top + ch * (1 - i / 5);
+                ctx.fillText((i / 5).toFixed(1), pad.left - 4, y + 3);
+            }
+            ctx.textAlign = 'center';
+            for (let i = 0; i <= 3; i++) {
+                const x = pad.left + cw * i / 3;
+                ctx.fillText(i.toString(), x, pad.top + ch + 14);
+            }
+            ctx.fillText('Distance r (units of R)', pad.left + cw / 2, H - 4);
+            ctx.save(); ctx.translate(12, pad.top + ch / 2); ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center'; ctx.fillText('g (norm.)', 0, 0); ctx.restore();
+
+            // Field curve
+            ctx.strokeStyle = lineColor; ctx.lineWidth = 2; ctx.beginPath();
+            let started = false;
+            for (let i = 0; i <= 300; i++) {
+                const r_norm = i / 100;
+                const g_norm = Math.min(fieldStrengthAt(r_norm, objectType) / maxField, 1.1);
+                const x = pad.left + (r_norm / 3) * cw;
+                const y = pad.top + ch * (1 - g_norm);
+                if (!started) { ctx.moveTo(x, y); started = true; }
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Current position dot
+            const curG = Math.min(fieldStrengthAt(fieldDist, objectType) / maxField, 1.1);
+            const dotX = pad.left + (fieldDist / 3) * cw;
+            const dotY = pad.top + ch * (1 - curG);
+            ctx.beginPath(); ctx.arc(dotX, dotY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = dotColor; ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+
+        // Draw schematic of planet + test mass
+        function drawFieldViz() {
+            const canvas = document.getElementById('field-viz-canvas');
+            const size = 220;
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, size, size);
+
+            const cx = size / 2, cy = size / 2;
+            const planetR = size / 3;
+            const testPos = planetR * fieldDist;
+
+            const planetColor = getCSSVar('--planet-color');
+            const testColor = '#38BDF8';
+            const labelColor = getCSSVar('--text-secondary');
+
+            // Planet
+            if (objectType === 'solid') {
+                ctx.beginPath(); ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
+                const grad = ctx.createRadialGradient(cx - planetR * 0.3, cy - planetR * 0.3, 0, cx, cy, planetR);
+                grad.addColorStop(0, '#FCA07A'); grad.addColorStop(1, planetColor);
+                ctx.fillStyle = grad; ctx.fill();
+            } else {
+                ctx.beginPath(); ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
+                ctx.strokeStyle = planetColor; ctx.lineWidth = 18; ctx.stroke();
+            }
+
+            // Center dot
+            ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff'; ctx.fill();
+
+            // Reference line
+            ctx.strokeStyle = labelColor; ctx.lineWidth = 1;
+            ctx.setLineDash([4, 3]);
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(Math.min(cx + testPos + 20, size - 10), cy);
+            ctx.stroke(); ctx.setLineDash([]);
+
+            // Test mass
+            const testX = Math.min(cx + testPos, size - 16);
+            ctx.beginPath(); ctx.arc(testX, cy, 8, 0, Math.PI * 2);
+            ctx.fillStyle = testColor; ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+            // Label
+            ctx.fillStyle = labelColor; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(`r = ${fieldDist.toFixed(2)}R`, cx + testPos / 2, cy + 24);
+        }
+
+        function updateFieldReadout() {
+            const g = fieldStrengthAt(fieldDist, objectType);
+            const gNorm = (g / maxField).toFixed(3);
+            document.getElementById('field-strength-value').textContent = gNorm + ' g_max';
+
+            let explanation = '';
+            if (objectType === 'solid') {
+                if (fieldDist < 1) explanation = 'Inside a uniform solid sphere, the gravitational field increases linearly from the center. Only the mass enclosed within radius r contributes.';
+                else explanation = 'Outside a uniform solid sphere, it behaves like a point mass. The field decreases with the inverse square of the distance.';
+            } else {
+                if (fieldDist < 1) explanation = 'Inside a uniform spherical shell, gravitational forces from all parts of the shell cancel out, resulting in zero net field strength.';
+                else explanation = 'Outside a uniform spherical shell, it behaves like a point mass. The field decreases with the inverse square of the distance.';
+            }
+            document.getElementById('field-explanation').textContent = explanation;
+        }
+
+        document.getElementById('field-dist-slider').addEventListener('input', function () {
+            fieldDist = parseFloat(this.value);
+            document.getElementById('field-dist-display').textContent = fieldDist.toFixed(2) + ' R';
+            drawFieldChart(); drawFieldViz(); updateFieldReadout();
+        });
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // SECTION 3: Quiz
+        // ─────────────────────────────────────────────────────────────────────────
+        const QUESTIONS = [
+            {
+                q: "According to Newton's Shell Theorem, what is the net gravitational field strength inside a thin, uniform spherical shell?",
+                opts: ['It is constant and non-zero.', 'It increases linearly from the center.', 'It is zero everywhere inside.', 'It is the same as the surface field.'],
+                correct: 2,
+                explanation: "Inside a uniform spherical shell, the gravitational forces from all parts of the shell cancel each other out perfectly, resulting in a net gravitational field of zero."
+            },
+            {
+                q: "A planet has mass M and radius R. At what distance from the planet's center is the gravitational field strength 1/4 of its surface value?",
+                opts: ['R/2', 'R/4', '2R', '4R'],
+                correct: 2,
+                explanation: "Gravitational field strength outside a sphere is proportional to 1/r². For the field to be 1/4 of the surface value, the distance must be √4 = 2 times the radius, so 2R."
+            },
+            {
+                q: "If an object is in free-fall in an elevator, its apparent weight is…",
+                opts: ['Double its actual weight.', 'Equal to its actual weight.', 'Zero.', 'Half its actual weight.'],
+                correct: 2,
+                explanation: "Apparent weight is the normal force. In free-fall, there is no normal force acting on the object, so it appears weightless. Gravity is still acting on it, however."
+            },
+            {
+                q: "Which formula gives the gravitational field strength outside a uniform sphere of mass M at distance r from the centre?",
+                opts: ['g = G·M·r / R³', 'g = G·M / r²', 'g = G·M / R²', 'g = G·M²/ r'],
+                correct: 1,
+                explanation: "Outside any spherically symmetric mass distribution, the field strength is g = G·M / r², which is the inverse-square law."
+            }
+        ];
+
+        let quizIdx = 0, quizScore = 0, quizSelected = null, quizShowFeedback = false;
+
+        function renderQuiz() {
+            const el = document.getElementById('quiz-container');
+            if (quizIdx >= QUESTIONS.length) {
+                el.innerHTML = `<div class="quiz-finish">
+                    <div class="quiz-score">Quiz Complete! Score: ${quizScore} / ${QUESTIONS.length}</div>
+                    <button class="quiz-retry-btn" onclick="resetQuiz()">Try Again</button>
+                </div>`;
+                return;
+            }
+            const q = QUESTIONS[quizIdx];
+            el.innerHTML = `
+                <div class="quiz-progress">Question ${quizIdx + 1} / ${QUESTIONS.length}</div>
+                <div class="quiz-question">${q.q}</div>
+                <div class="quiz-options">
+                    ${q.opts.map((opt, i) => {
+                        let cls = 'quiz-opt';
+                        if (quizShowFeedback) {
+                            if (i === q.correct) cls += ' correct';
+                            else if (i === quizSelected) cls += ' wrong';
+                        }
+                        if (i === quizSelected) cls += ' selected';
+                        return `<button class="${cls}" ${quizShowFeedback ? 'disabled' : ''} onclick="selectAnswer(${i})">${opt}</button>`;
+                    }).join('')}
+                </div>
+                ${quizShowFeedback ? `
+                <div class="quiz-feedback ${quizSelected === q.correct ? 'correct-fb' : 'wrong-fb'}">
+                    <div class="quiz-feedback-title">${quizSelected === q.correct ? 'Correct!' : 'Incorrect.'}</div>
+                    <div>${q.explanation}</div>
+                    <button class="quiz-next-btn" onclick="nextQuestion()">
+                        ${quizIdx + 1 < QUESTIONS.length ? 'Next Question →' : 'See Results'}
+                    </button>
+                </div>` : ''}
+            `;
+        }
+
+        window.selectAnswer = function(i) {
+            if (quizShowFeedback) return;
+            quizSelected = i;
+            quizShowFeedback = true;
+            if (i === QUESTIONS[quizIdx].correct) quizScore++;
+            renderQuiz();
+        };
+
+        window.nextQuestion = function() {
+            quizIdx++; quizSelected = null; quizShowFeedback = false; renderQuiz();
+        };
+
+        window.resetQuiz = function() {
+            quizIdx = 0; quizScore = 0; quizSelected = null; quizShowFeedback = false; renderQuiz();
+        };
+
+        renderQuiz();
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // SECTION 4: Key Concepts
+        // ─────────────────────────────────────────────────────────────────────────
+        const TAKEAWAYS = [
+            { title: 'Universal Law of Gravitation', content: 'Describes the attractive force between any two masses: Fg = G × (m₁m₂ / r²)' },
+            { title: 'Gravitational Field (g)', content: 'Force per unit mass at a location: g = G × (M / r²). It is a property of the source mass, not the test mass.' },
+            { title: "Newton's Shell Theorem", content: 'Outside a sphere/shell, it acts like a point mass. Inside a shell, the field is zero. Inside a solid sphere, field is proportional to r.' },
+            { title: "Distance 'r'", content: 'Always measure from center of mass to center of mass, not surface-to-surface.' },
+            { title: 'Inertial vs. Gravitational Mass', content: 'Though conceptually different, they are experimentally equivalent — the Equivalence Principle.' },
+            { title: 'Apparent Weight', content: 'This is the normal force. It can differ from actual weight (mg) in accelerating reference frames, like an elevator.' },
+        ];
+        const MISCONCEPTIONS = [
+            { title: 'Gravity Depends on Test Mass', content: 'Incorrect. The gravitational field g at a point in space is independent of the test mass placed there.' },
+            { title: "'g' is Constant Everywhere", content: "Incorrect. g = 9.8 m/s² is an approximation only valid near Earth's surface. It decreases with altitude." },
+            { title: 'Zero Gravity Inside a Planet', content: 'Incorrect. The gravitational force is only zero at the very center of a uniform sphere. Inside a shell, it\'s zero everywhere.' },
+            { title: 'Apparent Weight is Actual Weight', content: 'Incorrect. They are only the same in a non-accelerating (inertial) reference frame.' },
+        ];
+
+        let openAccId = null;
+
+        function buildAccordion(items, containerId, prefix) {
+            const el = document.getElementById(containerId);
+            el.innerHTML = items.map((item, i) => {
+                const id = prefix + i;
+                const isOpen = openAccId === id;
+                return `
+                <div class="acc-item">
+                    <button class="acc-btn" onclick="toggleAcc('${id}')">
+                        <span>${item.title}</span>
+                        <svg class="acc-chevron ${isOpen ? 'open' : ''}" width="12" height="12" viewBox="0 0 10 6" fill="none">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
+                        </svg>
+                    </button>
+                    <div class="acc-body ${isOpen ? 'open' : ''}">${item.content}</div>
+                </div>`;
+            }).join('');
+        }
+
+        window.toggleAcc = function(id) {
+            openAccId = openAccId === id ? null : id;
+            buildAccordion(TAKEAWAYS, 'takeaways-accordion', 'tk');
+            buildAccordion(MISCONCEPTIONS, 'misconceptions-accordion', 'mc');
+        };
+
+        buildAccordion(TAKEAWAYS, 'takeaways-accordion', 'tk');
+        buildAccordion(MISCONCEPTIONS, 'misconceptions-accordion', 'mc');
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // Theme toggle
+        // ─────────────────────────────────────────────────────────────────────────
+        const themeButton = document.getElementById('theme-button');
+        const DARK_KEY = 'gravitas-dark';
+        const LIGHT_KEY = 'gravitas-light';
+
+        function updateAppChromeTheme(theme) {
+            const tc = document.querySelector('meta[name="theme-color"]');
+            const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            const dark = theme === 'dark';
+            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+        }
+        function updateButtonEmoji(theme) {
+            themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+        }
+
+        const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', initTheme);
+        updateAppChromeTheme(initTheme);
+        updateButtonEmoji(initTheme);
+
+        window.addEventListener('pageshow', function () {
+            updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+        });
+
+        themeButton.addEventListener('click', function () {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') {
+                localStorage.setItem(DARK_KEY, 'true'); localStorage.removeItem(LIGHT_KEY);
+            } else {
+                localStorage.setItem(LIGHT_KEY, 'true'); localStorage.removeItem(DARK_KEY);
+            }
+            updateAppChromeTheme(next); updateButtonEmoji(next);
+            drawFieldChart(); drawFieldViz();
+        });
+
+        function updateOfflineFontState() {
+            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
+        }
+        window.addEventListener('online', updateOfflineFontState);
+        window.addEventListener('offline', updateOfflineFontState);
+        updateOfflineFontState();
+
+        // Initial field draws
+        drawFieldChart(); drawFieldViz(); updateFieldReadout();
+        window.addEventListener('resize', function () { drawFieldChart(); });
+    </script>
+
+    <script>
+    (function () {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+
+</html>

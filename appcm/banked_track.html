@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#E8F3FD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('banked-track-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#15243E');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Banked Track Physics Simulator</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
+
+            --brand-primary: #1A56DB;
+            --brand-secondary: #1D4ED8;
+            --brand-accent: #D97706;
+
+            --card-bg: #FFFFFF;
+            --card-border: #C5DCF0;
+            --card-shadow: 0 4px 16px rgba(26,86,219,0.06);
+
+            --slider-track: #C5DCF0;
+            --slider-thumb: #1A56DB;
+
+            --nav-bg: rgba(255,255,255,0.92);
+            --nav-border: rgba(30,80,160,0.10);
+
+            --readout-bg: #F0F7FF;
+
+            /* SVG diagram colors */
+            --diag-track: #6B7280;
+            --diag-car: #06B6D4;
+            --diag-grid: rgba(0,0,0,0.08);
+            --diag-theta: #A78BFA;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
+            --brand-primary: #F6C90E;
+            --brand-secondary: #EAB308;
+            --brand-accent: #60A5FA;
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            --slider-track: #2A4270;
+            --slider-thumb: #F6C90E;
+            --nav-bg: rgba(21,36,62,0.90);
+            --nav-border: rgba(255,255,255,0.08);
+            --readout-bg: #1C2F52;
+            --diag-track: #9CA3AF;
+            --diag-car: #22D3EE;
+            --diag-grid: rgba(255,255,255,0.07);
+            --diag-theta: #C4B5FD;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html.offline-font { --font-sans: system-ui, sans-serif; --font-display: system-ui, sans-serif; --font-mono: 'Courier New', monospace; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display); font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 700; color: var(--text-main); letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; }
+        #theme-button {
+            background: none; border: none; cursor: pointer; font-size: 1.2rem;
+            padding: 6px; border-radius: 8px; transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        .main-content {
+            flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; padding: 24px 16px;
+        }
+
+        .sim-grid {
+            display: grid; grid-template-columns: 1fr; gap: 20px;
+        }
+        @media (min-width: 960px) {
+            .sim-grid { grid-template-columns: 3fr 2fr; align-items: start; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        .card-title {
+            font-family: var(--font-display); font-size: 1.05rem; font-weight: 700;
+            color: var(--brand-primary);
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 10px; margin-bottom: 16px;
+        }
+
+        /* SVG diagram */
+        .svg-diagram {
+            width: 100%; aspect-ratio: 5 / 3.5;
+            background: var(--readout-bg);
+            border: 1px solid var(--card-border); border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Sliders */
+        .slider-group { margin-bottom: 14px; }
+        .slider-label {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.8rem; font-weight: 500; color: var(--text-main); margin-bottom: 4px;
+        }
+        .slider-label span { font-family: var(--font-mono); font-size: 0.75rem; color: var(--brand-primary); }
+        input[type="range"] {
+            width: 100%; height: 6px; appearance: none; -webkit-appearance: none;
+            background: var(--slider-track); border-radius: 3px; cursor: pointer; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            background: var(--slider-thumb); border-radius: 50%; cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; background: var(--slider-thumb);
+            border-radius: 50%; cursor: pointer; border: none;
+        }
+        .slider-sep { border: none; border-top: 1px solid var(--card-border); margin: 12px 0; }
+
+        /* Speed cards */
+        .speed-card {
+            background: var(--readout-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+        }
+        .speed-card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px; cursor: pointer;
+            background: none; border: none; width: 100%; text-align: left;
+            font-family: var(--font-sans); color: var(--text-main);
+        }
+        .speed-card-header:hover { background: var(--card-border); }
+        .speed-card-left { display: flex; flex-direction: column; gap: 2px; }
+        .speed-card-name { font-weight: 700; font-size: 0.875rem; color: var(--text-main); }
+        .speed-card-value { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--brand-accent); }
+        .speed-card-kph { font-size: 0.75rem; color: var(--text-secondary); font-family: var(--font-mono); }
+        .speed-card-chevron { transition: transform 0.2s; color: var(--text-secondary); flex-shrink: 0; }
+        .speed-card-chevron.open { transform: rotate(180deg); }
+        .speed-card-body {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+            padding: 0 14px;
+        }
+        .speed-card-body.open { max-height: 600px; padding: 0 14px 12px; }
+        .speed-card-body p { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.6; }
+        .speed-card-body strong { color: var(--text-main); }
+        .formula-box {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 6px; padding: 8px 10px;
+            font-family: var(--font-mono); font-size: 0.75rem; color: var(--brand-primary);
+            margin: 6px 0;
+        }
+
+        /* Explanation cards */
+        .explanation-card { margin-bottom: 14px; }
+        .exp-title { font-weight: 700; font-size: 0.95rem; color: var(--brand-primary); margin-bottom: 8px; }
+        .exp-text { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.65; }
+        .exp-text + .exp-text { margin-top: 6px; }
+        .exp-text strong { color: var(--text-main); }
+
+        footer {
+            text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-secondary);
+            border-top: 1px solid var(--card-border);
+        }
+        footer a { color: var(--brand-primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (pointer: coarse) { input[type="range"] { height: 10px; } }
+    </style>
+</head>
+
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Banked Track Physics Simulator</div>
+        <div class="banner-actions">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme">&#9728;&#65039;</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="sim-grid">
+            <!-- Left column: diagram + explanation -->
+            <div>
+                <!-- SVG Diagram card -->
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-title">Force Diagram</div>
+                    <div class="svg-diagram">
+                        <svg id="diagram-svg" viewBox="0 0 500 350" width="100%" height="100%">
+                            <defs id="svg-defs"></defs>
+                            <g id="diagram-content"></g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Explanation -->
+                <div class="card">
+                    <div class="card-title">The Physics of Banked Tracks</div>
+                    <div class="explanation-card">
+                        <div class="exp-title">How Banked Curves Work</div>
+                        <p class="exp-text">When a vehicle travels around a curve, it undergoes circular motion, requiring a net centripetal force directed toward the center. On a flat road, only friction provides this force.</p>
+                        <p class="exp-text">By banking the curve at angle θ, the normal force (N), always perpendicular to the surface, gains a horizontal component that contributes to the centripetal force — reducing reliance on friction.</p>
+                    </div>
+                    <div class="explanation-card">
+                        <div class="exp-title">Key Forces</div>
+                        <p class="exp-text"><strong style="color:#10B981;">Gravity (mg):</strong> Weight of the vehicle, always acting straight down.</p>
+                        <p class="exp-text"><strong style="color:#F59E0B;">Normal Force (N):</strong> Perpendicular to the road surface. On a banked track, it has both vertical and horizontal components.</p>
+                        <p class="exp-text"><strong style="color:#EF4444;">Friction (fₛ):</strong> Parallel to the road surface. Acts down the slope if speed is too high, up the slope if speed is too low.</p>
+                        <p class="exp-text"><strong style="color:#A855F7;">Centripetal Force (F꜀):</strong> The <em>net</em> horizontal force (N·sin θ ± fₛ·cos θ) = mv²/r. Not a separate force.</p>
+                    </div>
+                    <div class="explanation-card">
+                        <div class="exp-title">Understanding the Speed Limits</div>
+                        <p class="exp-text"><strong>Ideal Speed:</strong> At this speed, N's horizontal component exactly provides the centripetal force. No friction needed — most stable condition.</p>
+                        <p class="exp-text"><strong>Min &amp; Max Speeds:</strong> Set by maximum static friction (fₛ = μₛN). Below minimum, car slides down the bank. Above maximum, car slides up. Adjust the sliders to see how angle and friction define this safe range.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right column: controls + calculated speeds -->
+            <div>
+                <!-- Controls -->
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-title">Controls</div>
+                    <div class="slider-group">
+                        <div class="slider-label">Current Speed (v) <span id="speed-display">— m/s</span></div>
+                        <input type="range" id="speed-slider" min="0" max="100" step="0.25" value="10">
+                    </div>
+                    <hr class="slider-sep">
+                    <div class="slider-group">
+                        <div class="slider-label">Bank Angle (θ) <span id="angle-display">15.00°</span></div>
+                        <input type="range" id="angle-slider" min="0" max="45" step="0.5" value="15">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">Static Friction (μₛ) <span id="mu-display">0.50</span></div>
+                        <input type="range" id="mu-slider" min="0" max="1" step="0.01" value="0.5">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">Curve Radius (r) <span id="radius-display">100 m</span></div>
+                        <input type="range" id="radius-slider" min="10" max="500" step="5" value="100">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">Vehicle Mass (m) <span id="mass-display">1000 kg</span></div>
+                        <input type="range" id="mass-slider" min="500" max="2500" step="50" value="1000">
+                    </div>
+                </div>
+
+                <!-- Calculated speeds -->
+                <div class="card">
+                    <div class="card-title">Calculated Speeds</div>
+                    <div id="speed-cards"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; <a href="/">PanPhy Labs</a> |
+        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+    </footer>
+
+    <script>
+        // ─── Constants ───────────────────────────────────────────────────────────
+        const GRAVITY = 9.81;
+
+        // ─── State ────────────────────────────────────────────────────────────────
+        let bankAngle = 15;
+        let mu = 0.5;
+        let radius = 100;
+        let mass = 1000;
+        let currentSpeed = 10; // will be updated to ideal speed on init
+
+        let openSpeedCard = null;
+
+        // ─── DOM refs ─────────────────────────────────────────────────────────────
+        const speedSlider  = document.getElementById('speed-slider');
+        const angleSlider  = document.getElementById('angle-slider');
+        const muSlider     = document.getElementById('mu-slider');
+        const radiusSlider = document.getElementById('radius-slider');
+        const massSlider   = document.getElementById('mass-slider');
+
+        const speedDisplay  = document.getElementById('speed-display');
+        const angleDisplay  = document.getElementById('angle-display');
+        const muDisplay     = document.getElementById('mu-display');
+        const radiusDisplay = document.getElementById('radius-display');
+        const massDisplay   = document.getElementById('mass-display');
+
+        const speedCardsEl = document.getElementById('speed-cards');
+        const diagramSvg   = document.getElementById('diagram-svg');
+        const svgDefs      = document.getElementById('svg-defs');
+        const svgContent   = document.getElementById('diagram-content');
+
+        // ─── Physics ─────────────────────────────────────────────────────────────
+        function compute() {
+            const angleRad = bankAngle * Math.PI / 180;
+            const tan = Math.tan(angleRad);
+            const cos = Math.cos(angleRad);
+            const sin = Math.sin(angleRad);
+            const g = GRAVITY;
+            const r = radius;
+            const m = mass;
+            const v = currentSpeed;
+
+            const idealSpeed = Math.sqrt(g * r * tan);
+
+            const minNum = tan - mu;
+            const minSpeed = (minNum <= 0) ? 0 : Math.sqrt((g * r * minNum) / (1 + mu * tan));
+
+            const maxDen = 1 - mu * tan;
+            const maxNum = tan + mu;
+            const maxSpeed = (maxDen <= 0) ? Infinity : Math.sqrt((g * r * maxNum) / maxDen);
+
+            const gravityForce = m * g;
+            const normalForce  = m * g * cos + (m * v * v / r) * sin;
+            const frictionReq  = (m * v * v / r) * cos - m * g * sin;
+            const centripetal  = (m * v * v) / r;
+
+            return {
+                angleRad, tan,
+                idealSpeed, minSpeed, maxSpeed,
+                forces: { gravity: gravityForce, normal: normalForce, friction: frictionReq, centripetal }
+            };
+        }
+
+        // ─── SVG Diagram ─────────────────────────────────────────────────────────
+        function getCSSVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+        function mkArrowMarker(id, color) {
+            return `<marker id="${id}" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="${color}"/>
+            </marker>`;
+        }
+
+        function drawDiagram(calc) {
+            const W = 500, H = 350;
+            const cx = W / 2, cy = H / 2 + 50;
+            const carW = 60, carH = 30;
+            const { angleRad, forces } = calc;
+            const { gravity, normal, friction, centripetal } = forces;
+            const mu_ = mu;
+            const frictionDirection = Math.sign(friction);
+
+            const maxGrav = 2500 * 9.81;
+            const maxArrow = H / 3;
+            const scale = maxArrow / maxGrav;
+
+            const gravLen   = gravity   * scale;
+            const normLen   = normal    * scale;
+            const fricLen   = Math.abs(friction) * scale;
+            const centLen   = centripetal * scale;
+
+            const cax = cx - (carH / 2) * Math.sin(angleRad);
+            const cay = cy - (carH / 2) * Math.cos(angleRad);
+
+            const mg_x2 = cax;
+            const mg_y2 = cay + gravLen;
+            const N_x2  = cax - normLen * Math.sin(angleRad);
+            const N_y2  = cay - normLen * Math.cos(angleRad);
+            const Fs_x2 = cax - frictionDirection * fricLen * Math.cos(angleRad);
+            const Fs_y2 = cay + frictionDirection * fricLen * Math.sin(angleRad);
+            const Fc_x2 = cax - centLen;
+            const Fc_y2 = cay;
+
+            const trackColor = getCSSVar('--diag-track');
+            const carColor   = getCSSVar('--diag-car');
+            const gridColor  = getCSSVar('--diag-grid');
+            const thetaColor = getCSSVar('--diag-theta');
+            const textColor  = getCSSVar('--text-secondary');
+
+            // Markers
+            svgDefs.innerHTML =
+                mkArrowMarker('arr-mg', '#10B981') +
+                mkArrowMarker('arr-n',  '#F59E0B') +
+                mkArrowMarker('arr-fs', '#EF4444') +
+                mkArrowMarker('arr-fc', '#A855F7');
+
+            let html = '';
+
+            // Horizontal reference line
+            html += `<line x1="0" y1="${cy}" x2="${W}" y2="${cy}" stroke="${gridColor}" stroke-width="1" stroke-dasharray="4 4"/>`;
+
+            // Angle arc
+            const arcR = 60;
+            html += `<g transform="translate(${cx},${cy})">
+                <path d="M ${arcR} 0 A ${arcR} ${arcR} 0 0 0 ${arcR * Math.cos(-angleRad)} ${arcR * Math.sin(-angleRad)}"
+                    stroke="${thetaColor}" stroke-width="2" fill="none"/>
+                <text x="75" y="-20" fill="${thetaColor}" font-size="16" font-weight="bold">θ</text>
+            </g>`;
+
+            // Track and car (rotated)
+            html += `<g transform="rotate(${-bankAngle} ${cx} ${cy})">
+                <line x1="0" y1="${cy}" x2="${W}" y2="${cy}" stroke="${trackColor}" stroke-width="6"/>
+                <rect x="${cx - carW/2}" y="${cy - carH}" width="${carW}" height="${carH}" fill="${carColor}" rx="3"/>
+            </g>`;
+
+            // Gravity arrow
+            html += `<g>
+                <line x1="${cax}" y1="${cay}" x2="${mg_x2}" y2="${mg_y2}"
+                    stroke="#10B981" stroke-width="2.5" marker-end="url(#arr-mg)"/>
+                <text x="${mg_x2 + 20}" y="${mg_y2}" fill="#10B981" font-size="14" font-weight="bold"
+                    dominant-baseline="central">mg</text>
+            </g>`;
+
+            // Normal force arrow
+            html += `<g>
+                <line x1="${cax}" y1="${cay}" x2="${N_x2}" y2="${N_y2}"
+                    stroke="#F59E0B" stroke-width="2.5" marker-end="url(#arr-n)"/>
+                <text x="${N_x2 - 20}" y="${N_y2 - 15}" fill="#F59E0B" font-size="14" font-weight="bold"
+                    dominant-baseline="central">N</text>
+            </g>`;
+
+            // Friction arrow (only if non-trivial)
+            if (mu_ > 0 && Math.abs(friction) > 0.01 * gravity) {
+                const lox = -frictionDirection * Math.cos(angleRad) * 20;
+                const loy = frictionDirection * Math.sin(angleRad) * 20 + 10;
+                html += `<g>
+                    <line x1="${cax}" y1="${cay}" x2="${Fs_x2}" y2="${Fs_y2}"
+                        stroke="#EF4444" stroke-width="2.5" marker-end="url(#arr-fs)"/>
+                    <text x="${Fs_x2 + lox}" y="${Fs_y2 + loy}" fill="#EF4444" font-size="14" font-weight="bold"
+                        dominant-baseline="central" text-anchor="middle">fₛ</text>
+                </g>`;
+            }
+
+            // Centripetal force (dashed)
+            if (centLen > 1) {
+                html += `<g>
+                    <line x1="${cax}" y1="${cay}" x2="${Fc_x2}" y2="${Fc_y2}"
+                        stroke="#A855F7" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arr-fc)"/>
+                    <text x="${Fc_x2}" y="${Fc_y2 - 20}" fill="#A855F7" font-size="14" font-weight="bold"
+                        dominant-baseline="central" text-anchor="middle">F꜀</text>
+                </g>`;
+            }
+
+            svgContent.innerHTML = html;
+        }
+
+        // ─── Speed cards ──────────────────────────────────────────────────────────
+        function mpsToKph(v) { return v * 3.6; }
+
+        function buildSpeedCards(calc) {
+            const { idealSpeed, minSpeed, maxSpeed, tan } = calc;
+            const g = GRAVITY;
+            const r = radius;
+            const theta = bankAngle;
+            const mu_ = mu;
+
+            const cards = [
+                {
+                    id: 'ideal',
+                    name: 'Ideal Speed (v_ideal)',
+                    speed: idealSpeed,
+                    formula: 'v = √(g · r · tan θ)',
+                    derivation: `<p>At ideal speed, no friction is needed. Balance vertical forces (N·cos θ = mg) and set horizontal net force equal to centripetal (N·sin θ = mv²/r). Dividing gives:</p>
+<div class="formula-box">g · tan θ = v²/r  →  v = √(g · r · tan θ)</div>`,
+                    calculation: `<p>v = √(${g.toFixed(2)} × ${r} × tan(${theta}°))</p>
+<p>v = √(${(g * r * tan).toFixed(2)}) = <strong>${idealSpeed.toFixed(2)} m/s</strong></p>
+<p style="color:var(--text-secondary)">At this speed, the horizontal component of N alone provides the centripetal force. No friction needed.</p>`
+                },
+                {
+                    id: 'min',
+                    name: 'Minimum Speed (v_min)',
+                    speed: minSpeed,
+                    formula: 'v = √(g·r·(tan θ − μs) / (1 + μs·tan θ))',
+                    derivation: `<p>Friction acts <strong>up the slope</strong> (prevents sliding down). Summing forces:</p>
+<div class="formula-box">ΣFᵧ = N·cos θ + fₛ·sin θ − mg = 0
+ΣFₓ = N·sin θ − fₛ·cos θ = mv²/r</div>
+<p>Substitute fₛ = μₛN and divide equations to eliminate N and m:</p>
+<div class="formula-box">(tan θ − μₛ) / (1 + μₛ·tan θ) = v²/gr</div>`,
+                    calculation: minSpeed === 0
+                        ? `<p>Since tan(${theta}°) ≤ ${mu_}, friction alone keeps the car on track even at rest. <strong>Min speed = 0 m/s.</strong></p>`
+                        : `<p>v = √(${g.toFixed(2)} × ${r} × (tan(${theta}°) − ${mu_}) / (1 + ${mu_} × tan(${theta}°)))</p>
+<p>v = <strong>${minSpeed.toFixed(2)} m/s</strong></p>`
+                },
+                {
+                    id: 'max',
+                    name: 'Maximum Speed (v_max)',
+                    speed: maxSpeed,
+                    formula: 'v = √(g·r·(tan θ + μs) / (1 − μs·tan θ))',
+                    derivation: `<p>Friction acts <strong>down the slope</strong> (prevents sliding up). Summing forces:</p>
+<div class="formula-box">ΣFᵧ = N·cos θ − fₛ·sin θ − mg = 0
+ΣFₓ = N·sin θ + fₛ·cos θ = mv²/r</div>
+<p>Substitute fₛ = μₛN and divide equations:</p>
+<div class="formula-box">(tan θ + μₛ) / (1 − μₛ·tan θ) = v²/gr</div>`,
+                    calculation: maxSpeed === Infinity
+                        ? `<p>Since 1 − μₛ·tan θ ≤ 0, the denominator is zero or negative. The car will never slide up the bank regardless of speed. <strong>Max speed = Unlimited.</strong></p>`
+                        : `<p>v = √(${g.toFixed(2)} × ${r} × (tan(${theta}°) + ${mu_}) / (1 − ${mu_} × tan(${theta}°)))</p>
+<p>v = <strong>${maxSpeed.toFixed(2)} m/s</strong></p>`
+                }
+            ];
+
+            speedCardsEl.innerHTML = cards.map(card => {
+                const isOpen = openSpeedCard === card.id;
+                const isInf = !isFinite(card.speed);
+                const valStr = isInf ? 'Unlimited' : card.speed.toFixed(2) + ' m/s';
+                const kphStr = isInf ? '' : `(${mpsToKph(card.speed).toFixed(2)} km/h)`;
+                return `
+                <div class="speed-card">
+                    <button class="speed-card-header" onclick="toggleSpeedCard('${card.id}')">
+                        <div class="speed-card-left">
+                            <span class="speed-card-name">${card.name}</span>
+                            <span class="speed-card-value">${valStr}</span>
+                            <span class="speed-card-kph">${kphStr}</span>
+                        </div>
+                        <svg class="speed-card-chevron ${isOpen ? 'open' : ''}" width="16" height="16" viewBox="0 0 10 6" fill="none">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
+                        </svg>
+                    </button>
+                    <div class="speed-card-body ${isOpen ? 'open' : ''}">
+                        <p style="font-weight:600;margin-bottom:4px;">Formula:</p>
+                        <div class="formula-box">${card.formula}</div>
+                        <p style="font-weight:600;margin-top:10px;margin-bottom:4px;">Derivation:</p>
+                        ${card.derivation}
+                        <p style="font-weight:600;margin-top:10px;margin-bottom:4px;">Calculation:</p>
+                        ${card.calculation}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        window.toggleSpeedCard = function(id) {
+            openSpeedCard = openSpeedCard === id ? null : id;
+            updateAll();
+        };
+
+        // ─── Speed slider max ─────────────────────────────────────────────────────
+        function updateSpeedSliderMax(maxSpeed) {
+            const sliderMax = isFinite(maxSpeed) ? Math.ceil(maxSpeed + 10) : 100;
+            speedSlider.max = sliderMax;
+            if (currentSpeed > sliderMax) {
+                currentSpeed = sliderMax;
+                speedSlider.value = currentSpeed;
+            }
+        }
+
+        function updateAll() {
+            const calc = compute();
+            updateSpeedSliderMax(calc.maxSpeed);
+            speedDisplay.textContent = currentSpeed.toFixed(2) + ' m/s';
+            drawDiagram(calc);
+            buildSpeedCards(calc);
+        }
+
+        // ─── Slider listeners ─────────────────────────────────────────────────────
+        speedSlider.addEventListener('input', function () {
+            currentSpeed = parseFloat(this.value); updateAll();
+        });
+        angleSlider.addEventListener('input', function () {
+            bankAngle = parseFloat(this.value);
+            angleDisplay.textContent = bankAngle.toFixed(2) + '°';
+            // Update ideal speed as suggested starting point
+            const ideal = Math.sqrt(GRAVITY * radius * Math.tan(bankAngle * Math.PI / 180));
+            currentSpeed = parseFloat(ideal.toFixed(2));
+            updateAll();
+            speedSlider.value = currentSpeed;
+        });
+        muSlider.addEventListener('input', function () {
+            mu = parseFloat(this.value);
+            muDisplay.textContent = mu.toFixed(2);
+            updateAll();
+        });
+        radiusSlider.addEventListener('input', function () {
+            radius = parseFloat(this.value);
+            radiusDisplay.textContent = radius + ' m';
+            const ideal = Math.sqrt(GRAVITY * radius * Math.tan(bankAngle * Math.PI / 180));
+            currentSpeed = parseFloat(ideal.toFixed(2));
+            updateAll();
+            speedSlider.value = currentSpeed;
+        });
+        massSlider.addEventListener('input', function () {
+            mass = parseFloat(this.value);
+            massDisplay.textContent = mass + ' kg';
+            updateAll();
+        });
+
+        // ─── Theme toggle ─────────────────────────────────────────────────────────
+        const themeButton = document.getElementById('theme-button');
+        const DARK_KEY = 'banked-track-dark';
+        const LIGHT_KEY = 'banked-track-light';
+
+        function updateAppChromeTheme(theme) {
+            const tc = document.querySelector('meta[name="theme-color"]');
+            const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            const dark = theme === 'dark';
+            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+        }
+        function updateButtonEmoji(theme) {
+            themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+        }
+
+        const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', initTheme);
+        updateAppChromeTheme(initTheme);
+        updateButtonEmoji(initTheme);
+
+        window.addEventListener('pageshow', function () {
+            updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+        });
+
+        themeButton.addEventListener('click', function () {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') {
+                localStorage.setItem(DARK_KEY, 'true'); localStorage.removeItem(LIGHT_KEY);
+            } else {
+                localStorage.setItem(LIGHT_KEY, 'true'); localStorage.removeItem(DARK_KEY);
+            }
+            updateAppChromeTheme(next); updateButtonEmoji(next);
+            updateAll();
+        });
+
+        function updateOfflineFontState() {
+            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
+        }
+        window.addEventListener('online', updateOfflineFontState);
+        window.addEventListener('offline', updateOfflineFontState);
+        updateOfflineFontState();
+
+        // ─── Initial render ───────────────────────────────────────────────────────
+        // Start at ideal speed
+        const initIdeal = Math.sqrt(GRAVITY * radius * Math.tan(bankAngle * Math.PI / 180));
+        currentSpeed = parseFloat(initIdeal.toFixed(2));
+        speedSlider.value = currentSpeed;
+        updateAll();
+    </script>
+
+    <script>
+    (function () {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+
+</html>

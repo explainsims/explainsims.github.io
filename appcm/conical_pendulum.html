@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#E8F3FD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('conical-pendulum-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#15243E');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Conical Pendulum Interactive Lab</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
+
+            --brand-primary: #1A56DB;
+            --brand-secondary: #1D4ED8;
+            --brand-accent: #D97706;
+
+            --card-bg: #FFFFFF;
+            --card-border: #C5DCF0;
+            --card-shadow: 0 4px 16px rgba(26,86,219,0.06);
+
+            --slider-track: #C5DCF0;
+            --slider-thumb: #1A56DB;
+
+            --nav-bg: rgba(255,255,255,0.92);
+            --nav-border: rgba(30,80,160,0.10);
+
+            --readout-bg: #F0F7FF;
+
+            --svg-support: #64748B;
+            --svg-string: #94A3B8;
+            --svg-labels: #64748B;
+            --svg-arc: #818CF8;
+            --svg-orbit: rgba(6,182,212,0.5);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
+            --brand-primary: #F6C90E;
+            --brand-secondary: #EAB308;
+            --brand-accent: #60A5FA;
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            --slider-track: #2A4270;
+            --slider-thumb: #F6C90E;
+            --nav-bg: rgba(21,36,62,0.90);
+            --nav-border: rgba(255,255,255,0.08);
+            --readout-bg: #1C2F52;
+            --svg-support: #94A3B8;
+            --svg-string: #CBD5E1;
+            --svg-labels: #94A3B8;
+            --svg-arc: #A5B4FC;
+            --svg-orbit: rgba(34,211,238,0.4);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html.offline-font { --font-sans: system-ui, sans-serif; --font-display: system-ui, sans-serif; --font-mono: 'Courier New', monospace; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display); font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 700; color: var(--text-main); letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; }
+        #theme-button {
+            background: none; border: none; cursor: pointer; font-size: 1.2rem;
+            padding: 6px; border-radius: 8px; transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        .main-content {
+            flex: 1; max-width: 1200px; margin: 0 auto;
+            width: 100%; padding: 24px 16px;
+        }
+
+        .sim-grid {
+            display: grid; grid-template-columns: 1fr; gap: 20px;
+        }
+        @media (min-width: 960px) {
+            .sim-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        .card-title {
+            font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+            color: var(--brand-primary);
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 10px; margin-bottom: 16px;
+        }
+
+        /* Sliders */
+        .slider-group { margin-bottom: 16px; }
+        .slider-label {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.875rem; font-weight: 500; color: var(--text-main); margin-bottom: 6px;
+        }
+        .slider-label span { font-family: var(--font-mono); font-size: 0.8rem; color: var(--brand-primary); }
+        input[type="range"] {
+            width: 100%; height: 6px; appearance: none; -webkit-appearance: none;
+            background: var(--slider-track); border-radius: 3px; cursor: pointer; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            background: var(--slider-thumb); border-radius: 50%; cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; background: var(--slider-thumb);
+            border-radius: 50%; cursor: pointer; border: none;
+        }
+
+        /* SVG container */
+        .svg-container {
+            width: 100%; aspect-ratio: 1;
+            background: var(--readout-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px; overflow: hidden;
+        }
+
+        /* Calculation cards */
+        .calc-section-title {
+            font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+            color: var(--brand-primary);
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 8px; margin-bottom: 12px;
+        }
+        .calc-card {
+            background: var(--readout-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .calc-card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px; cursor: pointer;
+            background: none; border: none; width: 100%; text-align: left;
+            font-family: var(--font-sans); color: var(--text-main);
+        }
+        .calc-card-header:hover { background: var(--card-border); }
+        .calc-card-left { display: flex; flex-direction: column; gap: 2px; }
+        .calc-card-title { font-weight: 600; font-size: 0.875rem; color: var(--text-main); }
+        .calc-card-formula { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); }
+        .calc-card-result { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--brand-accent); }
+        .calc-card-chevron { transition: transform 0.2s; color: var(--text-secondary); flex-shrink: 0; }
+        .calc-card-chevron.open { transform: rotate(180deg); }
+        .calc-card-body {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+            padding: 0 14px;
+        }
+        .calc-card-body.open { max-height: 300px; padding: 0 14px 12px; }
+        .calc-card-body p { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 6px; }
+        .calc-card-body strong { color: var(--text-main); }
+
+        footer {
+            text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-secondary);
+            border-top: 1px solid var(--card-border);
+        }
+        footer a { color: var(--brand-primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (pointer: coarse) {
+            input[type="range"] { height: 10px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Conical Pendulum Interactive Lab</div>
+        <div class="banner-actions">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme">&#9728;&#65039;</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="sim-grid">
+            <!-- Left: controls + visualizer -->
+            <div>
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-title">Control Parameters</div>
+                    <div class="slider-group">
+                        <div class="slider-label">String Length (L) <span id="len-display">1.00 m</span></div>
+                        <input type="range" id="len-slider" min="1" max="3" step="0.1" value="1">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">Bob Mass (m) <span id="mass-display">1.00 kg</span></div>
+                        <input type="range" id="mass-slider" min="1" max="5" step="0.1" value="1">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">Angle (θ) <span id="angle-display">30°</span></div>
+                        <input type="range" id="angle-slider" min="1" max="80" step="1" value="30">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Pendulum Diagram</div>
+                    <div class="svg-container">
+                        <svg id="pendulum-svg" viewBox="0 0 320 320" width="100%" height="100%">
+                            <defs>
+                                <radialGradient id="bobGrad" cx="0.4" cy="0.4" r="0.6">
+                                    <stop offset="0%" stop-color="#22D3EE"/>
+                                    <stop offset="100%" stop-color="#06B6D4"/>
+                                </radialGradient>
+                                <marker id="arr-t" viewBox="0 0 10 10" refX="8" refY="5"
+                                    markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#F472B6"/>
+                                </marker>
+                                <marker id="arr-fg" viewBox="0 0 10 10" refX="8" refY="5"
+                                    markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#A78BFA"/>
+                                </marker>
+                                <marker id="arr-fc" viewBox="0 0 10 10" refX="8" refY="5"
+                                    markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#FACC15"/>
+                                </marker>
+                            </defs>
+                            <!-- Support structure -->
+                            <g id="support-group"></g>
+                            <!-- Height line -->
+                            <line id="h-line" stroke-width="1.5" stroke-dasharray="4 2"/>
+                            <text id="h-text" font-size="12" font-family="monospace">h</text>
+                            <!-- Radius line -->
+                            <line id="r-line" stroke-width="1.5" stroke-dasharray="4 2"/>
+                            <text id="r-text" font-size="12" font-family="monospace" text-anchor="middle">r</text>
+                            <!-- String -->
+                            <line id="string-line" stroke-width="2"/>
+                            <text id="l-text" font-size="12" font-family="monospace" text-anchor="middle">L</text>
+                            <!-- Angle arc -->
+                            <path id="angle-arc" fill="none" stroke-width="1.5"/>
+                            <text id="angle-text" font-size="12" font-family="monospace">θ</text>
+                            <!-- Orbit ellipse -->
+                            <ellipse id="orbit-ellipse" fill="none" stroke-width="1"/>
+                            <!-- Force vectors -->
+                            <line id="force-t" stroke="#F472B6" stroke-width="2" marker-end="url(#arr-t)"/>
+                            <text id="force-t-lbl" fill="#F472B6" font-size="12" font-family="monospace" text-anchor="middle">T</text>
+                            <line id="force-fg" stroke="#A78BFA" stroke-width="2" marker-end="url(#arr-fg)"/>
+                            <text id="force-fg-lbl" fill="#A78BFA" font-size="12" font-family="monospace" text-anchor="end">Fg</text>
+                            <line id="force-fc" stroke="#FACC15" stroke-width="2" marker-end="url(#arr-fc)"/>
+                            <text id="force-fc-lbl" fill="#FACC15" font-size="12" font-family="monospace" text-anchor="middle">Fc</text>
+                            <!-- Bob -->
+                            <circle id="bob" r="10" fill="url(#bobGrad)" stroke="#0E7490" stroke-width="1"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: calculations -->
+            <div>
+                <div class="calc-section-title">Step-by-Step Calculations</div>
+                <div id="calc-cards"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; <a href="/">PanPhy Labs</a> |
+        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+    </footer>
+
+    <script>
+        // ─── Constants ───────────────────────────────────────────────────────────
+        const G = 9.81;
+
+        // ─── State ────────────────────────────────────────────────────────────────
+        let length = 1.0;
+        let mass = 1.0;
+        let angle = 30;
+
+        // ─── DOM refs ─────────────────────────────────────────────────────────────
+        const lenSlider = document.getElementById('len-slider');
+        const massSlider = document.getElementById('mass-slider');
+        const angleSlider = document.getElementById('angle-slider');
+        const lenDisplay = document.getElementById('len-display');
+        const massDisplay = document.getElementById('mass-display');
+        const angleDisplay = document.getElementById('angle-display');
+        const calcCardsEl = document.getElementById('calc-cards');
+
+        // SVG elements
+        const svg = document.getElementById('pendulum-svg');
+        const supportGroup = document.getElementById('support-group');
+
+        function svgEl(id) { return document.getElementById(id); }
+
+        // ─── Physics ─────────────────────────────────────────────────────────────
+        function compute(L, m, deg) {
+            const angleRad = deg * Math.PI / 180;
+            const radius = L * Math.sin(angleRad);
+            const height = L * Math.cos(angleRad);
+            const tension = (m * G) / Math.cos(angleRad);
+            const centripetalForce = tension * Math.sin(angleRad);
+            const velocity = Math.sqrt((centripetalForce * radius) / m);
+            const centripAccel = radius > 0 ? velocity * velocity / radius : 0;
+            const period = velocity > 0 ? (2 * Math.PI * radius) / velocity : Infinity;
+            return { angleRad, radius, height, tension, centripetalForce, velocity, centripAccel, period };
+        }
+
+        // ─── SVG drawing ─────────────────────────────────────────────────────────
+        function getCSSVar(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        function drawPendulum(L, deg, m, tension, centripetalForce) {
+            const vbSize = 320;
+            const pivot = { x: vbSize / 2, y: 40 };
+            const maxL = 3;
+            const scale = (vbSize - 40) / 2 / maxL;
+            const Lpx = L * scale;
+            const angleRad = deg * Math.PI / 180;
+
+            const bob = {
+                x: pivot.x + Lpx * Math.sin(angleRad),
+                y: pivot.y + Lpx * Math.cos(angleRad),
+            };
+            const bobRadius = 8 + (m - 1) * 1.5;
+
+            // Force vector scaling
+            const MAX_M = 5;
+            const MAX_ANGLE_RAD = 80 * Math.PI / 180;
+            const TARGET_LEN = 180;
+            const maxTension = (MAX_M * G) / Math.cos(MAX_ANGLE_RAD);
+            const forceScale = TARGET_LEN / maxTension;
+
+            const gravVecY = m * G * forceScale;
+            const tensVecLen = tension * forceScale;
+            const fcVecX = centripetalForce * forceScale;
+
+            const svgStr = getCSSVar('--svg-string');
+            const svgLbl = getCSSVar('--svg-labels');
+            const svgArc = getCSSVar('--svg-arc');
+            const svgOrbit = getCSSVar('--svg-orbit');
+            const svgSup = getCSSVar('--svg-support');
+
+            // Support structure
+            supportGroup.innerHTML = `
+                <rect x="${pivot.x-60}" y="${pivot.y-20}" width="120" height="20" rx="0" fill="${svgSup}"/>
+                <polygon points="${pivot.x-10},${pivot.y} ${pivot.x},${pivot.y-20} ${pivot.x+10},${pivot.y}" fill="${svgSup}"/>
+            `;
+
+            // Height line
+            const hLine = svgEl('h-line');
+            hLine.setAttribute('x1', pivot.x); hLine.setAttribute('y1', pivot.y);
+            hLine.setAttribute('x2', pivot.x); hLine.setAttribute('y2', bob.y);
+            hLine.setAttribute('stroke', svgLbl);
+
+            const hText = svgEl('h-text');
+            hText.setAttribute('x', pivot.x + 6); hText.setAttribute('y', pivot.y + (bob.y - pivot.y) / 2);
+            hText.setAttribute('fill', svgLbl);
+
+            // Radius line
+            const rLine = svgEl('r-line');
+            rLine.setAttribute('x1', pivot.x); rLine.setAttribute('y1', bob.y);
+            rLine.setAttribute('x2', bob.x); rLine.setAttribute('y2', bob.y);
+            rLine.setAttribute('stroke', svgLbl);
+
+            const rText = svgEl('r-text');
+            rText.setAttribute('x', pivot.x + (bob.x - pivot.x) / 2);
+            rText.setAttribute('y', bob.y - 6);
+            rText.setAttribute('fill', svgLbl);
+
+            // String
+            const strLine = svgEl('string-line');
+            strLine.setAttribute('x1', pivot.x); strLine.setAttribute('y1', pivot.y);
+            strLine.setAttribute('x2', bob.x); strLine.setAttribute('y2', bob.y);
+            strLine.setAttribute('stroke', svgStr);
+
+            const lText = svgEl('l-text');
+            lText.setAttribute('x', pivot.x + (Lpx * Math.sin(angleRad)) / 2 + 6 * Math.cos(angleRad));
+            lText.setAttribute('y', pivot.y + (Lpx * Math.cos(angleRad)) / 2 - 6 * Math.sin(angleRad));
+            lText.setAttribute('fill', svgStr);
+
+            // Angle arc
+            const arcR = Lpx / 5;
+            const arcPath = svgEl('angle-arc');
+            arcPath.setAttribute('d', `M ${pivot.x} ${pivot.y + arcR} A ${arcR} ${arcR} 0 0 1 ${pivot.x + arcR * Math.sin(angleRad)} ${pivot.y + arcR * Math.cos(angleRad)}`);
+            arcPath.setAttribute('stroke', svgArc);
+
+            const angleTextEl = svgEl('angle-text');
+            angleTextEl.setAttribute('x', pivot.x + (arcR + 10) * Math.sin(angleRad / 2));
+            angleTextEl.setAttribute('y', pivot.y + (arcR + 10) * Math.cos(angleRad / 2));
+            angleTextEl.setAttribute('fill', svgArc);
+
+            // Orbit ellipse
+            const orbitEl = svgEl('orbit-ellipse');
+            orbitEl.setAttribute('cx', pivot.x); orbitEl.setAttribute('cy', bob.y);
+            orbitEl.setAttribute('rx', Lpx * Math.sin(angleRad));
+            orbitEl.setAttribute('ry', Lpx * Math.sin(angleRad) * 0.2);
+            orbitEl.setAttribute('stroke', svgOrbit);
+
+            // Force: Tension
+            const fT = svgEl('force-t');
+            fT.setAttribute('x1', bob.x); fT.setAttribute('y1', bob.y);
+            fT.setAttribute('x2', bob.x - tensVecLen * Math.sin(angleRad));
+            fT.setAttribute('y2', bob.y - tensVecLen * Math.cos(angleRad));
+
+            const fTlbl = svgEl('force-t-lbl');
+            fTlbl.setAttribute('x', bob.x - 30 * Math.sin(angleRad));
+            fTlbl.setAttribute('y', bob.y - 30 * Math.cos(angleRad));
+
+            // Force: Gravity
+            const fFg = svgEl('force-fg');
+            fFg.setAttribute('x1', bob.x); fFg.setAttribute('y1', bob.y);
+            fFg.setAttribute('x2', bob.x); fFg.setAttribute('y2', bob.y + gravVecY);
+
+            const fFgLbl = svgEl('force-fg-lbl');
+            fFgLbl.setAttribute('x', bob.x - 14);
+            fFgLbl.setAttribute('y', bob.y + gravVecY / 2);
+
+            // Force: Centripetal
+            const fFc = svgEl('force-fc');
+            fFc.setAttribute('x1', bob.x); fFc.setAttribute('y1', bob.y);
+            fFc.setAttribute('x2', bob.x - fcVecX); fFc.setAttribute('y2', bob.y);
+
+            const fFcLbl = svgEl('force-fc-lbl');
+            fFcLbl.setAttribute('x', bob.x - fcVecX / 2);
+            fFcLbl.setAttribute('y', bob.y + 16);
+
+            // Bob
+            const bobEl = svgEl('bob');
+            bobEl.setAttribute('cx', bob.x); bobEl.setAttribute('cy', bob.y);
+            bobEl.setAttribute('r', bobRadius);
+        }
+
+        // ─── Calculation cards ────────────────────────────────────────────────────
+        const CALC_DEFS = [
+            {
+                id: 'radius', title: 'Radius (r)', formula: 'r = L × sin(θ)',
+                explanation: `<p>The radius is the horizontal distance from the center of the circular path to the pendulum bob.</p>
+<p>A right-angled triangle is formed by the vertical height (h), the horizontal radius (r), and the string length (L). Since <strong>sin(θ) = r / L</strong>, we get <strong>r = L × sin(θ)</strong>.</p>`
+            },
+            {
+                id: 'tension', title: 'Tension (T)', formula: 'T = (m × g) / cos(θ)',
+                explanation: `<p>Since the bob is not accelerating vertically, the vertical forces must balance: the upward vertical component of tension <strong>T × cos(θ)</strong> must equal gravity <strong>m × g</strong>.</p>
+<p>Solving for T: <strong>T = (m × g) / cos(θ)</strong>.</p>`
+            },
+            {
+                id: 'fc', title: 'Centripetal Force (Fc)', formula: 'Fc = T × sin(θ)',
+                explanation: `<p>The centripetal force is the net force directed toward the center of the circular path.</p>
+<p>In this system it is provided by the horizontal component of tension: <strong>Fc = T × sin(θ)</strong>.</p>`
+            },
+            {
+                id: 'velocity', title: 'Velocity (v)', formula: 'v = √(Fc × r / m)',
+                explanation: `<p>From Newton's 2nd law for circular motion: <strong>Fc = m × v² / r</strong>.</p>
+<p>Rearranging: <strong>v² = Fc × r / m</strong>, so <strong>v = √(Fc × r / m)</strong>.</p>`
+            },
+            {
+                id: 'period', title: 'Period (T_p)', formula: 'T_p = 2πr / v',
+                explanation: `<p>The period is the time for one full revolution.</p>
+<p>Using <strong>time = distance / speed</strong>, where distance is the circumference <strong>2πr</strong>: <strong>T_p = 2πr / v</strong>.</p>`
+            },
+            {
+                id: 'accel', title: 'Centripetal Acceleration (ac)', formula: 'ac = v² / r',
+                explanation: `<p>From Newton's 2nd law: <strong>Fc = m × ac</strong>. With <strong>Fc = m × v² / r</strong>, the mass cancels: <strong>ac = v² / r</strong>.</p>`
+            },
+        ];
+
+        let openCardId = null;
+
+        function buildCalcCards(vals) {
+            const { angleRad, radius, tension, centripetalForce, velocity, centripAccel, period } = vals;
+            const results = {
+                radius: `${radius.toFixed(3)} m`,
+                tension: `${tension.toFixed(3)} N`,
+                fc: `${centripetalForce.toFixed(3)} N`,
+                velocity: `${velocity.toFixed(3)} m/s`,
+                period: isFinite(period) ? `${period.toFixed(3)} s` : '∞',
+                accel: `${centripAccel.toFixed(3)} m/s²`,
+            };
+            const steps = {
+                radius: `r = ${length.toFixed(2)} m × sin(${angle}°) = ${radius.toFixed(3)} m`,
+                tension: `T = (${mass.toFixed(2)} kg × ${G} m/s²) / cos(${angle}°) = ${tension.toFixed(3)} N`,
+                fc: `Fc = ${tension.toFixed(3)} N × sin(${angle}°) = ${centripetalForce.toFixed(3)} N`,
+                velocity: `v = √(${centripetalForce.toFixed(3)} × ${radius.toFixed(3)} / ${mass.toFixed(2)}) = ${velocity.toFixed(3)} m/s`,
+                period: `T_p = (2π × ${radius.toFixed(3)}) / ${velocity.toFixed(3)} = ${isFinite(period) ? period.toFixed(3) + ' s' : '∞'}`,
+                accel: `ac = (${velocity.toFixed(3)})² / ${radius.toFixed(3)} = ${centripAccel.toFixed(3)} m/s²`,
+            };
+
+            calcCardsEl.innerHTML = CALC_DEFS.map(def => {
+                const isOpen = openCardId === def.id;
+                return `
+                <div class="calc-card">
+                    <button class="calc-card-header" onclick="toggleCard('${def.id}')">
+                        <div class="calc-card-left">
+                            <span class="calc-card-title">${def.title}</span>
+                            <span class="calc-card-formula">${def.formula}</span>
+                            <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-secondary);margin-top:2px;">${steps[def.id]}</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:8px;">
+                            <span class="calc-card-result">${results[def.id]}</span>
+                            <svg class="calc-card-chevron ${isOpen ? 'open' : ''}" width="16" height="16" viewBox="0 0 10 6" fill="none">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
+                            </svg>
+                        </div>
+                    </button>
+                    <div class="calc-card-body ${isOpen ? 'open' : ''}">${def.explanation}</div>
+                </div>`;
+            }).join('');
+        }
+
+        window.toggleCard = function(id) {
+            openCardId = openCardId === id ? null : id;
+            updateAll();
+        };
+
+        function updateAll() {
+            const vals = compute(length, mass, angle);
+            drawPendulum(length, angle, mass, vals.tension, vals.centripetalForce);
+            buildCalcCards(vals);
+        }
+
+        // ─── Slider listeners ─────────────────────────────────────────────────────
+        lenSlider.addEventListener('input', function () {
+            length = parseFloat(this.value);
+            lenDisplay.textContent = length.toFixed(2) + ' m';
+            updateAll();
+        });
+        massSlider.addEventListener('input', function () {
+            mass = parseFloat(this.value);
+            massDisplay.textContent = mass.toFixed(2) + ' kg';
+            updateAll();
+        });
+        angleSlider.addEventListener('input', function () {
+            angle = parseInt(this.value);
+            angleDisplay.textContent = angle + '°';
+            updateAll();
+        });
+
+        // ─── Theme toggle ─────────────────────────────────────────────────────────
+        const themeButton = document.getElementById('theme-button');
+        const DARK_KEY = 'conical-pendulum-dark';
+        const LIGHT_KEY = 'conical-pendulum-light';
+
+        function updateAppChromeTheme(theme) {
+            const tc = document.querySelector('meta[name="theme-color"]');
+            const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            const dark = theme === 'dark';
+            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+        }
+        function updateButtonEmoji(theme) {
+            themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+        }
+
+        const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', initTheme);
+        updateAppChromeTheme(initTheme);
+        updateButtonEmoji(initTheme);
+
+        window.addEventListener('pageshow', function () {
+            updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+        });
+
+        themeButton.addEventListener('click', function () {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') {
+                localStorage.setItem(DARK_KEY, 'true'); localStorage.removeItem(LIGHT_KEY);
+            } else {
+                localStorage.setItem(LIGHT_KEY, 'true'); localStorage.removeItem(DARK_KEY);
+            }
+            updateAppChromeTheme(next); updateButtonEmoji(next);
+            // Redraw to pick up new CSS variable colours
+            updateAll();
+        });
+
+        function updateOfflineFontState() {
+            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
+        }
+        window.addEventListener('online', updateOfflineFontState);
+        window.addEventListener('offline', updateOfflineFontState);
+        updateOfflineFontState();
+
+        // ─── Initial render ───────────────────────────────────────────────────────
+        updateAll();
+    </script>
+
+    <script>
+    (function () {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+
+</html>
