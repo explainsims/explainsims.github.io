@@ -578,6 +578,7 @@
         let lastTimestamp = null;
         let maxEnergy = 0;  // J — recalculated only at reset / slider change
         let frozenEnergies = null; // snapshot at end-of-sim; cleared on reset
+        let frozenVelocity = null; // final velocity display; cleared on reset
 
         // ════════════════════════════════════════════════════════════════
         // DOM REFS
@@ -656,6 +657,7 @@
             // Stop if net deceleration and velocity near zero
             if (accel <= 0 && velocity <= 0) {
                 velocity = 0;
+                frozenVelocity = 0;
                 frozenEnergies = computeEnergies();
                 isRunning = false;
                 updatePlayButton();
@@ -668,6 +670,7 @@
 
             if (position >= RAMP_LENGTH) {
                 position = RAMP_LENGTH;
+                frozenVelocity = velocity; // snapshot before zeroing
                 frozenEnergies = computeEnergies(); // snapshot before zeroing velocity
                 velocity = 0;
                 isRunning = false;
@@ -1063,7 +1066,7 @@
         function updateReadouts() {
             rdTime.textContent = simTime.toFixed(2);
             rdPos.textContent  = position.toFixed(2);
-            rdVel.textContent  = velocity.toFixed(2);
+            rdVel.textContent  = (frozenVelocity !== null ? frozenVelocity : velocity).toFixed(2);
         }
 
         function updatePlayButton() {
@@ -1080,6 +1083,7 @@
             isRunning = false;
             lastTimestamp = null;
             frozenEnergies = null;
+            frozenVelocity = null;
             // Recalculate max energy
             const angleRad = getAngleRad();
             const h_start  = RAMP_LENGTH * Math.sin(angleRad);
