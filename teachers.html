@@ -629,7 +629,7 @@
                 width: calc(100vw - 16px);
                 max-width: 760px;
                 display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+                grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
                 align-items: center;
                 gap: 0.1rem;
                 padding: 0.3rem 0.35rem;
@@ -728,6 +728,7 @@
         <a href="/simulations.html">Sims</a>
         <a href="/teachers.html" aria-current="page">Teachers</a>
         <a href="/fun.html">Fun</a>
+        <a href="/panphy.html">PanPhy</a>
         <div class="theme-toggle">
             <button id="theme-button" aria-label="Toggle Light/Dark Theme">☀️</button>
         </div>
@@ -747,16 +748,6 @@
         <h2>For Teachers <span class="section-label">Utility</span></h2>
         <p class="section-desc">Utilities to help run lessons, manage exam timing, and support all learners.</p>
         <div class="grid">
-            <div class="card">
-                <h3>Exam Timer</h3>
-                <p>Manage exam times with an automatic extra-time timer.</p>
-                <a href="/for_teachers/timer.html">Open Timer</a>
-            </div>
-            <div class="card">
-                <h3>Camera Visualizer</h3>
-                <p>Project your device camera to the big screen, then snap &amp; sketch.</p>
-                <a href="/for_teachers/visualizer.html">Use Camera</a>
-            </div>
             <div class="card">
                 <h3>EAL Companion</h3>
                 <p>AI-powered language support for EAL learners.</p>
@@ -1200,11 +1191,6 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/for_teachers/timer.html': [
-                '/for_teachers/timer.html',
-                '/for_teachers/timer_beep.mp3'
-            ],
-            '/for_teachers/visualizer.html': ['/for_teachers/visualizer.html']
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(

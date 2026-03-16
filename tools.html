@@ -629,7 +629,7 @@
                 width: calc(100vw - 16px);
                 max-width: 760px;
                 display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+                grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
                 align-items: center;
                 gap: 0.1rem;
                 padding: 0.3rem 0.35rem;
@@ -730,6 +730,7 @@
         <a href="/simulations.html">Sims</a>
         <a href="/teachers.html">Teachers</a>
         <a href="/fun.html">Fun</a>
+        <a href="/panphy.html">PanPhy</a>
         <div class="theme-toggle">
             <button id="theme-button" aria-label="Toggle Light/Dark Theme">☀️</button>
         </div>
@@ -753,16 +754,6 @@
                 <h3>Markdown + LaTeX</h3>
                 <p>Write, preview, and present scientific documents with LaTeX support.</p>
                 <a href="/tools/markdown_editor.html">Open Editor</a>
-            </div>
-            <div class="card">
-                <h3>Data Plotting &amp; Fitting</h3>
-                <p>Process data, plot graphs, add uncertainties, and run best-fit analysis.</p>
-                <a href="/tools/panphyplot.html">Plot Data</a>
-            </div>
-            <div class="card">
-                <h3>Motion Tracker</h3>
-                <p>Step through video frames, click to track objects, and extract motion data.</p>
-                <a href="/tools/motion_tracker.html">Track Motion</a>
             </div>
             <div class="card">
                 <h3>Sound Analyzer</h3>
@@ -1223,18 +1214,6 @@
                 'https://cdn.jsdelivr.net/npm/dompurify@2.3.4/dist/purify.min.js',
                 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js'
-            ],
-            '/tools/panphyplot.html': [
-                '/tools/panphyplot.html',
-                '/tools/panphyplot/js/main.js',
-                '/tools/panphyplot/js/fit-worker.js',
-                'https://cdn.plot.ly/plotly-basic-2.29.1.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js'
-            ],
-            '/tools/motion_tracker.html': [
-                '/tools/motion_tracker.html',
-                'https://cdn.jsdelivr.net/npm/chart.js'
             ],
             '/tools/sound_analyzer.html': ['/tools/sound_analyzer.html'],
             '/tools/tone_generator.html': ['/tools/tone_generator.html']
