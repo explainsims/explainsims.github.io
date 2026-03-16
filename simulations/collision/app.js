@@ -215,7 +215,7 @@ const MEDIAPIPE_SOURCES = [
     }
 ];
 
-const CAMERA_PREFERENCE_STORAGE_KEY = 'panphy-collision-preferred-camera';
+const CAMERA_PREFERENCE_STORAGE_KEY = 'collision-preferred-camera';
 
 function loadPreferredCameraId() {
     try {

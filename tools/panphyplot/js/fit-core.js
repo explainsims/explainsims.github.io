@@ -1,4 +1,4 @@
-// Shared numerical helpers for PanPhyPlot curve fitting.
+// Shared numerical helpers for curve fitting.
 (function(globalScope) {
 	'use strict';
 
@@ -223,7 +223,7 @@
 		return equation;
 	}
 
-	globalScope.PanPhyFitCore = Object.freeze({
+	globalScope.FitCore = Object.freeze({
 		transpose,
 		multiply,
 		multiplyMatrixVector,

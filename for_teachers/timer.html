@@ -420,12 +420,6 @@
 </head>
 
 <body>
-    <div class="logo-container">
-        <a href="https://panphy.github.io/">
-            <img src="/assets/panphy.png" alt="logo">
-        </a>
-    </div>
-
     <button id="fullscreenExitBtn" class="fullscreen-exit-btn">Exit Fullscreen (Esc)</button>
 
     <div class="app-container">
@@ -464,14 +458,9 @@
     </div>
     <audio id="alarm-sound-original" src="timer_beep.mp3" preload="auto"></audio>
     <audio id="alarm-sound-extra" src="timer_beep.mp3" preload="auto"></audio>
-    <footer>
-        <p>&copy; <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy Labs</a> |
-            <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
-        </p>
-    </footer>
     <script>
         /* ------------ Constants ------------ */
-        const STORAGE_KEY = 'panphy_timer_state';
+        const STORAGE_KEY = 'timer_state';
         const TICK_INTERVAL = 100; // More frequent updates for accuracy
 
         /* ------------ Grab DOM nodes once ------------ */

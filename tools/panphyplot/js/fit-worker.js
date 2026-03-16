@@ -11,11 +11,11 @@ try {
 	console.error('Failed to load shared fit core in worker:', error);
 }
 
-const fitCore = (typeof self === 'object' && self.PanPhyFitCore) ? self.PanPhyFitCore : {};
+const fitCore = (typeof self === 'object' && self.FitCore) ? self.FitCore : {};
 
 function missingFitCoreFunction(name) {
 	return () => {
-		throw new Error(`PanPhyFitCore.${name} is unavailable.`);
+		throw new Error(`FitCore.${name} is unavailable.`);
 	};
 }
 

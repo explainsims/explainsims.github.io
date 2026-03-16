@@ -15,11 +15,11 @@ const CUSTOM_FIT_FORBIDDEN_NODE_TYPES = new Set([
 	'BlockNode'
 ]);
 const CUSTOM_FIT_FORBIDDEN_FUNCTION_NAMES = new Set(['import']);
-const fitCore = (typeof globalThis === 'object' && globalThis.PanPhyFitCore) ? globalThis.PanPhyFitCore : {};
+const fitCore = (typeof globalThis === 'object' && globalThis.FitCore) ? globalThis.FitCore : {};
 
 function missingFitCoreFunction(name) {
 	return () => {
-		throw new Error(`PanPhyFitCore.${name} is unavailable.`);
+		throw new Error(`FitCore.${name} is unavailable.`);
 	};
 }
 

@@ -1,4 +1,4 @@
-// Data Processing popup (PanPhyPlot MVP)
+// Data Processing popup
 (function() {
 	const CREATE_NEW_TARGET_VALUE = '__create_new_dataset__';
 	const MATH_REFERENCE_URL = '/tools/panphyplot/math_ref.html';

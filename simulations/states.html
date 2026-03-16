@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <script>
     (function () {
-      if (localStorage.getItem('panphy-dark')) {
+      if (localStorage.getItem('states-dark')) {
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
@@ -18,7 +18,7 @@
       }
     })();
   </script>
-  <title>States of Matter | PanPhy Labs</title>
+  <title>States of Matter</title>
   <script src="/assets/sw-register.js" defer></script>
   <link rel="icon" type="image/png" href="/assets/favicon.png">
   <style>
@@ -862,8 +862,6 @@
 <body>
   <div id="app">
     <header id="titleBanner">
-      <a href="/" class="banner-logo"><img src="/assets/panphy.png" alt="PanPhy Labs"
-          onerror="this.style.display='none'"></a>
       <h1 class="banner-title gradient-text">States of Matter</h1>
       <div class="banner-actions">
         <button id="theme-button" title="Toggle theme" aria-label="Toggle Light/Dark Theme">☀️</button>
@@ -1812,9 +1810,9 @@
       html.setAttribute('data-theme', next);
 
       if (next === 'dark') {
-        localStorage.setItem('panphy-dark', '1');
+        localStorage.setItem('states-dark', '1');
       } else {
-        localStorage.removeItem('panphy-dark');
+        localStorage.removeItem('states-dark');
       }
 
       setThemeMeta(next);

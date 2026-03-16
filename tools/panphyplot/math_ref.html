@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PanPhyPlot Math Reference</title>
+  <title>Math Reference</title>
   <link rel="icon" type="image/png" href="/assets/favicon.png">
   <script src="/assets/sw-register.js" defer></script>
   <style>
@@ -370,17 +370,11 @@
 
 <body>
   <div class="banner">
-    <div class="banner-logo">
-      <a href="https://panphy.github.io/">
-        <img src="/assets/panphy.png" alt="PanPhy logo" />
-      </a>
-    </div>
-
-    <div class="banner-title">PanPhyPlot Math Reference</div>
+    <div class="banner-title">Math Reference</div>
 
     <div class="banner-buttons">
-      <a href="/tools/panphyplot.html" class="banner-button" title="Open PanPhyPlot">Open App</a>
-      <a href="/tools/panphyplot/panphyplot_manual.html" class="banner-button" title="Open PanPhyPlot manual">Manual</a>
+      <a href="/tools/panphyplot.html" class="banner-button" title="Open Plot Data">Open App</a>
+      <a href="/tools/panphyplot/panphyplot_manual.html" class="banner-button" title="Open the manual">Manual</a>
       <div class="theme-toggle">
         <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes">☀️</button>
       </div>
@@ -390,7 +384,7 @@
   <div class="content">
     <h1>Quick Math.js Reference</h1>
     <p>
-      This page is a practical cheat-sheet for formulas used in PanPhyPlot Data Processing. It is aimed at
+      This page is a practical cheat-sheet for formulas used in the Data Processing tool. It is aimed at
       pre-university students, so it focuses on common operators and functions you are most likely to use.
     </p>
 
@@ -627,15 +621,11 @@
     </p>
   </div>
 
-  <footer>
-    &copy; <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy Labs</a> |
-    <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
-  </footer>
 
   <script>
     const themeButton = document.getElementById('theme-button');
-    const DARK_THEME_KEY = 'panphy-dark';
-    const LIGHT_THEME_KEY = 'panphy-light';
+    const DARK_THEME_KEY = 'plot-dark';
+    const LIGHT_THEME_KEY = 'plot-light';
 
     const currentTheme = localStorage.getItem(DARK_THEME_KEY)
       ? 'dark'

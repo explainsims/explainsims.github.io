@@ -1,4 +1,4 @@
-// Shared state for PanPhyPlot
+// Shared state for Plot Data
 let rawData = []; // Each element will be an array of data points
 let activeSet = 0; // Index of the current active dataset
 let datasetHeaders = {}; // Object to store headers per dataset, e.g. {0: {x: 'x', y: 'y'}, 1: {x: 'Time', y: 'Distance'}}
@@ -24,9 +24,9 @@ datasetErrorTypes[0] = { x: 'absolute', y: 'absolute' };
 
 let isSyncing = false;
 const STATE_SCHEMA_VERSION = 2;
-const STORAGE_KEY = 'panphyplot-state-v2';
-const LEGACY_STORAGE_KEYS = ['panphyplot-state-v1'];
-const THEME_KEY = 'panphyplot-theme';
+const STORAGE_KEY = 'plot-state-v2';
+const LEGACY_STORAGE_KEYS = ['plot-state-v1'];
+const THEME_KEY = 'plot-theme';
 const DATASET_NAME_MAX_LENGTH = 20;
 
 function debounce(func, wait) {
@@ -105,7 +105,7 @@ function migratePersistedState(savedState, sourceKey = STORAGE_KEY) {
 	const migrated = { ...savedState };
 	const detectedVersion = Number.isInteger(migrated.schemaVersion)
 		? migrated.schemaVersion
-		: (sourceKey === 'panphyplot-state-v1' ? 1 : 1);
+		: (sourceKey === 'plot-state-v1' ? 1 : 1);
 
 	// v1 -> v2: introduce explicit schemaVersion and normalized UI slice.
 	if (detectedVersion < 2) {
