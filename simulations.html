@@ -20,15 +20,15 @@
       }
     })();
     </script>
-    <title>ExplAIn Sims</title>
+    <title>Simulations — ExplAIn Sims</title>
     <meta name="description"
-        content="Interactive physics simulations, tools, and educational games for teachers and students.">
-    <meta property="og:title" content="ExplAIn Sims">
+        content="Interactive physics simulations covering waves, collisions, relativity, and more.">
+    <meta property="og:title" content="Simulations — ExplAIn Sims">
     <meta property="og:description"
-        content="Interactive physics simulations, tools, and educational games for teachers and students.">
-    <meta name="twitter:title" content="ExplAIn Sims">
+        content="Interactive physics simulations covering waves, collisions, relativity, and more.">
+    <meta name="twitter:title" content="Simulations — ExplAIn Sims">
     <meta name="twitter:description"
-        content="Interactive physics simulations, tools, and educational games for teachers and students.">
+        content="Interactive physics simulations covering waves, collisions, relativity, and more.">
 
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
@@ -539,21 +539,6 @@
         }
 
         /* ========================================
-           About Section
-           ======================================== */
-        #about p {
-            font-size: 1.05rem;
-            max-width: 720px;
-            color: var(--text-secondary);
-            line-height: 1.85;
-        }
-
-        #about strong {
-            color: var(--text-main);
-            font-weight: 700;
-        }
-
-        /* ========================================
            Footer
            ======================================== */
         footer {
@@ -698,17 +683,34 @@
                 transform: none;
             }
         }
+
+        .logo-link {
+            display: block;
+            text-decoration: none;
+            animation: heroFadeUp 0.8s ease-out both;
+        }
+        nav a[aria-current="page"] {
+            color: var(--text-main);
+        }
+        nav a[aria-current="page"]::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+        .section-desc {
+            font-size: 1.05rem;
+            max-width: 720px;
+            color: var(--text-secondary);
+            line-height: 1.85;
+            margin: -1.5rem 0 2.5rem 0;
+        }
     </style>
 </head>
 
 <body>
-    <div class="spacetime-bg" aria-hidden="true">
-        <canvas id="spacetime-canvas"></canvas>
-    </div>
+    <div class="spacetime-bg" aria-hidden="true"><canvas id="spacetime-canvas"></canvas></div>
 
     <nav>
         <a href="/tools.html">Tools</a>
-        <a href="/simulations.html">Sims</a>
+        <a href="/simulations.html" aria-current="page">Sims</a>
         <a href="/teachers.html">Teachers</a>
         <a href="/fun.html">Fun</a>
         <div class="theme-toggle">
@@ -717,39 +719,58 @@
     </nav>
 
     <header>
-        <img src="/assets/ExplAIn%20Sims.png" class="logo" alt="ExplAIn Sims">
+        <a href="/" class="logo-link">
+            <img src="/assets/ExplAIn%20Sims.png" class="logo" alt="ExplAIn Sims">
+        </a>
         <h1>Expl<span class="ai-highlight">AI</span>n</h1>
         <div class="site-subtitle">Sims</div>
         <div class="hero-rule"></div>
         <p>Physics apps, tools, sims, and some random stuff.</p>
     </header>
 
-    <div class="section" id="featured" data-section="01">
-        <h2>Featured <span class="section-label">Today's Pick</span></h2>
-        <div class="grid" id="featured-grid">
-            <!-- Populated by JS — one random card from each section -->
+    <div class="section" id="simulations" data-section="01">
+        <h2>Simulations <span class="section-label">Interact</span></h2>
+        <p class="section-desc">Interactive physics simulations covering waves, collisions, relativity, and more.</p>
+        <div class="grid">
+            <div class="card">
+                <h3>Wave Superposition</h3>
+                <p>Learn how waves interact.</p>
+                <a href="/simulations/superposition.html">Launch Sim</a>
+            </div>
+            <div class="card">
+                <h3>Interference</h3>
+                <p>Explore two-source wave interference in a 3D ripple tank.</p>
+                <a href="/simulations/interference.html">Launch Sim</a>
+            </div>
+            <div class="card">
+                <h3>Standing Wave</h3>
+                <p>Visualize standing waves with different boundary conditions.</p>
+                <a href="/simulations/standing_wave.html">Launch Sim</a>
+            </div>
+            <div class="card">
+                <h3>Collision Lab</h3>
+                <p>Experiment with collision physics using interactive, real-time motion.</p>
+                <a href="/simulations/collision.html">Launch Sim</a>
+            </div>
+            <div class="card">
+                <h3>States of Matter</h3>
+                <p>Compare solids, liquids, gases, and phase changes in a 3D particle model.</p>
+                <a href="/simulations/states.html">Launch Sim</a>
+            </div>
+            <div class="card">
+                <h3>Physical Pendulum</h3>
+                <p>Explore how pivot position affects a physical pendulum's period and its equivalent simple pendulum.</p>
+                <a href="/simulations/physical_pendulum.html">Launch Sim</a>
+            </div>
+            <div class="card">
+                <h3>Lorentz Transform</h3>
+                <p>Learn how spacetime transforms between inertial frames.</p>
+                <a href="/simulations/lorentz.html">Launch Sim</a>
+            </div>
         </div>
     </div>
 
-    <div class="section" id="about" data-section="02">
-        <h2>About</h2>
-        <p>
-            The tools, simulations, and games here are built with AI and
-            designed to be interactive and educational. While there are many great web tools and physics simulations
-            online, not all meet my needs. On school-managed devices, students and teachers often don't have the
-            admin rights to install software, so I build my own web apps: simple, browser-based, and ready for
-            everyone to explore and enjoy.
-            <br><br>
-            Most apps are also offline-friendly. After your first visit, the site caches each app in the
-            background &mdash; look for the <strong>Offline ready</strong> badge on each card. Once cached,
-            those tools, simulations, and games work without an internet connection. A few features that rely on
-            external services (Asteroid Storm's leaderboard and the EAL Companion) still require internet access.
-        </p>
-    </div>
-
-    <footer>
-        <p>h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p>
-    </footer>
+    <footer><p>h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p></footer>
 
     <script>
         // Cat Chase Animation
@@ -1129,49 +1150,6 @@
         })();
     </script>
     <script>
-        // Featured section — pick one random card from each category
-        (function () {
-            var FEATURED_POOL = {
-                tools: [
-                    { t: 'Markdown + LaTeX', d: 'Write, preview, and present scientific documents with LaTeX support.', h: '/tools/markdown_editor.html', c: 'Open Editor' },
-                    { t: 'Data Plotting & Fitting', d: 'Process data, plot graphs, add uncertainties, and run best-fit analysis.', h: '/tools/panphyplot.html', c: 'Plot Data' },
-                    { t: 'Motion Tracker', d: 'Step through video frames, click to track objects, and extract motion data.', h: '/tools/motion_tracker.html', c: 'Track Motion' },
-                    { t: 'Sound Analyzer', d: 'Visualize live audio as a frequency spectrum and waveform.', h: '/tools/sound_analyzer.html', c: 'Analyze Sound' },
-                    { t: 'Tone Generator', d: 'Dual-channel sine wave mixing.', h: '/tools/tone_generator.html', c: 'Generate Tone' }
-                ],
-                sims: [
-                    { t: 'Wave Superposition', d: 'Learn how waves interact.', h: '/simulations/superposition.html', c: 'Launch Sim' },
-                    { t: 'Interference', d: 'Explore two-source wave interference in a 3D ripple tank.', h: '/simulations/interference.html', c: 'Launch Sim' },
-                    { t: 'Standing Wave', d: 'Visualize standing waves with different boundary conditions.', h: '/simulations/standing_wave.html', c: 'Launch Sim' },
-                    { t: 'Collision Lab', d: 'Experiment with collision physics using interactive, real-time motion.', h: '/simulations/collision.html', c: 'Launch Sim' },
-                    { t: 'States of Matter', d: 'Compare solids, liquids, gases, and phase changes in a 3D particle model.', h: '/simulations/states.html', c: 'Launch Sim' },
-                    { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/simulations/physical_pendulum.html', c: 'Launch Sim' },
-                    { t: 'Lorentz Transform', d: 'Learn how spacetime transforms between inertial frames.', h: '/simulations/lorentz.html', c: 'Launch Sim' }
-                ],
-                teachers: [
-                    { t: 'Exam Timer', d: 'Manage exam times with an automatic extra-time timer.', h: '/for_teachers/timer.html', c: 'Open Timer' },
-                    { t: 'Camera Visualizer', d: 'Project your device camera to the big screen, then snap &amp; sketch.', h: '/for_teachers/visualizer.html', c: 'Use Camera' },
-                    { t: 'EAL Companion', d: 'AI-powered language support for EAL learners.', h: 'https://panphy-eal.streamlit.app/', c: 'Open App', ext: true }
-                ],
-                fun: [
-                    { t: 'Asteroid Storm', d: 'Survive the asteroid storm! Beat top survivors worldwide!', h: '/fun/dodge.html', c: 'Play Now' },
-                    { t: 'Hit Me!', d: 'Wait for it... tap when green! Tracks your best and average times.', h: '/fun/react.html', c: 'Play Now' },
-                    { t: 'ASCII Camera', d: 'See yourself in 8-bit color ASCII characters.', h: '/fun/ascii_cam.html', c: 'Open Camera' }
-                ]
-            };
-            var grid = document.getElementById('featured-grid');
-            if (!grid) return;
-            Object.values(FEATURED_POOL).forEach(function (pool) {
-                var item = pool[Math.floor(Math.random() * pool.length)];
-                var div = document.createElement('div');
-                div.className = 'card';
-                var linkExtra = item.ext ? ' target="_blank" rel="noopener noreferrer"' : '';
-                div.innerHTML = '<h3>' + item.t + '</h3><p>' + item.d + '</p><a href="' + item.h + '"' + linkExtra + '>' + item.c + '</a>';
-                grid.appendChild(div);
-            });
-        })();
-    </script>
-    <script>
         // Theme Toggle Functionality
         const themeButton = document.getElementById('theme-button');
         const DARK_THEME_KEY = "theme-dark";
@@ -1227,30 +1205,6 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/tools/markdown_editor.html': [
-                '/tools/markdown_editor.html',
-                '/tools/markdown_editor/css/markdown_editor.css',
-                '/tools/markdown_editor/js/main.js',
-                'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
-                'https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js',
-                'https://cdn.jsdelivr.net/npm/dompurify@2.3.4/dist/purify.min.js',
-                'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js'
-            ],
-            '/tools/panphyplot.html': [
-                '/tools/panphyplot.html',
-                '/tools/panphyplot/js/main.js',
-                '/tools/panphyplot/js/fit-worker.js',
-                'https://cdn.plot.ly/plotly-basic-2.29.1.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js'
-            ],
-            '/tools/motion_tracker.html': [
-                '/tools/motion_tracker.html',
-                'https://cdn.jsdelivr.net/npm/chart.js'
-            ],
-            '/tools/sound_analyzer.html': ['/tools/sound_analyzer.html'],
-            '/tools/tone_generator.html': ['/tools/tone_generator.html'],
             '/simulations/superposition.html': ['/simulations/superposition.html'],
             '/simulations/standing_wave.html': ['/simulations/standing_wave.html'],
             '/simulations/physical_pendulum.html': ['/simulations/physical_pendulum.html'],
@@ -1274,14 +1228,7 @@
                 '/simulations/states.html',
                 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js',
                 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js'
-            ],
-            '/for_teachers/timer.html': [
-                '/for_teachers/timer.html',
-                '/for_teachers/timer_beep.mp3'
-            ],
-            '/for_teachers/visualizer.html': ['/for_teachers/visualizer.html'],
-            '/fun/react.html': ['/fun/react.html'],
-            '/fun/ascii_cam.html': ['/fun/ascii_cam.html']
+            ]
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(
