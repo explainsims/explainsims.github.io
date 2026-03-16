@@ -614,7 +614,7 @@
                 width: calc(100vw - 16px);
                 max-width: 760px;
                 display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+                grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
                 align-items: center;
                 gap: 0.1rem;
                 padding: 0.3rem 0.35rem;
@@ -713,6 +713,7 @@
         <a href="/simulations.html" aria-current="page">Sims</a>
         <a href="/teachers.html">Teachers</a>
         <a href="/fun.html">Fun</a>
+        <a href="/panphy.html">PanPhy</a>
         <div class="theme-toggle">
             <button id="theme-button" aria-label="Toggle Light/Dark Theme">☀️</button>
         </div>
@@ -732,11 +733,6 @@
         <h2>Simulations <span class="section-label">Interact</span></h2>
         <p class="section-desc">Interactive physics simulations covering waves, collisions, relativity, and more.</p>
         <div class="grid">
-            <div class="card">
-                <h3>Wave Superposition</h3>
-                <p>Learn how waves interact.</p>
-                <a href="/simulations/superposition.html">Launch Sim</a>
-            </div>
             <div class="card">
                 <h3>Interference</h3>
                 <p>Explore two-source wave interference in a 3D ripple tank.</p>
@@ -761,11 +757,6 @@
                 <h3>Physical Pendulum</h3>
                 <p>Explore how pivot position affects a physical pendulum's period and its equivalent simple pendulum.</p>
                 <a href="/simulations/physical_pendulum.html">Launch Sim</a>
-            </div>
-            <div class="card">
-                <h3>Lorentz Transform</h3>
-                <p>Learn how spacetime transforms between inertial frames.</p>
-                <a href="/simulations/lorentz.html">Launch Sim</a>
             </div>
         </div>
     </div>
@@ -1205,10 +1196,8 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/simulations/superposition.html': ['/simulations/superposition.html'],
             '/simulations/standing_wave.html': ['/simulations/standing_wave.html'],
             '/simulations/physical_pendulum.html': ['/simulations/physical_pendulum.html'],
-            '/simulations/lorentz.html': ['/simulations/lorentz.html'],
             '/simulations/interference.html': [
                 '/simulations/interference.html',
                 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js'

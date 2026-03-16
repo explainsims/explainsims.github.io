@@ -629,7 +629,7 @@
                 width: calc(100vw - 16px);
                 max-width: 760px;
                 display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+                grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
                 align-items: center;
                 gap: 0.1rem;
                 padding: 0.3rem 0.35rem;
@@ -711,6 +711,7 @@
         <a href="/simulations.html">Sims</a>
         <a href="/teachers.html">Teachers</a>
         <a href="/fun.html">Fun</a>
+        <a href="/panphy.html">PanPhy</a>
         <div class="theme-toggle">
             <button id="theme-button" aria-label="Toggle Light/Dark Theme">☀️</button>
         </div>
@@ -1134,29 +1135,31 @@
             var FEATURED_POOL = {
                 tools: [
                     { t: 'Markdown + LaTeX', d: 'Write, preview, and present scientific documents with LaTeX support.', h: '/tools/markdown_editor.html', c: 'Open Editor' },
-                    { t: 'Data Plotting & Fitting', d: 'Process data, plot graphs, add uncertainties, and run best-fit analysis.', h: '/tools/panphyplot.html', c: 'Plot Data' },
-                    { t: 'Motion Tracker', d: 'Step through video frames, click to track objects, and extract motion data.', h: '/tools/motion_tracker.html', c: 'Track Motion' },
                     { t: 'Sound Analyzer', d: 'Visualize live audio as a frequency spectrum and waveform.', h: '/tools/sound_analyzer.html', c: 'Analyze Sound' },
                     { t: 'Tone Generator', d: 'Dual-channel sine wave mixing.', h: '/tools/tone_generator.html', c: 'Generate Tone' }
                 ],
                 sims: [
-                    { t: 'Wave Superposition', d: 'Learn how waves interact.', h: '/simulations/superposition.html', c: 'Launch Sim' },
                     { t: 'Interference', d: 'Explore two-source wave interference in a 3D ripple tank.', h: '/simulations/interference.html', c: 'Launch Sim' },
                     { t: 'Standing Wave', d: 'Visualize standing waves with different boundary conditions.', h: '/simulations/standing_wave.html', c: 'Launch Sim' },
                     { t: 'Collision Lab', d: 'Experiment with collision physics using interactive, real-time motion.', h: '/simulations/collision.html', c: 'Launch Sim' },
                     { t: 'States of Matter', d: 'Compare solids, liquids, gases, and phase changes in a 3D particle model.', h: '/simulations/states.html', c: 'Launch Sim' },
-                    { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/simulations/physical_pendulum.html', c: 'Launch Sim' },
-                    { t: 'Lorentz Transform', d: 'Learn how spacetime transforms between inertial frames.', h: '/simulations/lorentz.html', c: 'Launch Sim' }
+                    { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/simulations/physical_pendulum.html', c: 'Launch Sim' }
                 ],
                 teachers: [
-                    { t: 'Exam Timer', d: 'Manage exam times with an automatic extra-time timer.', h: '/for_teachers/timer.html', c: 'Open Timer' },
-                    { t: 'Camera Visualizer', d: 'Project your device camera to the big screen, then snap &amp; sketch.', h: '/for_teachers/visualizer.html', c: 'Use Camera' },
                     { t: 'EAL Companion', d: 'AI-powered language support for EAL learners.', h: 'https://panphy-eal.streamlit.app/', c: 'Open App', ext: true }
                 ],
                 fun: [
                     { t: 'Asteroid Storm', d: 'Survive the asteroid storm! Beat top survivors worldwide!', h: '/fun/dodge.html', c: 'Play Now' },
                     { t: 'Hit Me!', d: 'Wait for it... tap when green! Tracks your best and average times.', h: '/fun/react.html', c: 'Play Now' },
                     { t: 'ASCII Camera', d: 'See yourself in 8-bit color ASCII characters.', h: '/fun/ascii_cam.html', c: 'Open Camera' }
+                ],
+                panphy: [
+                    { t: 'Data Plotting & Fitting', d: 'Process data, plot graphs, add uncertainties, and run best-fit analysis.', h: '/tools/panphyplot.html', c: 'Plot Data' },
+                    { t: 'Motion Tracker', d: 'Step through video frames, click to track objects, and extract motion data.', h: '/tools/motion_tracker.html', c: 'Track Motion' },
+                    { t: 'Wave Superposition', d: 'Learn how waves interact.', h: '/simulations/superposition.html', c: 'Launch Sim' },
+                    { t: 'Lorentz Transform', d: 'Learn how spacetime transforms between inertial frames.', h: '/simulations/lorentz.html', c: 'Launch Sim' },
+                    { t: 'Exam Timer', d: 'Manage exam times with an automatic extra-time timer.', h: '/for_teachers/timer.html', c: 'Open Timer' },
+                    { t: 'Camera Visualizer', d: 'Project your device camera to the big screen, then snap &amp; sketch.', h: '/for_teachers/visualizer.html', c: 'Use Camera' }
                 ]
             };
             var grid = document.getElementById('featured-grid');
