@@ -734,26 +734,6 @@
         <p class="section-desc">Interactive physics simulations covering waves, collisions, relativity, and more.</p>
         <div class="grid">
             <div class="card">
-                <h3>Interference</h3>
-                <p>Explore two-source wave interference in a 3D ripple tank.</p>
-                <a href="/simulations/interference.html">Launch Sim</a>
-            </div>
-            <div class="card">
-                <h3>Standing Wave</h3>
-                <p>Visualize standing waves with different boundary conditions.</p>
-                <a href="/simulations/standing_wave.html">Launch Sim</a>
-            </div>
-            <div class="card">
-                <h3>Collision Lab</h3>
-                <p>Experiment with collision physics using interactive, real-time motion.</p>
-                <a href="/simulations/collision.html">Launch Sim</a>
-            </div>
-            <div class="card">
-                <h3>States of Matter</h3>
-                <p>Compare solids, liquids, gases, and phase changes in a 3D particle model.</p>
-                <a href="/simulations/states.html">Launch Sim</a>
-            </div>
-            <div class="card">
                 <h3>Physical Pendulum</h3>
                 <p>Explore how pivot position affects a physical pendulum's period and its equivalent simple pendulum.</p>
                 <a href="/simulations/physical_pendulum.html">Launch Sim</a>
@@ -1196,28 +1176,7 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/simulations/standing_wave.html': ['/simulations/standing_wave.html'],
-            '/simulations/physical_pendulum.html': ['/simulations/physical_pendulum.html'],
-            '/simulations/interference.html': [
-                '/simulations/interference.html',
-                'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js'
-            ],
-            '/simulations/collision.html': [
-                '/simulations/collision.html',
-                '/simulations/collision/app.js',
-                'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js',
-                '/simulations/collision/collision_assets/models/hand_landmarker.task',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/vision_bundle.mjs',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_internal.js',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_internal.wasm',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_nosimd_internal.js',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_nosimd_internal.wasm'
-            ],
-            '/simulations/states.html': [
-                '/simulations/states.html',
-                'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js',
-                'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js'
-            ]
+            '/simulations/physical_pendulum.html': ['/simulations/physical_pendulum.html']
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(

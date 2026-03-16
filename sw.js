@@ -1,10 +1,8 @@
-const BUILD_ID = '2026-03-16T19:00:00Z';
+const BUILD_ID = '2026-03-16T20:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
 const CORS_REQUIRED_ASSETS = new Set([
-  'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js',
-  'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js'
 ]);
 
 const ASSETS_TO_CACHE = [
@@ -19,21 +17,9 @@ const ASSETS_TO_CACHE = [
   '/assets/apple-touch-icon.png',
   '/assets/panphy.png',
   '/manifest.json',
+  '/assets/sw-register.js',
 
   // Tools
-  '/tools/markdown_editor.html',
-  '/assets/sw-register.js',
-  '/tools/markdown_editor/css/markdown_editor.css',
-  '/tools/markdown_editor/js/state.js',
-  '/tools/markdown_editor/js/rendering.js',
-  '/tools/markdown_editor/js/copy.js',
-  '/tools/markdown_editor/js/ui.js',
-  '/tools/markdown_editor/js/main.js',
-  '/tools/markdown_editor/sample_doc.md',
-  '/tools/markdown_editor/templates/math-basic.md',
-  '/tools/markdown_editor/templates/math-calculus.md',
-  '/tools/markdown_editor/templates/math-matrices.md',
-  '/tools/markdown_editor/templates/math-table.md',
   '/tools/panphyplot.html',
   '/tools/panphyplot/css/panphyplot.css',
   '/tools/panphyplot/js/curve-fitting.js',
@@ -50,48 +36,19 @@ const ASSETS_TO_CACHE = [
   'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js',
   '/tools/panphyplot/panphyplot_manual.html',
   '/tools/panphyplot/math_ref.html',
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css',
-  'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
-  'https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js',
-  'https://cdn.jsdelivr.net/npm/dompurify@2.3.4/dist/purify.min.js',
-  'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
   '/tools/motion_tracker.html',
   'https://cdn.jsdelivr.net/npm/chart.js',
-  '/tools/sound_analyzer.html',
-  '/tools/tone_generator.html',
 
   // Simulations
-  '/simulations/interference.html',
   '/simulations/superposition.html',
-  '/simulations/standing_wave.html',
-  '/simulations/states.html',
   '/simulations/physical_pendulum.html',
   '/simulations/lorentz.html',
   '/simulations/lorentz_learn.html',
-  '/simulations/collision.html',
-  '/simulations/collision/styles.css',
-  '/simulations/collision/app.js',
-  'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js',
-  'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js',
-  '/simulations/collision/collision_assets/models/hand_landmarker.task',
-  '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/vision_bundle.mjs',
-  '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_internal.js',
-  '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_internal.wasm',
-  '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_nosimd_internal.js',
-  '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_nosimd_internal.wasm',
 
   // For Teachers
   '/for_teachers/timer.html',
   '/for_teachers/timer_beep.mp3',
   '/for_teachers/visualizer.html',
-
-  // Fun
-  '/fun/react.html',
-  '/fun/ascii_cam.html'
 ];
 
 // Install: pre-cache your core pages

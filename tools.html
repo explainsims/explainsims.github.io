@@ -750,21 +750,6 @@
         <h2>Tools <span class="section-label">Explore</span></h2>
         <p class="section-desc">Analyse data, create scientific documents, and explore sound with this collection of browser-based physics tools.</p>
         <div class="grid">
-            <div class="card">
-                <h3>Markdown + LaTeX</h3>
-                <p>Write, preview, and present scientific documents with LaTeX support.</p>
-                <a href="/tools/markdown_editor.html">Open Editor</a>
-            </div>
-            <div class="card">
-                <h3>Sound Analyzer</h3>
-                <p>Visualize live audio as a frequency spectrum and waveform.</p>
-                <a href="/tools/sound_analyzer.html">Analyze Sound</a>
-            </div>
-            <div class="card">
-                <h3>Tone Generator</h3>
-                <p>Dual-channel sine wave mixing.</p>
-                <a href="/tools/tone_generator.html">Generate Tone</a>
-            </div>
         </div>
     </div>
 
@@ -1205,18 +1190,6 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/tools/markdown_editor.html': [
-                '/tools/markdown_editor.html',
-                '/tools/markdown_editor/css/markdown_editor.css',
-                '/tools/markdown_editor/js/main.js',
-                'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
-                'https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js',
-                'https://cdn.jsdelivr.net/npm/dompurify@2.3.4/dist/purify.min.js',
-                'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js'
-            ],
-            '/tools/sound_analyzer.html': ['/tools/sound_analyzer.html'],
-            '/tools/tone_generator.html': ['/tools/tone_generator.html']
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(
