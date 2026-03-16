@@ -330,17 +330,6 @@
             display: none;
         }
 
-        /* Browser support warning */
-        #noSpeechWarning {
-            padding: 12px;
-            border-radius: 8px;
-            background: rgba(220,38,38,0.08);
-            border: 1px solid rgba(220,38,62,0.25);
-            font-size: 0.85rem;
-            color: var(--rec-color);
-            display: none;
-        }
-
         /* ── Note Editor Panel ── */
         .editor-panel { display: flex; flex-direction: column; gap: 12px; }
 
@@ -560,10 +549,6 @@
         <!-- Recording panel -->
         <div class="card recording-panel">
             <div class="card-title">Recording</div>
-
-            <div id="noSpeechWarning">
-                ⚠️ Your browser doesn't support the Web Speech API. Try Chrome or Edge for live transcription.
-            </div>
 
             <div class="record-btn-wrap">
                 <button id="recordBtn" title="Start Recording" aria-label="Start Recording">
@@ -929,15 +914,22 @@
     }
 
     // ============================================================
-    //  Web Speech API — the core API-key-free adaptation
+    //  Whisper transcription via transformers.js (runs locally,
+    //  no API key — model ~39 MB, downloaded once then cached)
     // ============================================================
-    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    var recognition = null;
-    var isRecording  = false;
+    var transcriber  = null;
+    var modelReady   = false;
+    var modelLoading = false;
+
+    // ============================================================
+    //  MediaRecorder — captures audio locally, no network needed
+    // ============================================================
+    var mediaRecorder = null;
+    var audioChunks   = [];
+    var micStream     = null;
+    var isRecording   = false;
     var timerInterval = null;
     var timerStart    = 0;
-    var fullFinalTranscript = '';
-    var restartTimer  = null;   // single pending restart — prevents duplicate starts
 
     var recordBtn  = document.getElementById('recordBtn');
     var micIcon    = document.getElementById('micIcon');
@@ -947,117 +939,193 @@
     var interimBox = document.getElementById('interimBox');
     var vizBars    = document.getElementById('vizBars');
 
-    if (!SpeechRecognition) {
-        document.getElementById('noSpeechWarning').style.display = '';
-        recordBtn.disabled = true;
-    } else {
-        recognition = new SpeechRecognition();
-        recognition.continuous     = true;
-        recognition.interimResults = true;
-        recognition.lang           = navigator.language || 'en-US';
-
-        recognition.onresult = function (event) {
-            var interim = '';
-            for (var i = event.resultIndex; i < event.results.length; i++) {
-                var result = event.results[i];
-                if (result.isFinal) {
-                    fullFinalTranscript += result[0].transcript + ' ';
-                } else {
-                    interim += result[0].transcript;
+    // Load the Whisper model in the background as soon as the page opens.
+    // Uses a dynamic import so no <script type="module"> is needed.
+    async function loadModel() {
+        if (modelReady || modelLoading) return;
+        modelLoading = true;
+        try {
+            var mod = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js');
+            mod.env.backends.onnx.wasm.numThreads = 1; // avoids SharedArrayBuffer requirement
+            statusEl.textContent = 'Loading speech model (~39 MB, one-time download)…';
+            transcriber = await mod.pipeline(
+                'automatic-speech-recognition',
+                'Xenova/whisper-tiny',
+                {
+                    progress_callback: function (p) {
+                        if (p.status === 'downloading' && p.total) {
+                            var pct = Math.round(p.loaded / p.total * 100);
+                            statusEl.textContent = 'Downloading model: ' + pct + '%…';
+                        }
+                    }
                 }
-            }
-            interimBox.textContent = interim || '';
+            );
+            modelReady   = true;
+            modelLoading = false;
+            statusEl.textContent = 'Ready to record.';
+        } catch (err) {
+            modelLoading = false;
+            statusEl.textContent = 'Could not load speech model — check your connection.';
+            console.error('Whisper model load error:', err);
+        }
+    }
+    loadModel(); // start downloading in background immediately
 
-            // Live update of raw content
-            var display = fullFinalTranscript + (interim ? interim : '');
-            document.getElementById('rawContent').textContent = display.trim();
-        };
+    // Linear-interpolation resampler: converts Float32Array to 16 kHz
+    function resampleTo16k(audio, fromRate) {
+        if (fromRate === 16000) return audio;
+        var ratio  = fromRate / 16000;
+        var outLen = Math.round(audio.length / ratio);
+        var out    = new Float32Array(outLen);
+        for (var i = 0; i < outLen; i++) {
+            var pos = i * ratio;
+            var lo  = Math.floor(pos);
+            var hi  = Math.min(lo + 1, audio.length - 1);
+            out[i]  = audio[lo] + (pos - lo) * (audio[hi] - audio[lo]);
+        }
+        return out;
+    }
 
-        recognition.onstart = function () {
-            statusEl.textContent = 'Listening…';
-        };
-
-        recognition.onerror = function (e) {
-            // Fatal — mic genuinely unavailable; stop and tell the user
-            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-                statusEl.textContent = 'Microphone permission denied. Allow mic access and try again.';
-                stopRecording();
+    async function processAudio(blob) {
+        // If model wasn't ready when recording started, wait for it now
+        if (!modelReady) {
+            statusEl.textContent = 'Waiting for model to finish loading…';
+            await loadModel();
+            if (!modelReady) {
+                statusEl.textContent = 'Model unavailable. Check connection and try again.';
                 return;
             }
-            if (e.error === 'audio-capture') {
-                statusEl.textContent = 'No microphone found. Connect one and try again.';
-                stopRecording();
-                return;
-            }
-            // Non-fatal — show a helpful message; onend will restart automatically
-            if (e.error === 'no-speech')  { statusEl.textContent = 'Listening… (no speech yet)'; return; }
-            if (e.error === 'aborted')    { return; } // we called stop() — onend handles restart logic
-            if (e.error === 'network')    { statusEl.textContent = 'Network hiccup — reconnecting…'; return; }
-            // Unknown error — log it but keep going
-            statusEl.textContent = 'Notice: ' + e.error + ' — continuing…';
-        };
+        }
 
-        recognition.onend = function () {
-            if (!isRecording) return;
-            // Guard: only one pending restart at a time
-            clearTimeout(restartTimer);
-            restartTimer = setTimeout(function () {
-                restartTimer = null;
-                if (!isRecording) return;
-                try {
-                    recognition.start();
-                } catch (e) {
-                    // Threw — likely already restarted internally; just wait for next onend
-                    // Do NOT call stopRecording() here
-                }
-            }, 500);
-        };
+        statusEl.textContent = 'Transcribing… (this may take a moment)';
+
+        // Decode audio blob → 16 kHz mono Float32Array
+        var arrayBuffer = await blob.arrayBuffer();
+        var AudioCtx    = window.AudioContext || window.webkitAudioContext;
+        var audioCtx;
+        try { audioCtx = new AudioCtx({ sampleRate: 16000 }); }
+        catch (e) { audioCtx = new AudioCtx(); }
+
+        var audioBuffer = await new Promise(function (resolve, reject) {
+            audioCtx.decodeAudioData(arrayBuffer, resolve, reject);
+        });
+
+        var float32 = audioBuffer.getChannelData(0); // mono
+        if (audioBuffer.sampleRate !== 16000) {
+            float32 = resampleTo16k(float32, audioBuffer.sampleRate);
+        }
+        audioCtx.close();
+
+        // Run Whisper
+        var result = await transcriber(float32, {
+            task: 'transcribe',
+            chunk_length_s: 30,
+            stride_length_s: 5,
+        });
+
+        var rawText = (result.text || '').trim();
+        if (!rawText) { statusEl.textContent = 'No speech detected. Try again.'; return; }
+
+        document.getElementById('rawContent').textContent = rawText;
+
+        // Polish with JS-based cleanup
+        statusEl.textContent = 'Polishing note…';
+        var polished = polishText(rawText);
+        document.getElementById('polishedContent').innerHTML = simpleMarkdown(polished);
+
+        // Auto-fill title from first sentence if blank
+        var titleInput = document.getElementById('noteTitle');
+        if (!titleInput.value.trim()) {
+            var first = polished.split(/[.!?]/)[0].trim();
+            titleInput.value = first.substring(0, 60) + (first.length > 60 ? '…' : '');
+        }
+
+        if (currentNote) {
+            currentNote.raw      = rawText;
+            currentNote.polished = polished;
+            currentNote.title    = titleInput.value;
+        }
+
+        statusEl.textContent = 'Done. Ready for next recording.';
     }
 
     function startRecording() {
-        if (!recognition) return;
-        clearTimeout(restartTimer);
-        restartTimer = null;
-        fullFinalTranscript = '';
-        document.getElementById('rawContent').textContent = '';
-        document.getElementById('polishedContent').innerHTML = '';
-        interimBox.textContent = '';
-        interimBox.style.display = 'block';
+        if (modelLoading && !modelReady) {
+            statusEl.textContent = 'Model still loading — please wait a moment.';
+            return;
+        }
 
-        try { recognition.start(); } catch(e) { statusEl.textContent = 'Could not start: ' + e.message; return; }
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function (stream) {
+                micStream   = stream;
+                audioChunks = [];
+                document.getElementById('rawContent').textContent = '';
+                document.getElementById('polishedContent').innerHTML = '';
 
-        isRecording = true;
-        recordBtn.classList.add('is-recording');
-        recordBtn.setAttribute('title', 'Stop Recording');
-        recordBtn.setAttribute('aria-label', 'Stop Recording');
-        micIcon.style.display  = 'none';
-        stopIcon.style.display = '';
-        vizBars.classList.add('active');
+                // Pick the best supported MIME type
+                var mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4']
+                    .find(function (t) { return MediaRecorder.isTypeSupported(t); }) || '';
+                try {
+                    mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+                } catch (e) {
+                    mediaRecorder = new MediaRecorder(stream);
+                }
 
-        // Timer
-        timerStart = Date.now();
-        timerEl.style.display = 'block';
-        timerInterval = setInterval(function () {
-            var ms  = Date.now() - timerStart;
-            var mm  = String(Math.floor(ms / 60000)).padStart(2, '0');
-            var ss  = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
-            timerEl.textContent = mm + ':' + ss;
-        }, 500);
+                mediaRecorder.ondataavailable = function (e) {
+                    if (e.data && e.data.size > 0) audioChunks.push(e.data);
+                };
+                mediaRecorder.onstop = function () {
+                    stream.getTracks().forEach(function (t) { t.stop(); });
+                    micStream = null;
+                    if (audioChunks.length) {
+                        var blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                        processAudio(blob).catch(function (err) {
+                            statusEl.textContent = 'Transcription error: ' + err.message;
+                            console.error(err);
+                        });
+                    } else {
+                        statusEl.textContent = 'No audio captured. Try again.';
+                    }
+                };
 
-        statusEl.textContent = 'Listening…';
+                mediaRecorder.start(1000); // chunk every second
+                isRecording = true;
+
+                recordBtn.classList.add('is-recording');
+                recordBtn.setAttribute('title', 'Stop Recording');
+                recordBtn.setAttribute('aria-label', 'Stop Recording');
+                micIcon.style.display  = 'none';
+                stopIcon.style.display = '';
+                vizBars.classList.add('active');
+                interimBox.textContent   = 'Recording in progress…';
+                interimBox.style.display = 'block';
+
+                timerStart = Date.now();
+                timerEl.style.display = 'block';
+                timerInterval = setInterval(function () {
+                    var ms = Date.now() - timerStart;
+                    timerEl.textContent =
+                        String(Math.floor(ms / 60000)).padStart(2, '0') + ':' +
+                        String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
+                }, 500);
+
+                statusEl.textContent = 'Recording…';
+            })
+            .catch(function (err) {
+                statusEl.textContent =
+                    err.name === 'NotAllowedError' ? 'Mic permission denied. Allow mic access and try again.' :
+                    err.name === 'NotFoundError'   ? 'No microphone found. Connect one and try again.' :
+                                                     'Mic error: ' + err.message;
+            });
     }
 
     function stopRecording() {
         if (!isRecording) return;
         isRecording = false;
-        clearTimeout(restartTimer);
-        restartTimer = null;
-
-        try { recognition.stop(); } catch(_) {}
 
         clearInterval(timerInterval);
-        timerEl.style.display  = 'none';
-        timerEl.textContent    = '00:00';
+        timerEl.style.display = 'none';
+        timerEl.textContent   = '00:00';
 
         recordBtn.classList.remove('is-recording');
         recordBtn.setAttribute('title', 'Start Recording');
@@ -1065,34 +1133,14 @@
         micIcon.style.display  = '';
         stopIcon.style.display = 'none';
         vizBars.classList.remove('active');
-
-        interimBox.textContent  = '';
+        interimBox.textContent   = '';
         interimBox.style.display = 'none';
 
-        var raw = fullFinalTranscript.trim();
-        if (!raw) { statusEl.textContent = 'No speech detected. Try again.'; return; }
-
-        document.getElementById('rawContent').textContent = raw;
-
-        // Polish with pure JS
-        statusEl.textContent = 'Polishing note…';
-        var polished = polishText(raw);
-        document.getElementById('polishedContent').innerHTML = simpleMarkdown(polished);
-
-        // Auto-fill title from first sentence
-        var titleInput = document.getElementById('noteTitle');
-        if (!titleInput.value.trim()) {
-            var firstSentence = polished.split(/[.!?]/)[0].trim();
-            titleInput.value = firstSentence.substring(0, 60) + (firstSentence.length > 60 ? '…' : '');
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop(); // triggers onstop → processAudio
+        } else {
+            statusEl.textContent = 'No audio captured. Try again.';
         }
-
-        if (currentNote) {
-            currentNote.raw     = raw;
-            currentNote.polished = polished;
-            currentNote.title   = titleInput.value;
-        }
-
-        statusEl.textContent = 'Done. Ready for next recording.';
     }
 
     recordBtn.addEventListener('click', function () {
