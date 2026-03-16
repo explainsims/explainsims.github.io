@@ -134,7 +134,7 @@
         }
 
         /* ========================================
-           Spacetime Grid Background
+           Cat Chase Background
            ======================================== */
         .spacetime-bg {
             position: fixed;
@@ -860,220 +860,285 @@
     </footer>
 
     <script>
-        // Spacetime Grid Warp Animation
+        // Cat Chase Animation
         (function () {
             var canvas = document.getElementById('spacetime-canvas');
             if (!canvas) return;
             var ctx = canvas.getContext('2d');
             var dpr = window.devicePixelRatio || 1;
-            var w, h, cols, rows;
-            var spacing = 40;
-            var time = 0;
+            var w = 0, h = 0;
 
-            var mouseX = 0;
-            var mouseY = 0;
-            var activeX = 0;
-            var activeY = 0;
-            var strength = 120;
-            var massRadius = 180;
+            var mouseX = 0, mouseY = 0;
+            var catX = 0, catY = 0;
+            var facingRight = true;
+            var isMoving = false;
+            var frame = 0;
             var hasPointerInteraction = false;
-
             var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var STOP_DIST = 38;
+            var MAX_SPEED = 6;
 
-            var running = false;
-            var lastFrameTime = 0;
-            var frameInterval = 1000 / 60;
-            var idleThreshold = 0.5;
+            function isDark() {
+                return document.documentElement.getAttribute('data-theme') === 'dark';
+            }
 
-            function wake() {
-                if (!running) {
-                    running = true;
-                    lastFrameTime = performance.now();
-                    requestAnimationFrame(loop);
+            // Draw a side-view cat facing right at local origin (0,0 = body centre)
+            function drawCat(fr, moving, idle) {
+                var dark = isDark();
+                var s = 1.3; // scale — cat ≈ 55 px wide, 45 px tall
+
+                // Palette
+                var fur    = dark ? '#C8823E' : '#D98B3C';
+                var stripe = dark ? 'rgba(100,45,5,0.28)' : 'rgba(130,58,5,0.22)';
+                var belly  = dark ? '#E8C49A' : '#F5DCBA';
+                var pink   = 'rgba(255,180,195,0.82)';
+                var eyeC   = dark ? '#5EEAD4' : '#2C7A50';
+                var mouthC = dark ? 'rgba(100,45,5,0.55)' : 'rgba(90,40,5,0.50)';
+                var wisk   = dark ? 'rgba(255,255,255,0.30)' : 'rgba(10,10,10,0.18)';
+
+                // Head anchor (cat faces right; head is to the right)
+                var hx = s * 14, hy = s * -4;
+
+                // --- TAIL (left side = back of cat) ---
+                var tailAmp  = idle ? 14 : 8;
+                var tailFreq = idle ? 0.04 : 0.22;
+                var tSwing   = Math.sin(fr * tailFreq) * tailAmp;
+
+                ctx.strokeStyle = fur;
+                ctx.lineWidth   = s * 4;
+                ctx.lineCap     = 'round';
+                ctx.lineJoin    = 'round';
+                ctx.beginPath();
+                ctx.moveTo(s * -11, s * -1);
+                ctx.bezierCurveTo(
+                    s * -20,               s * -5,
+                    s * -24 + tSwing * 0.35, s * -16,
+                    s * -20 + tSwing,      s * -26
+                );
+                ctx.stroke();
+                // Lighter tail tip
+                ctx.strokeStyle = belly;
+                ctx.lineWidth   = s * 2.2;
+                ctx.beginPath();
+                ctx.moveTo(s * -22 + tSwing * 0.7, s * -22);
+                ctx.lineTo(s * -20 + tSwing,        s * -26);
+                ctx.stroke();
+
+                // --- BODY ---
+                ctx.save();
+                ctx.rotate(-0.12);
+                ctx.fillStyle = fur;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, s * 12, s * 7.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Tabby stripes
+                ctx.fillStyle = stripe;
+                ctx.beginPath();
+                ctx.ellipse(s * -3, 0, s * 1.4, s * 6.5, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(s * 1, 0, s * 1.4, s * 6.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(s * 5, 0, s * 1.4, s * 6.5, -0.2, 0, Math.PI * 2);
+                ctx.fill();
+                // Belly
+                ctx.fillStyle = belly;
+                ctx.beginPath();
+                ctx.ellipse(s * 2, s * 3, s * 7, s * 4.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // --- HEAD ---
+                ctx.fillStyle = fur;
+                ctx.beginPath();
+                ctx.arc(hx, hy, s * 9, 0, Math.PI * 2);
+                ctx.fill();
+                // Forehead stripe
+                ctx.fillStyle = stripe;
+                ctx.beginPath();
+                ctx.ellipse(hx - s * 1.5, hy - s * 4, s * 2.2, s * 5.5, 0.15, 0, Math.PI * 2);
+                ctx.fill();
+                // Chin / muzzle
+                ctx.fillStyle = belly;
+                ctx.beginPath();
+                ctx.ellipse(hx + s * 5, hy + s * 1, s * 5.5, s * 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // --- EARS ---
+                // Back ear (partially behind)
+                ctx.fillStyle = fur;
+                ctx.beginPath();
+                ctx.moveTo(hx - s * 5,  hy - s * 7);
+                ctx.lineTo(hx - s * 10, hy - s * 17);
+                ctx.lineTo(hx - s * 1,  hy - s * 8.5);
+                ctx.closePath();
+                ctx.fill();
+                // Front ear
+                ctx.fillStyle = fur;
+                ctx.beginPath();
+                ctx.moveTo(hx + s * 2,  hy - s * 7.5);
+                ctx.lineTo(hx + s * 8,  hy - s * 18);
+                ctx.lineTo(hx + s * 9.5, hy - s * 7);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = pink;
+                ctx.beginPath();
+                ctx.moveTo(hx + s * 3,  hy - s * 8);
+                ctx.lineTo(hx + s * 7,  hy - s * 16);
+                ctx.lineTo(hx + s * 8.5, hy - s * 7.5);
+                ctx.closePath();
+                ctx.fill();
+
+                // --- EYE (side view — one visible eye) ---
+                var blinkCycle = fr % 250;
+                var blinking   = idle && blinkCycle > 244;
+
+                if (!blinking) {
+                    ctx.fillStyle = eyeC;
+                    ctx.beginPath();
+                    ctx.arc(hx + s * 1, hy - s * 1, s * 2.8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#111';
+                    ctx.beginPath();
+                    if (moving) {
+                        // Round pupils when excited / running
+                        ctx.arc(hx + s * 1, hy - s * 1, s * 1.6, 0, Math.PI * 2);
+                    } else {
+                        // Slit pupils when calm
+                        ctx.ellipse(hx + s * 1, hy - s * 1, s * 0.7, s * 2.2, 0, 0, Math.PI * 2);
+                    }
+                    ctx.fill();
+                    // Eye shine
+                    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+                    ctx.beginPath();
+                    ctx.arc(hx + s * 1.8, hy - s * 2, s * 0.9, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Happy-squint blink
+                    ctx.strokeStyle = mouthC;
+                    ctx.lineWidth   = s * 1.8;
+                    ctx.lineCap     = 'round';
+                    ctx.beginPath();
+                    ctx.arc(hx + s * 1, hy - s * 0.5, s * 2.5, 0.15 * Math.PI, 0.85 * Math.PI);
+                    ctx.stroke();
                 }
+
+                // --- NOSE ---
+                ctx.fillStyle = pink;
+                ctx.beginPath();
+                ctx.moveTo(hx + s * 10,   hy + s * 2);
+                ctx.lineTo(hx + s * 8.5,  hy + s * 3.5);
+                ctx.lineTo(hx + s * 11.5, hy + s * 3.5);
+                ctx.closePath();
+                ctx.fill();
+
+                // --- MOUTH ---
+                ctx.strokeStyle = mouthC;
+                ctx.lineWidth   = s * 0.9;
+                ctx.lineCap     = 'round';
+                ctx.beginPath();
+                ctx.moveTo(hx + s * 10, hy + s * 3.5);
+                ctx.quadraticCurveTo(hx + s * 8, hy + s * 5.5, hx + s * 6, hy + s * 5);
+                ctx.stroke();
+
+                // --- WHISKERS ---
+                ctx.strokeStyle = wisk;
+                ctx.lineWidth   = 0.95;
+                ctx.lineCap     = 'butt';
+                var wx = hx + s * 8, wy = hy + s * 2;
+                // Forward whiskers
+                ctx.beginPath(); ctx.moveTo(wx, wy - s * 1); ctx.lineTo(wx + s * 12, wy - s * 3);   ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(wx, wy);          ctx.lineTo(wx + s * 12, wy - s * 0.5); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(wx, wy + s * 1); ctx.lineTo(wx + s * 11, wy + s * 2);   ctx.stroke();
+                // Backward whiskers
+                ctx.beginPath(); ctx.moveTo(wx - s * 2, wy - s * 1); ctx.lineTo(wx - s * 14, wy - s * 3); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(wx - s * 2, wy);          ctx.lineTo(wx - s * 14, wy);          ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(wx - s * 2, wy + s * 1); ctx.lineTo(wx - s * 12, wy + s * 2); ctx.stroke();
+
+                // --- LEGS (4 legs, pairs alternating phase) ---
+                var legPhase = moving ? fr * 0.22 : 0;
+                var legsData = [
+                    { x: s * 7,   phase: 0 },
+                    { x: s * 3.5, phase: Math.PI },
+                    { x: s * -5,  phase: Math.PI },
+                    { x: s * -8.5, phase: 0 }
+                ];
+                legsData.forEach(function (leg) {
+                    var swing = moving ? Math.sin(legPhase + leg.phase) * s * 4.5 : 0;
+                    var ly = s * 7 + swing;
+                    ctx.fillStyle = fur;
+                    ctx.beginPath();
+                    ctx.ellipse(leg.x, ly, s * 2.2, s * 4.2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = belly;
+                    ctx.beginPath();
+                    ctx.ellipse(leg.x, ly + s * 4.5, s * 2.8, s * 1.8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                });
             }
 
-            function clamp(value, min, max) {
-                return Math.max(min, Math.min(max, value));
-            }
+            function loop() {
+                requestAnimationFrame(loop);
+                ctx.clearRect(0, 0, w, h);
 
-            function getInitialAnchor() {
-                var heading = document.querySelector('header h1');
-                if (!heading) {
-                    return {
-                        x: w * 0.66,
-                        y: h * 0.28
-                    };
+                if (!reducedMotion) {
+                    frame++;
+                    var dx   = mouseX - catX;
+                    var dy   = mouseY - catY;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist > STOP_DIST) {
+                        var speed = Math.min(dist * 0.09, MAX_SPEED);
+                        catX += (dx / dist) * speed;
+                        catY += (dy / dist) * speed;
+                        isMoving     = true;
+                        facingRight  = dx >= 0;
+                    } else {
+                        isMoving = false;
+                    }
+                    catX = Math.max(30, Math.min(w - 30, catX));
+                    catY = Math.max(40, Math.min(h - 20, catY));
                 }
 
-                var rect = heading.getBoundingClientRect();
-                return {
-                    x: clamp(rect.right + Math.max(48, rect.width * 0.18), 80, w - 80),
-                    y: clamp(rect.top + rect.height * 0.58, 80, h - 80)
-                };
+                ctx.save();
+                ctx.translate(catX, catY);
+                if (!facingRight) ctx.scale(-1, 1);
+                drawCat(frame, isMoving, !isMoving);
+                ctx.restore();
             }
-
-            function setPointerTarget(x, y) {
-                mouseX = x;
-                mouseY = y;
-                wake();
-            }
-
-            function handlePointerInput(x, y) {
-                if (reducedMotion) return;
-                if (!hasPointerInteraction) {
-                    hasPointerInteraction = true;
-                }
-                setPointerTarget(x, y);
-            }
-
-            document.addEventListener('mousemove', function (e) {
-                handlePointerInput(e.clientX, e.clientY);
-            });
-            document.addEventListener('touchmove', function (e) {
-                handlePointerInput(e.touches[0].clientX, e.touches[0].clientY);
-            }, { passive: true });
-            document.addEventListener('touchstart', function (e) {
-                handlePointerInput(e.touches[0].clientX, e.touches[0].clientY);
-            }, { passive: true });
 
             function resize() {
                 w = window.innerWidth;
                 h = window.innerHeight;
-                canvas.width = w * dpr;
+                canvas.width  = w * dpr;
                 canvas.height = h * dpr;
-                canvas.style.width = w + 'px';
+                canvas.style.width  = w + 'px';
                 canvas.style.height = h + 'px';
                 ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-                cols = Math.ceil(w / spacing) + 2;
-                rows = Math.ceil(h / spacing) + 2;
                 if (!hasPointerInteraction) {
-                    var anchor = getInitialAnchor();
-                    mouseX = anchor.x;
-                    mouseY = anchor.y;
-                    activeX = anchor.x;
-                    activeY = anchor.y;
-                }
-                if (reducedMotion) {
-                    draw();
-                } else {
-                    wake();
+                    catX   = 80;
+                    catY   = h * 0.65;
+                    mouseX = w * 0.5;
+                    mouseY = h * 0.4;
                 }
             }
 
-            function getGridColor() {
-                var theme = document.documentElement.getAttribute('data-theme');
-                return theme === 'dark'
-                    ? 'rgba(251, 146, 60, 0.08)'
-                    : 'rgba(194, 65, 12, 0.07)';
-            }
-
-            function getNodeColor() {
-                var theme = document.documentElement.getAttribute('data-theme');
-                return theme === 'dark'
-                    ? 'rgba(251, 146, 60, 0.18)'
-                    : 'rgba(194, 65, 12, 0.14)';
-            }
-
-            function warp(gx, gy, t) {
-                var distX = gx - activeX;
-                var distY = gy - activeY;
-                var dist = Math.sqrt(distX * distX + distY * distY);
-                if (dist < 1) dist = 1;
-                var falloff = Math.exp(-(dist * dist) / (massRadius * massRadius));
-                var ripple = Math.sin(dist * 0.04 - t * 1.5) * 0.3;
-                var pull = (strength * falloff * (1 + ripple)) / (dist + 50);
-                return {
-                    x: gx - distX * pull,
-                    y: gy - distY * pull
-                };
-            }
-
-            function draw() {
-                time += 0.008;
-                ctx.clearRect(0, 0, w, h);
-
-                activeX += (mouseX - activeX) * 0.012;
-                activeY += (mouseY - activeY) * 0.012;
-
-                var lineColor = getGridColor();
-                var nodeColor = getNodeColor();
-
-                var grid = [];
-                for (var r = 0; r <= rows; r++) {
-                    grid[r] = [];
-                    for (var c = 0; c <= cols; c++) {
-                        var gx = c * spacing;
-                        var gy = r * spacing;
-                        grid[r][c] = warp(gx, gy, time);
-                    }
-                }
-
-                ctx.strokeStyle = lineColor;
-                ctx.lineWidth = 0.8;
-                ctx.beginPath();
-
-                for (var r = 0; r <= rows; r++) {
-                    var p = grid[r][0];
-                    ctx.moveTo(p.x, p.y);
-                    for (var c = 1; c <= cols; c++) {
-                        p = grid[r][c];
-                        ctx.lineTo(p.x, p.y);
-                    }
-                }
-
-                for (var c = 0; c <= cols; c++) {
-                    var p = grid[0][c];
-                    ctx.moveTo(p.x, p.y);
-                    for (var r = 1; r <= rows; r++) {
-                        p = grid[r][c];
-                        ctx.lineTo(p.x, p.y);
-                    }
-                }
-
-                ctx.stroke();
-
-                ctx.fillStyle = nodeColor;
-                for (var r = 0; r <= rows; r++) {
-                    for (var c = 0; c <= cols; c++) {
-                        var p = grid[r][c];
-                        var origX = c * spacing;
-                        var origY = r * spacing;
-                        var distortion = Math.sqrt(
-                            (p.x - origX) * (p.x - origX) +
-                            (p.y - origY) * (p.y - origY)
-                        );
-                        if (distortion > 2) {
-                            var radius = Math.min(2.5, 0.8 + distortion * 0.08);
-                            ctx.beginPath();
-                            ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    }
-                }
-            }
-
-            function loop(now) {
-                if (!running) return;
-
-                if (now - lastFrameTime < frameInterval) {
-                    requestAnimationFrame(loop);
-                    return;
-                }
-                lastFrameTime = now;
-
-                draw();
-
-                var dx = mouseX - activeX;
-                var dy = mouseY - activeY;
-                if (dx * dx + dy * dy < idleThreshold * idleThreshold) {
-                    draw();
-                    running = false;
-                    return;
-                }
-
-                requestAnimationFrame(loop);
-            }
+            document.addEventListener('mousemove', function (e) {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                if (!hasPointerInteraction) hasPointerInteraction = true;
+            });
+            document.addEventListener('touchmove', function (e) {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+                hasPointerInteraction = true;
+            }, { passive: true });
+            document.addEventListener('touchstart', function (e) {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+                hasPointerInteraction = true;
+            }, { passive: true });
 
             resize();
             window.addEventListener('resize', resize);
@@ -1085,7 +1150,7 @@
                     requestAnimationFrame(resize);
                 }
             });
-            draw();
+            loop();
         })();
     </script>
     <script>
