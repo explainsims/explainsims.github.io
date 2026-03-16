@@ -945,16 +945,27 @@
             document.getElementById('rawContent').textContent = display.trim();
         };
 
+        recognition.onstart = function () {
+            // Mic is confirmed open — safe to grab a second stream for the visualizer
+            setupVisualizer();
+        };
+
         recognition.onerror = function (e) {
-            if (e.error === 'no-speech') return; // ignore silence gaps
+            if (e.error === 'no-speech') return; // ignore silence gaps; onend will restart
             statusEl.textContent = 'Speech error: ' + e.error;
             stopRecording();
         };
 
         recognition.onend = function () {
-            // Auto-restart if we're still supposed to be recording
+            // Auto-restart after a brief delay to avoid InvalidStateError race condition
             if (isRecording) {
-                try { recognition.start(); } catch(_) {}
+                setTimeout(function () {
+                    if (!isRecording) return; // user stopped while we were waiting
+                    try { recognition.start(); } catch (e) {
+                        // If we still can't restart, bail out cleanly
+                        stopRecording();
+                    }
+                }, 250);
             }
         };
     }
@@ -986,8 +997,7 @@
             timerEl.textContent = mm + ':' + ss;
         }, 500);
 
-        // Waveform visualizer
-        setupVisualizer();
+        // Visualizer is started from recognition.onstart once mic is confirmed open
 
         statusEl.textContent = 'Listening…';
     }
