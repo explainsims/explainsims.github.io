@@ -23,7 +23,7 @@
 
     <title>Voice Dictation — PanPhy Labs</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
-    <!-- sw-register intentionally omitted: beta page -->
+    <script src="/assets/sw-register.js" defer></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
@@ -280,13 +280,41 @@
             display: none;
         }
 
-        /* Waveform canvas */
-        #waveformCanvas {
-            width: 100%;
+        /* CSS waveform visualiser — no getUserMedia needed */
+        .viz-bars {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
             height: 56px;
             border-radius: 8px;
             background: var(--rec-color-soft);
-            display: none;
+            padding: 8px;
+        }
+        .viz-bars.active { display: flex; }
+        .viz-bar {
+            width: 5px;
+            border-radius: 3px;
+            background: var(--rec-color);
+            transform-origin: center;
+            animation: viz-bounce 0.9s ease-in-out infinite;
+        }
+        .viz-bar:nth-child(1)  { height: 16px; animation-delay: 0.00s; }
+        .viz-bar:nth-child(2)  { height: 28px; animation-delay: 0.10s; }
+        .viz-bar:nth-child(3)  { height: 40px; animation-delay: 0.20s; }
+        .viz-bar:nth-child(4)  { height: 48px; animation-delay: 0.05s; }
+        .viz-bar:nth-child(5)  { height: 36px; animation-delay: 0.15s; }
+        .viz-bar:nth-child(6)  { height: 52px; animation-delay: 0.25s; }
+        .viz-bar:nth-child(7)  { height: 44px; animation-delay: 0.08s; }
+        .viz-bar:nth-child(8)  { height: 32px; animation-delay: 0.18s; }
+        .viz-bar:nth-child(9)  { height: 20px; animation-delay: 0.30s; }
+        .viz-bar:nth-child(10) { height: 14px; animation-delay: 0.12s; }
+        @keyframes viz-bounce {
+            0%, 100% { transform: scaleY(0.25); opacity: 0.6; }
+            50%       { transform: scaleY(1);    opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .viz-bar { animation: none; transform: scaleY(0.6); }
         }
 
         /* Interim transcript */
@@ -558,7 +586,13 @@
                 <span id="recordStatus">Ready to record</span>
             </div>
 
-            <canvas id="waveformCanvas"></canvas>
+            <div class="viz-bars" id="vizBars" aria-hidden="true">
+                <div class="viz-bar"></div><div class="viz-bar"></div>
+                <div class="viz-bar"></div><div class="viz-bar"></div>
+                <div class="viz-bar"></div><div class="viz-bar"></div>
+                <div class="viz-bar"></div><div class="viz-bar"></div>
+                <div class="viz-bar"></div><div class="viz-bar"></div>
+            </div>
 
             <div id="interimBox" aria-live="polite" aria-label="Live transcript"></div>
         </div>
@@ -903,12 +937,7 @@
     var timerInterval = null;
     var timerStart    = 0;
     var fullFinalTranscript = '';
-
-    // Audio visualizer (Web Audio API — no recording, just visual)
-    var audioCtx  = null;
-    var analyser  = null;
-    var micStream = null;
-    var vizFrameId = null;
+    var restartTimer  = null;   // single pending restart — prevents duplicate starts
 
     var recordBtn  = document.getElementById('recordBtn');
     var micIcon    = document.getElementById('micIcon');
@@ -916,8 +945,7 @@
     var timerEl    = document.getElementById('recordTimer');
     var statusEl   = document.getElementById('recordStatus');
     var interimBox = document.getElementById('interimBox');
-    var canvas     = document.getElementById('waveformCanvas');
-    var canvasCtx  = canvas.getContext('2d');
+    var vizBars    = document.getElementById('vizBars');
 
     if (!SpeechRecognition) {
         document.getElementById('noSpeechWarning').style.display = '';
@@ -945,33 +973,35 @@
             document.getElementById('rawContent').textContent = display.trim();
         };
 
-        recognition.onstart = function () {
-            // Mic is confirmed open — safe to grab a second stream for the visualizer
-            setupVisualizer();
-        };
-
         recognition.onerror = function (e) {
-            if (e.error === 'no-speech') return; // ignore silence gaps; onend will restart
-            statusEl.textContent = 'Speech error: ' + e.error;
+            // no-speech is routine silence — ignore it and let onend handle restart
+            if (e.error === 'no-speech' || e.error === 'aborted') return;
+            statusEl.textContent = 'Microphone error (' + e.error + '). Try again.';
             stopRecording();
         };
 
         recognition.onend = function () {
-            // Auto-restart after a brief delay to avoid InvalidStateError race condition
-            if (isRecording) {
-                setTimeout(function () {
-                    if (!isRecording) return; // user stopped while we were waiting
-                    try { recognition.start(); } catch (e) {
-                        // If we still can't restart, bail out cleanly
-                        stopRecording();
-                    }
-                }, 250);
-            }
+            if (!isRecording) return;
+            // Guard: only one pending restart at a time
+            clearTimeout(restartTimer);
+            restartTimer = setTimeout(function () {
+                restartTimer = null;
+                if (!isRecording) return;
+                try {
+                    recognition.start();
+                } catch (e) {
+                    // Still failed — show message but keep isRecording true so user
+                    // can try stopping cleanly rather than getting a stuck UI
+                    statusEl.textContent = 'Paused (tap stop to finish).';
+                }
+            }, 300);
         };
     }
 
     function startRecording() {
         if (!recognition) return;
+        clearTimeout(restartTimer);
+        restartTimer = null;
         fullFinalTranscript = '';
         document.getElementById('rawContent').textContent = '';
         document.getElementById('polishedContent').innerHTML = '';
@@ -986,6 +1016,7 @@
         recordBtn.setAttribute('aria-label', 'Stop Recording');
         micIcon.style.display  = 'none';
         stopIcon.style.display = '';
+        vizBars.classList.add('active');
 
         // Timer
         timerStart = Date.now();
@@ -997,14 +1028,14 @@
             timerEl.textContent = mm + ':' + ss;
         }, 500);
 
-        // Visualizer is started from recognition.onstart once mic is confirmed open
-
         statusEl.textContent = 'Listening…';
     }
 
     function stopRecording() {
         if (!isRecording) return;
         isRecording = false;
+        clearTimeout(restartTimer);
+        restartTimer = null;
 
         try { recognition.stop(); } catch(_) {}
 
@@ -1017,11 +1048,10 @@
         recordBtn.setAttribute('aria-label', 'Start Recording');
         micIcon.style.display  = '';
         stopIcon.style.display = 'none';
+        vizBars.classList.remove('active');
 
         interimBox.textContent  = '';
         interimBox.style.display = 'none';
-
-        teardownVisualizer();
 
         var raw = fullFinalTranscript.trim();
         if (!raw) { statusEl.textContent = 'No speech detected. Try again.'; return; }
@@ -1073,78 +1103,6 @@
         });
     });
     document.getElementById('exportBtn').addEventListener('click', exportNotes);
-
-    // ============================================================
-    //  Audio Visualizer (Web Audio API — no API key, no recording)
-    // ============================================================
-    function resizeCanvas() {
-        var dpr  = window.devicePixelRatio || 1;
-        var rect = canvas.getBoundingClientRect();
-        canvas.width  = Math.round(rect.width  * dpr);
-        canvas.height = Math.round(rect.height * dpr);
-        canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function setupVisualizer() {
-        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-            .then(function (stream) {
-                micStream = stream;
-                audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
-                analyser  = audioCtx.createAnalyser();
-                analyser.fftSize = 256;
-                analyser.smoothingTimeConstant = 0.75;
-                audioCtx.createMediaStreamSource(stream).connect(analyser);
-
-                canvas.style.display = 'block';
-                resizeCanvas();
-                drawViz();
-            })
-            .catch(function () { /* visualizer optional — speech still works */ });
-    }
-
-    function teardownVisualizer() {
-        if (vizFrameId) { cancelAnimationFrame(vizFrameId); vizFrameId = null; }
-        if (micStream)  { micStream.getTracks().forEach(function (t) { t.stop(); }); micStream = null; }
-        if (audioCtx && audioCtx.state !== 'closed') { audioCtx.close(); }
-        audioCtx = null; analyser = null;
-        canvasCtx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-        canvas.style.display = 'none';
-    }
-
-    function getCSSVar(name) {
-        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    }
-
-    function drawViz() {
-        if (!analyser || !isRecording) return;
-        vizFrameId = requestAnimationFrame(drawViz);
-
-        var data = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(data);
-
-        var w   = canvas.clientWidth;
-        var h   = canvas.clientHeight;
-        var num = Math.floor(data.length * 0.5);
-        var barW = Math.max(1, Math.floor(w / num * 0.7));
-        var gap  = Math.max(0, Math.floor(w / num * 0.3));
-        var x    = 0;
-
-        canvasCtx.clearRect(0, 0, w, h);
-        canvasCtx.fillStyle = getCSSVar('--rec-color') || '#DC2626';
-
-        for (var i = 0; i < num; i++) {
-            if (x >= w) break;
-            var norm  = data[Math.floor(i * data.length / num)] / 255;
-            var barH  = Math.max(2, Math.round(norm * h));
-            var y     = Math.round((h - barH) / 2);
-            canvasCtx.fillRect(Math.floor(x), y, barW, barH);
-            x += barW + gap;
-        }
-    }
-
-    window.addEventListener('resize', function () {
-        if (isRecording && canvas.style.display === 'block') resizeCanvas();
-    });
 
     // ============================================================
     //  Init
