@@ -6,7 +6,7 @@
     <script src="/assets/sw-register.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#F8F6F1">
+    <meta name="theme-color" content="#E8F3FD">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <script>
@@ -15,7 +15,7 @@
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (tc) tc.setAttribute('content', '#111110');
+        if (tc) tc.setAttribute('content', '#15243E');
         if (sb) sb.setAttribute('content', 'black-translucent');
       }
     })();
@@ -44,65 +44,65 @@
             --font-display: 'DM Serif Display', serif;
             --font-mono: 'IBM Plex Mono', monospace;
 
-            --bg-color: #F8F6F1;
-            --bg-pattern: #EDE9E0;
-            --text-main: #1B1B1B;
-            --text-secondary: #6B6560;
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
 
-            --brand-primary: #C2410C;
-            --brand-secondary: #EA580C;
-            --brand-accent: #0D9488;
+            --brand-primary: #1A56DB;
+            --brand-secondary: #1D4ED8;
+            --brand-accent: #D97706;
 
-            --nav-bg: rgba(248, 246, 241, 0.88);
-            --nav-border: rgba(0, 0, 0, 0.06);
+            --nav-bg: rgba(232, 243, 253, 0.88);
+            --nav-border: rgba(30, 80, 160, 0.10);
 
             --card-bg: #FFFFFF;
-            --card-border: #E8E4DD;
-            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-            --card-hover-shadow: 0 16px 48px rgba(194, 65, 12, 0.07);
-            --card-accent-border: rgba(194, 65, 12, 0.6);
+            --card-border: #C5DCF0;
+            --card-shadow: 0 1px 3px rgba(26, 86, 219, 0.06);
+            --card-hover-shadow: 0 16px 48px rgba(26, 86, 219, 0.11);
+            --card-accent-border: rgba(26, 86, 219, 0.55);
 
-            --btn-bg: #1B1B1B;
-            --btn-text: #F8F6F1;
+            --btn-bg: #1A56DB;
+            --btn-text: #FFFFFF;
 
-            --status-check: #2563eb;
-            --status-ready: #0f9d58;
-            --status-warning: #d97706;
-            --status-error: #dc2626;
+            --status-check: #2563EB;
+            --status-ready: #16A34A;
+            --status-warning: #D97706;
+            --status-error: #DC2626;
 
-            --section-num-color: rgba(194, 65, 12, 0.06);
-            --divider-color: #E8E4DD;
+            --section-num-color: rgba(26, 86, 219, 0.05);
+            --divider-color: #C5DCF0;
         }
 
         [data-theme="dark"] {
-            --bg-color: #111110;
-            --bg-pattern: #1A1A18;
-            --text-main: #EDEBE8;
-            --text-secondary: #9C9890;
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
 
-            --brand-primary: #FB923C;
-            --brand-secondary: #F97316;
-            --brand-accent: #5EEAD4;
+            --brand-primary: #F6C90E;
+            --brand-secondary: #EAB308;
+            --brand-accent: #60A5FA;
 
-            --nav-bg: rgba(17, 17, 16, 0.88);
-            --nav-border: rgba(255, 255, 255, 0.06);
+            --nav-bg: rgba(21, 36, 62, 0.90);
+            --nav-border: rgba(255, 255, 255, 0.08);
 
-            --card-bg: #1A1A19;
-            --card-border: #2A2A28;
-            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-            --card-hover-shadow: 0 16px 48px rgba(251, 146, 60, 0.06);
-            --card-accent-border: rgba(251, 146, 60, 0.7);
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+            --card-hover-shadow: 0 16px 48px rgba(246, 201, 14, 0.09);
+            --card-accent-border: rgba(246, 201, 14, 0.65);
 
-            --btn-bg: #FB923C;
-            --btn-text: #111110;
+            --btn-bg: #F6C90E;
+            --btn-text: #0D1B2A;
 
-            --status-check: #7da8ff;
-            --status-ready: #4cd08d;
-            --status-warning: #f6b354;
-            --status-error: #ff7d7d;
+            --status-check: #60A5FA;
+            --status-ready: #4ADE80;
+            --status-warning: #FCD34D;
+            --status-error: #F87171;
 
-            --section-num-color: rgba(251, 146, 60, 0.05);
-            --divider-color: #2A2A28;
+            --section-num-color: rgba(246, 201, 14, 0.06);
+            --divider-color: #2A4270;
         }
 
         /* ========================================
@@ -240,12 +240,12 @@
         }
 
         .theme-toggle button:hover {
-            background-color: rgba(194, 65, 12, 0.08);
+            background-color: rgba(26, 86, 219, 0.08);
             transform: rotate(20deg);
         }
 
         [data-theme="dark"] .theme-toggle button:hover {
-            background-color: rgba(251, 146, 60, 0.1);
+            background-color: rgba(246, 201, 14, 0.10);
         }
 
         /* ========================================
@@ -1142,7 +1142,7 @@
             const isDarkTheme = theme === 'dark';
 
             if (themeColorMeta) {
-                themeColorMeta.setAttribute('content', isDarkTheme ? '#111110' : '#F8F6F1');
+                themeColorMeta.setAttribute('content', isDarkTheme ? '#15243E' : '#E8F3FD');
             }
 
             if (appleStatusBarMeta) {
