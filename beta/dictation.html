@@ -730,13 +730,16 @@
 
     // ============================================================
     //  Text polish — pure JS, no API key needed
+    //  Detects spoken structure (lists, topic breaks, summaries)
+    //  and outputs clean Markdown for the preview renderer.
     // ============================================================
     function polishText(raw) {
         if (!raw || !raw.trim()) return '';
 
+        // ── Phase 1: Pre-clean ──────────────────────────────────────────
         let text = raw.trim();
 
-        // Remove stuttered consecutive duplicate words  (e.g. "I I went" → "I went")
+        // Remove consecutive duplicate words (stutters): "I I went" → "I went"
         text = text.replace(/\b(\w+)\s+\1\b/gi, '$1');
 
         // Remove filler words / phrases
@@ -746,16 +749,109 @@
         // Tidy whitespace
         text = text.replace(/\s+/g, ' ').trim();
 
-        // Capitalise first letter of sentences
+        // Capitalise first letter of sentences and standalone "I"
         text = text.replace(/(^|[.!?]\s+)([a-z])/g, function (_, pre, ch) { return pre + ch.toUpperCase(); });
-
-        // Capitalise standalone "i"
         text = text.replace(/\bi\b/g, 'I');
 
-        // Ensure the text ends with terminal punctuation
-        if (text && !/[.!?]$/.test(text)) text += '.';
+        // Ensure text ends with terminal punctuation
+        if (!/[.!?]$/.test(text)) text += '.';
 
-        return text;
+        // ── Phase 2: Split into sentences ────────────────────────────────
+        var sentences = [];
+        var sentRe = /[^.!?]+[.!?]+/g;
+        var sm;
+        while ((sm = sentRe.exec(text)) !== null) {
+            var s = sm[0].trim();
+            if (s.length > 1) sentences.push(s);
+        }
+        if (!sentences.length) return text;
+
+        // ── Phase 3: Classify each sentence ──────────────────────────────
+        // Ordinal openers: "First, …", "Secondly, …", "Number two: …"
+        var ordinalRe   = /^(first(?:ly)?|second(?:ly)?|third(?:ly)?|fourth(?:ly)?|fifth(?:ly)?|number\s+(?:one|two|three|four|five|\d+))\s*[,:\s]/i;
+        // Additive openers: "Also, …", "Additionally, …", "Another thing, …"
+        var additiveRe  = /^(also[,\s]|additionally[,\s]|furthermore[,\s]|moreover[,\s]|another\s+(?:thing|point|example|reason)[,\s]|and\s+also[,\s])/i;
+        // Topic-shift openers: "Now, …", "Moving on, …", "Next, …"
+        var topicRe     = /^(now\s*[,\s]|moving\s+on\s*[,\s]|next\s*[,\s]|anyway\s*[,\s]|let'?s\s+(?:move\s+on|talk\s+about|look\s+at|consider|turn\s+to)\s*[,\s]?|on\s+(?:the\s+)?(?:other\s+hand|another\s+note)\s*[,\s])/i;
+        // Summary openers: "In summary, …", "To conclude, …", "In conclusion, …"
+        var summaryRe   = /^(in\s+summ?ar[yi](?:zing|sing)?\s*[,:\s]?|to\s+summ?ar[yi](?:ze|se)\s*[,:\s]?|in\s+conclusion\s*[,:\s]?|to\s+sum\s+up\s*[,:\s]?|in\s+short\s*[,:\s]?|all\s+in\s+all\s*[,:\s]?)/i;
+
+        var tagged = sentences.map(function (s) {
+            return {
+                text:        s,
+                words:       s.split(/\s+/).length,
+                isOrdinal:   ordinalRe.test(s),
+                isAdditive:  additiveRe.test(s),
+                isTopicShift:topicRe.test(s),
+                isSummary:   summaryRe.test(s),
+                isQuestion:  s.endsWith('?'),
+            };
+        });
+
+        var ordinalCount  = tagged.filter(function (t) { return t.isOrdinal; }).length;
+        var additiveCount = tagged.filter(function (t) { return t.isAdditive; }).length;
+
+        // ── Phase 4: Build Markdown ───────────────────────────────────────
+        var out      = [];
+        var inList   = false;   // inside numbered list
+        var inBullet = false;   // inside bullet list
+
+        function closeList() {
+            if (inList || inBullet) { out.push(''); inList = false; inBullet = false; }
+        }
+        function stripOpener(s, re) {
+            var body = s.replace(re, '').replace(/^[,:\s]+/, '').trim();
+            return body ? body.charAt(0).toUpperCase() + body.slice(1) : s;
+        }
+
+        tagged.forEach(function (item, idx) {
+            // Summary → ## Summary heading + stripped body
+            if (item.isSummary) {
+                closeList();
+                out.push('## Summary');
+                out.push('');
+                var sbody = stripOpener(item.text, summaryRe);
+                if (sbody) out.push(sbody);
+                return;
+            }
+            // Topic shift → blank line before the sentence
+            if (item.isTopicShift) {
+                closeList();
+                out.push('');
+                out.push(item.text);
+                return;
+            }
+            // Ordinal list item (only when ≥2 ordinal sentences detected)
+            if (item.isOrdinal && ordinalCount >= 2) {
+                if (inBullet) closeList();
+                inList = true;
+                out.push('1. ' + stripOpener(item.text, ordinalRe));
+                return;
+            }
+            // Additive bullet (only when ≥2 additive sentences detected)
+            if (item.isAdditive && additiveCount >= 2) {
+                if (inList) closeList();
+                inBullet = true;
+                out.push('- ' + stripOpener(item.text, additiveRe));
+                return;
+            }
+
+            // Regular sentence — close any open list first
+            closeList();
+
+            // Short opener at index 0 (≤5 words, no comma) followed by
+            // longer content → treat as a topic heading
+            if (idx === 0 && item.words <= 5 && !item.isQuestion &&
+                    !item.text.includes(',') && tagged.length > 1 && tagged[1].words >= 5) {
+                out.push('## ' + item.text.replace(/[.!?]$/, ''));
+                out.push('');
+                return;
+            }
+
+            out.push(item.text);
+        });
+
+        return out.join('\n').trim();
     }
 
     // Minimal Markdown → HTML (supports headings, bold, italic, bullets, numbered lists, line breaks)
@@ -1033,10 +1129,17 @@
         var polished = polishText(rawText);
         document.getElementById('polishedContent').innerHTML = simpleMarkdown(polished);
 
-        // Auto-fill title from first sentence if blank
+        // Auto-fill title from first real sentence if blank
+        // (skip Markdown heading / list lines so the title stays clean)
         var titleInput = document.getElementById('noteTitle');
         if (!titleInput.value.trim()) {
-            var first = polished.split(/[.!?]/)[0].trim();
+            var polishedLines = polished.split('\n');
+            var firstSentLine = polishedLines.find(function (l) {
+                return l.trim() && !l.startsWith('#') && !l.startsWith('-') && !/^\d+\./.test(l.trim());
+            });
+            var firstHeading = polishedLines.find(function (l) { return l.trim().startsWith('#'); });
+            var titleSrc = firstSentLine || (firstHeading ? firstHeading.replace(/^#+\s*/, '') : polished);
+            var first = titleSrc.split(/[.!?]/)[0].trim();
             titleInput.value = first.substring(0, 60) + (first.length > 60 ? '…' : '');
         }
 
