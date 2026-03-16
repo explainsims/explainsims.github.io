@@ -61,17 +61,16 @@ Read these files before beginning any adaptation:
 | `CLAUDE.md` | Full AI assistant guide with all conventions, patterns, and rules |
 | `README.md` | Project philosophy and overview |
 | `sw.js` | Service Worker — you will edit this |
-| `index.html` | Landing page — add an entry to `FEATURED_POOL` here |
-| `simulations.html` (or relevant gallery page) | Gallery page — you will add a card here |
+| `index.html` | Landing page — `FEATURED_POOL` powers the Featured section |
+| `simulations.html` (AP PCM) | Gallery page — add a card to the correct AP PCM unit here |
 | `sitemap.xml` | Sitemap — you will add the new URL |
 | Any existing simulation | Reference for the target structure and style |
 
 The most useful reference simulations to study (in order of complexity):
 
 1. **`simulations/superposition.html`** — Simplest. Canvas-based, single-file, no external deps.
-2. **`simulations/standing_wave.html`** — Similar but with more controls.
-3. **`simulations/states.html`** — Uses Three.js (external CDN dependency).
-4. **`simulations/collision.html`** — Modular (separate JS/CSS files + MediaPipe assets).
+2. **`simulations/physical_pendulum.html`** — Canvas-based with sliders, educational readouts, and dual-pendulum display.
+3. **`simulations/lorentz.html`** — Complex canvas with interactive spacetime diagrams.
 
 ---
 
@@ -199,7 +198,7 @@ Use this skeleton as your starting point:
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f8f9fa">
+    <meta name="theme-color" content="#E8F3FD">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
@@ -210,7 +209,7 @@ Use this skeleton as your starting point:
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (tc) tc.setAttribute('content', '#0f1014');
+        if (tc) tc.setAttribute('content', '#15243E');
         if (sb) sb.setAttribute('content', 'black-translucent');
       }
     })();
@@ -294,7 +293,7 @@ function updateAppChromeTheme(theme) {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     const appleStatusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
     const isDark = theme === 'dark';
-    if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#0f1014' : '#f8f9fa');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#15243E' : '#E8F3FD');
     if (appleStatusBarMeta) appleStatusBarMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
 }
 
@@ -506,27 +505,53 @@ Use snake_case for filenames.
 
 ### 7b. Add a tile card to the gallery page
 
-> **Site structure note (updated March 2026):** The site is now multi-page. Each category has its own gallery page — `/simulations.html`, `/tools.html`, `/teachers.html`, `/fun.html`. Cards are added to the relevant gallery page, **not** `index.html`. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool; add your card there too (see step 7b-ii).
+> **Site structure note (updated March 2026):** The site is now multi-page. Each category has its own gallery page — `/simulations.html` (now called **AP PCM**), `/tools.html`, `/teachers.html`, `/fun.html`, `/panphy.html`. Cards are added to the relevant gallery page, **not** `index.html` directly. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool.
+>
+> **AP PCM structure:** `/simulations.html` is organised into 7 AP Physics C: Mechanics units. When adding a simulation, the user will specify which unit it belongs to. Each unit is a `.unit-block` div with `id="unitN"` and a `.grid` inside it.
 
-**7b-i.** Open `/simulations.html` and add a card inside the `.grid` div:
+**7b-i — For AP PCM simulations.** Open `/simulations.html` and find the correct unit block (unit1–unit7). Add a card inside that unit's `.grid` div:
 
 ```html
-<div class="card">
-    <h3>Your Simulation Title</h3>
-    <p>One-sentence description of what the simulation does.</p>
-    <a href="/simulations/your_simulation.html">Launch Sim</a>
+<!-- Example: Unit 7 Oscillations -->
+<div class="unit-block" id="unit7">
+    <h3 class="unit-heading">Unit 7 <span class="section-label">Oscillations</span></h3>
+    <div class="grid">
+        <!-- existing cards... -->
+        <div class="card">
+            <h3>Your Simulation Title</h3>
+            <p>One-sentence description of what the simulation does.</p>
+            <a href="/simulations/your_simulation.html">Launch Sim</a>
+        </div>
+    </div>
 </div>
 ```
 
-**7b-ii.** Open `index.html` and find the `FEATURED_POOL` object in the Featured section script. Add an entry to the `sims` array:
+The units and their IDs are:
+- `unit1` — Kinematics
+- `unit2` — Force and Translational Dynamics
+- `unit3` — Work, Energy, and Power
+- `unit4` — Linear Momentum
+- `unit5` — Torque and Rotational Dynamics
+- `unit6` — Energy and Momentum of Rotating Systems
+- `unit7` — Oscillations
+
+**7b-ii — For tools / teachers / fun / panphy.** Add a card inside the `.grid` div in the relevant gallery page section.
+
+**7b-iii — FEATURED_POOL in `index.html`.** Open `index.html` and find the `FEATURED_POOL` object. Currently only `sims` (AP PCM) is populated. Add to the appropriate category array. If a category has no apps yet, do **not** add an empty array — it would crash the Featured section:
 
 ```javascript
-{ t: 'Your Simulation Title', d: 'One-sentence description.', h: '/simulations/your_simulation.html', c: 'Launch Sim' }
+var FEATURED_POOL = {
+    sims: [
+        // Add AP PCM sims here
+        { t: 'Your Simulation Title', d: 'One-sentence description.', h: '/simulations/your_simulation.html', c: 'Launch Sim' }
+    ]
+    // Only add other category keys (tools, fun, panphy, teachers) once they have apps
+};
 ```
 
 ### 7c. Add to `OFFLINE_CARD_REQUIREMENTS` in the gallery page
 
-Find the `OFFLINE_CARD_REQUIREMENTS` object in the `<script>` section at the bottom of **`/simulations.html`** (not `index.html`). Add an entry:
+Find the `OFFLINE_CARD_REQUIREMENTS` object in the `<script>` section at the bottom of the relevant gallery page (e.g. **`/simulations.html`** for AP PCM sims — not `index.html`). Add an entry:
 
 ```javascript
 '/simulations/your_simulation.html': ['/simulations/your_simulation.html'],
@@ -637,9 +662,10 @@ Use this checklist for every simulation you adapt:
 ### Site Integration
 - [ ] File placed in correct directory
 - [ ] Back button (`history.back()`) added to the right of the home icon in the banner
-- [ ] Card added to the relevant gallery page (`/simulations.html`, `/tools.html`, etc.)
-- [ ] Entry added to `FEATURED_POOL` in `index.html` Featured section script
-- [ ] Added to `OFFLINE_CARD_REQUIREMENTS` in the relevant gallery page (e.g. `/simulations.html`)
+- [ ] For AP PCM sims: card added to the correct unit block (`unit1`–`unit7`) inside `/simulations.html`
+- [ ] For other tabs: card added to the relevant gallery page (`/tools.html`, `/teachers.html`, etc.)
+- [ ] Entry added to `FEATURED_POOL` in `index.html` (appropriate category key — don't add empty arrays)
+- [ ] Added to `OFFLINE_CARD_REQUIREMENTS` in the relevant gallery page
 - [ ] Added to `ASSETS_TO_CACHE` in `sw.js`
 - [ ] `BUILD_ID` bumped in `sw.js`
 - [ ] URL added to `sitemap.xml`
@@ -781,21 +807,21 @@ import * as THREE from 'three';
 
 | Variable | Light | Dark | Usage |
 |----------|-------|------|-------|
-| `--bg-color` | `#f8f9fa` | `#0f1014` | Page background |
-| `--bg-pattern` | `#e9ecef` | `#181a20` | Dot pattern overlay |
-| `--text-main` | `#2d3436` | `#dfe6e9` | Primary text |
-| `--text-secondary` | `#636e72` | `#b2bec3` | Secondary/muted text |
-| `--brand-primary` | `#6c5ce7` | `#a29bfe` | Primary accent (indigo) |
-| `--brand-secondary` | `#a29bfe` | `#6c5ce7` | Secondary accent |
-| `--brand-accent` | `#00cec9` | `#81ecec` | Teal accent |
-| `--card-bg` | `#ffffff` | `#1e2129` | Card backgrounds |
-| `--card-border` | `#e9ecef` | `#2d3436` | Card borders |
-| `--card-shadow` | light shadow | dark shadow | Card shadows |
-| `--canvas-bg` | `#ffffff` | `#16181d` | Canvas background |
-| `--slider-track` | `#e2e8f0` | `#4a5568` | Slider track |
-| `--slider-thumb` | `#6c5ce7` | `#a29bfe` | Slider thumb |
-| `--nav-bg` | `rgba(255,255,255,0.85)` | `rgba(22,24,29,0.85)` | Header background |
-| `--nav-border` | `rgba(255,255,255,0.5)` | `rgba(255,255,255,0.08)` | Header border |
+| `--bg-color` | `#E8F3FD` | `#15243E` | Page background |
+| `--bg-pattern` | `#D5E8F7` | `#1C2F52` | Dot pattern overlay |
+| `--text-main` | `#0D1B2A` | `#EEF5FD` | Primary text |
+| `--text-secondary` | `#4A6380` | `#8BB3D4` | Secondary/muted text |
+| `--brand-primary` | `#1A56DB` | `#F6C90E` | Primary accent (blue / gold) |
+| `--brand-secondary` | `#1D4ED8` | `#EAB308` | Secondary accent |
+| `--brand-accent` | `#D97706` | `#60A5FA` | Amber / light-blue accent |
+| `--card-bg` | `#FFFFFF` | `#1C2F52` | Card backgrounds |
+| `--card-border` | `#C5DCF0` | `#2A4270` | Card borders |
+| `--card-shadow` | `0 4px 16px rgba(26,86,219,0.06)` | `0 4px 16px rgba(0,0,0,0.3)` | Card shadows |
+| `--canvas-bg` | `#FFFFFF` | `#15243E` | Canvas background |
+| `--slider-track` | `#C5DCF0` | `#2A4270` | Slider track |
+| `--slider-thumb` | `#1A56DB` | `#F6C90E` | Slider thumb |
+| `--nav-bg` | `rgba(255,255,255,0.92)` | `rgba(21,36,62,0.90)` | Header background |
+| `--nav-border` | `rgba(30,80,160,0.10)` | `rgba(255,255,255,0.08)` | Header border |
 
 ### Simulation-specific variables (add as needed)
 

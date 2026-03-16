@@ -20,15 +20,15 @@
       }
     })();
     </script>
-    <title>Simulations — ExplAIn Sims</title>
+    <title>AP PCM — ExplAIn Sims</title>
     <meta name="description"
-        content="Interactive physics simulations covering waves, collisions, relativity, and more.">
-    <meta property="og:title" content="Simulations — ExplAIn Sims">
+        content="AP Physics C: Mechanics simulations organised by unit.">
+    <meta property="og:title" content="AP PCM — ExplAIn Sims">
     <meta property="og:description"
-        content="Interactive physics simulations covering waves, collisions, relativity, and more.">
-    <meta name="twitter:title" content="Simulations — ExplAIn Sims">
+        content="AP Physics C: Mechanics simulations organised by unit.">
+    <meta name="twitter:title" content="AP PCM — ExplAIn Sims">
     <meta name="twitter:description"
-        content="Interactive physics simulations covering waves, collisions, relativity, and more.">
+        content="AP Physics C: Mechanics simulations organised by unit.">
 
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
@@ -53,7 +53,7 @@
             --brand-secondary: #1D4ED8;
             --brand-accent: #D97706;
 
-            --nav-bg: rgba(232, 243, 253, 0.88);
+            --nav-bg: rgba(255, 255, 255, 0.92);
             --nav-border: rgba(30, 80, 160, 0.10);
 
             --card-bg: #FFFFFF;
@@ -702,6 +702,72 @@
             line-height: 1.85;
             margin: -1.5rem 0 2.5rem 0;
         }
+
+        /* ========================================
+           AP PCM — Search & Unit Blocks
+           ======================================== */
+        .unit-search-wrap {
+            margin: 0 0 3rem 0;
+        }
+
+        .unit-search {
+            width: 100%;
+            max-width: 480px;
+            padding: 0.72rem 1.1rem;
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            font-weight: 500;
+            border: 1.5px solid var(--card-border);
+            border-radius: 10px;
+            background: var(--card-bg);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.4s;
+        }
+
+        .unit-search::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .unit-search:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.10);
+        }
+
+        [data-theme="dark"] .unit-search:focus {
+            box-shadow: 0 0 0 3px rgba(246, 201, 14, 0.10);
+        }
+
+        .unit-block {
+            margin-bottom: 3rem;
+        }
+
+        .unit-heading {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 400;
+            margin: 0 0 1.25rem 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 0.7rem;
+            border-bottom: 1px solid var(--divider-color);
+            transition: border-color 0.4s ease;
+        }
+
+        .unit-no-sims {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            opacity: 0.55;
+            padding: 0.25rem 0 1rem;
+        }
+
+        .unit-block[hidden] {
+            display: none;
+        }
     </style>
 </head>
 
@@ -710,7 +776,7 @@
 
     <nav>
         <a href="/tools.html">Tools</a>
-        <a href="/simulations.html" aria-current="page">Sims</a>
+        <a href="/simulations.html" aria-current="page">AP PCM</a>
         <a href="/teachers.html">Teachers</a>
         <a href="/fun.html">Fun</a>
         <a href="/panphy.html">PanPhy</a>
@@ -724,19 +790,65 @@
             <img src="/assets/ExplAIn%20Sims.png" class="logo" alt="ExplAIn Sims">
         </a>
         <h1>Expl<span class="ai-highlight">AI</span>n</h1>
-        <div class="site-subtitle">Sims</div>
+        <div class="site-subtitle">AP PCM</div>
         <div class="hero-rule"></div>
-        <p>Physics apps, tools, sims, and some random stuff.</p>
+        <p>AP Physics C: Mechanics simulations, organised by unit.</p>
     </header>
 
-    <div class="section" id="simulations" data-section="01">
-        <h2>Simulations <span class="section-label">Interact</span></h2>
-        <p class="section-desc">Interactive physics simulations covering waves, collisions, relativity, and more.</p>
-        <div class="grid">
-            <div class="card">
-                <h3>Physical Pendulum</h3>
-                <p>Explore how pivot position affects a physical pendulum's period and its equivalent simple pendulum.</p>
-                <a href="/simulations/physical_pendulum.html">Launch Sim</a>
+    <div class="section" id="apcm" data-section="01">
+        <h2>AP Physics C: Mechanics <span class="section-label">Simulations</span></h2>
+        <p class="section-desc">Simulations organised by AP PCM curriculum unit. Search or browse all seven units below.</p>
+
+        <div class="unit-search-wrap">
+            <input type="search" id="unit-search" class="unit-search"
+                placeholder="Search simulations…" autocomplete="off"
+                aria-label="Search AP PCM simulations">
+        </div>
+
+        <div class="unit-block" id="unit1">
+            <h3 class="unit-heading">Unit 1 <span class="section-label">Kinematics</span></h3>
+            <div class="grid"></div>
+            <p class="unit-no-sims">No simulations yet.</p>
+        </div>
+
+        <div class="unit-block" id="unit2">
+            <h3 class="unit-heading">Unit 2 <span class="section-label">Force and Translational Dynamics</span></h3>
+            <div class="grid"></div>
+            <p class="unit-no-sims">No simulations yet.</p>
+        </div>
+
+        <div class="unit-block" id="unit3">
+            <h3 class="unit-heading">Unit 3 <span class="section-label">Work, Energy, and Power</span></h3>
+            <div class="grid"></div>
+            <p class="unit-no-sims">No simulations yet.</p>
+        </div>
+
+        <div class="unit-block" id="unit4">
+            <h3 class="unit-heading">Unit 4 <span class="section-label">Linear Momentum</span></h3>
+            <div class="grid"></div>
+            <p class="unit-no-sims">No simulations yet.</p>
+        </div>
+
+        <div class="unit-block" id="unit5">
+            <h3 class="unit-heading">Unit 5 <span class="section-label">Torque and Rotational Dynamics</span></h3>
+            <div class="grid"></div>
+            <p class="unit-no-sims">No simulations yet.</p>
+        </div>
+
+        <div class="unit-block" id="unit6">
+            <h3 class="unit-heading">Unit 6 <span class="section-label">Energy and Momentum of Rotating Systems</span></h3>
+            <div class="grid"></div>
+            <p class="unit-no-sims">No simulations yet.</p>
+        </div>
+
+        <div class="unit-block" id="unit7">
+            <h3 class="unit-heading">Unit 7 <span class="section-label">Oscillations</span></h3>
+            <div class="grid">
+                <div class="card">
+                    <h3>Physical Pendulum</h3>
+                    <p>Explore how pivot position affects a physical pendulum's period and its equivalent simple pendulum.</p>
+                    <a href="/simulations/physical_pendulum.html">Launch Sim</a>
+                </div>
             </div>
         </div>
     </div>
@@ -1328,6 +1440,55 @@
         }
 
         startOfflineReadinessMonitor();
+    </script>
+    <script>
+        // AP PCM unit search — filter cards and hide/show empty unit blocks
+        (function () {
+            var input = document.getElementById('unit-search');
+            if (!input) return;
+
+            function filterUnits() {
+                var q = input.value.toLowerCase().trim();
+                document.querySelectorAll('.unit-block').forEach(function (block) {
+                    var cards = block.querySelectorAll('.card');
+                    var noSimsMsg = block.querySelector('.unit-no-sims');
+                    var anyVisible = false;
+
+                    cards.forEach(function (card) {
+                        var title = (card.querySelector('h3') || {}).textContent || '';
+                        var desc  = (card.querySelector('p')  || {}).textContent || '';
+                        var match = !q || title.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
+                        card.style.display = match ? '' : 'none';
+                        if (match) anyVisible = true;
+                    });
+
+                    // Show/hide "no sims yet" and whether block is hidden during search
+                    if (q) {
+                        // During search: hide blocks that have cards but none match
+                        if (cards.length > 0 && !anyVisible) {
+                            block.setAttribute('hidden', '');
+                        } else {
+                            block.removeAttribute('hidden');
+                        }
+                    } else {
+                        block.removeAttribute('hidden');
+                    }
+
+                    if (noSimsMsg) {
+                        noSimsMsg.style.display = (cards.length === 0) ? '' : 'none';
+                    }
+                });
+            }
+
+            // Hide "no sims yet" for units that have cards, on page load
+            document.querySelectorAll('.unit-block').forEach(function (block) {
+                var cards = block.querySelectorAll('.card');
+                var noSimsMsg = block.querySelector('.unit-no-sims');
+                if (noSimsMsg && cards.length > 0) noSimsMsg.style.display = 'none';
+            });
+
+            input.addEventListener('input', filterUnits);
+        })();
     </script>
     <script>
         // Apply gradient text effect, skip on Brave iOS where background-clip:text is broken
