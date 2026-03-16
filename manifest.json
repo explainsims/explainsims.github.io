@@ -8,7 +8,7 @@
   "icons": [
     {
       "src": "assets/favicon.png",
-      "sizes": "48x48",
+      "sizes": "32x32",
       "type": "image/png",
       "purpose": "any"
     },
@@ -19,8 +19,8 @@
       "purpose": "any"
     },
     {
-      "src": "assets/panphy.png",
-      "sizes": "512x512",
+      "src": "assets/ExplAIn%20Sims.png",
+      "sizes": "2048x2048",
       "type": "image/png",
       "purpose": "any maskable"
     }
