@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#E8F3FD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('cons-energy-systems-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#15243E');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Conservation of Energy Lab</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
+
+            --brand-primary: #1A56DB;
+            --brand-secondary: #1D4ED8;
+            --brand-accent: #D97706;
+
+            --card-bg: #FFFFFF;
+            --card-border: #C5DCF0;
+            --card-shadow: 0 4px 16px rgba(26,86,219,0.06);
+
+            --canvas-bg: #FFFFFF;
+            --slider-track: #C5DCF0;
+            --slider-thumb: #1A56DB;
+
+            --nav-bg: rgba(255,255,255,0.92);
+            --nav-border: rgba(30,80,160,0.10);
+
+            --readout-bg: #E8F3FD;
+            --readout-border: #C5DCF0;
+
+            --section-heading: #1A56DB;
+
+            --ramp-fill: #e2e8f0;
+            --ramp-stroke: #94a3b8;
+            --ground-stroke: #64748b;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
+            --brand-primary: #F6C90E;
+            --brand-secondary: #EAB308;
+            --brand-accent: #60A5FA;
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            --canvas-bg: #15243E;
+            --slider-track: #2A4270;
+            --slider-thumb: #F6C90E;
+            --nav-bg: rgba(21,36,62,0.90);
+            --nav-border: rgba(255,255,255,0.08);
+            --readout-bg: #1C2F52;
+            --readout-border: #2A4270;
+            --section-heading: #F6C90E;
+
+            --ramp-fill: #2a3f5f;
+            --ramp-stroke: #4a6380;
+            --ground-stroke: #4a6380;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html.offline-font { --font-sans: system-ui, sans-serif; --font-display: system-ui, sans-serif; --font-mono: 'Courier New', monospace; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Banner ───────────────────────────────────────── */
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display); font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 700; color: var(--text-main); letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; }
+        #theme-button {
+            background: none; border: none; cursor: pointer; font-size: 1.2rem;
+            padding: 6px; border-radius: 8px; transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* ── Layout ──────────────────────────────────────── */
+        .main-content {
+            flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; padding: 24px 16px;
+        }
+        .sim-grid {
+            display: grid; grid-template-columns: 1fr; gap: 20px;
+        }
+        @media (min-width: 960px) {
+            .sim-grid { grid-template-columns: 7fr 5fr; align-items: start; }
+        }
+
+        /* ── Cards ───────────────────────────────────────── */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+        .card:last-child { margin-bottom: 0; }
+        .card-title {
+            font-family: var(--font-display); font-size: 1.05rem; font-weight: 700;
+            color: var(--section-heading);
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 10px; margin-bottom: 16px;
+        }
+
+        /* ── SVG Canvas ──────────────────────────────────── */
+        .svg-wrap {
+            width: 100%;
+            background: var(--canvas-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .svg-wrap svg { display: block; width: 100%; height: auto; }
+
+        /* ── Playback Controls ───────────────────────────── */
+        .playback-row {
+            display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+        }
+        .btn {
+            font-family: var(--font-sans); font-size: 0.875rem; font-weight: 600;
+            padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer;
+            transition: opacity 0.15s, background 0.15s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: var(--brand-primary); color: #fff; }
+        [data-theme="dark"] .btn-primary { color: #0D1B2A; }
+        .btn-secondary {
+            background: var(--readout-bg); color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+        .time-readout {
+            font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary);
+            background: var(--readout-bg); border: 1px solid var(--readout-border);
+            border-radius: 6px; padding: 6px 12px; margin-left: auto;
+        }
+
+        /* ── Sliders ─────────────────────────────────────── */
+        .slider-group { margin-bottom: 14px; }
+        .slider-group:last-child { margin-bottom: 0; }
+        .slider-label {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.8rem; font-weight: 500; color: var(--text-main); margin-bottom: 5px;
+        }
+        .slider-label .val {
+            font-family: var(--font-mono); font-size: 0.75rem; color: var(--brand-primary);
+        }
+        input[type="range"] {
+            width: 100%; height: 6px; appearance: none; -webkit-appearance: none;
+            background: var(--slider-track); border-radius: 3px; cursor: pointer; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            background: var(--slider-thumb); border-radius: 50%; cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; background: var(--slider-thumb);
+            border-radius: 50%; cursor: pointer; border: none;
+        }
+        @media (pointer: coarse) { input[type="range"] { height: 10px; } }
+
+        /* ── System Toggle ───────────────────────────────── */
+        .system-toggle {
+            display: flex; border-radius: 10px; overflow: hidden;
+            border: 1px solid var(--card-border); margin-bottom: 0;
+        }
+        .system-toggle button {
+            flex: 1; padding: 9px 6px; font-family: var(--font-sans);
+            font-size: 0.75rem; font-weight: 600; cursor: pointer;
+            background: var(--readout-bg); color: var(--text-secondary);
+            border: none; border-right: 1px solid var(--card-border);
+            transition: background 0.15s, color 0.15s;
+            line-height: 1.3;
+        }
+        .system-toggle button:last-child { border-right: none; }
+        .system-toggle button.active {
+            background: var(--brand-primary); color: #fff;
+        }
+        [data-theme="dark"] .system-toggle button.active { color: #0D1B2A; }
+
+        /* ── Energy Bars ─────────────────────────────────── */
+        .energy-bars-container {
+            display: flex; gap: 8px; align-items: stretch;
+            height: 220px; margin-top: 4px;
+        }
+        .bar-group {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .bar-group-label {
+            font-size: 0.68rem; font-weight: 600; color: var(--text-secondary);
+            text-align: center; text-transform: uppercase; letter-spacing: 0.04em;
+            flex-shrink: 0; height: 28px; display: flex; align-items: center; justify-content: center;
+        }
+        .bar-stack {
+            flex: 1; width: 100%; position: relative;
+            background: var(--readout-bg); border: 1px solid var(--card-border); border-radius: 8px;
+            overflow: visible;
+        }
+        /* zero line at 50% */
+        .bar-stack::after {
+            content: ''; position: absolute; left: 0; right: 0; bottom: 50%; height: 2px;
+            background: var(--card-border); z-index: 1;
+        }
+        .bar-inner {
+            position: absolute; bottom: 50%; left: 6px; right: 6px;
+            border-radius: 4px 4px 0 0;
+            display: flex; align-items: flex-start; justify-content: center;
+            transition: height 0.05s linear;
+            min-height: 2px;
+            z-index: 2;
+            overflow: hidden;
+        }
+        .bar-inner .bar-val {
+            font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600;
+            color: rgba(255,255,255,0.9); padding: 2px 0; line-height: 1;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 100%; text-align: center; margin-top: 2px;
+        }
+        .bar-ghost {
+            position: absolute; left: 4px; right: 4px; height: 2px;
+            border-top: 2px dashed rgba(71,85,105,0.6); z-index: 3;
+        }
+        .bar-sub-label {
+            font-size: 0.65rem; color: var(--text-secondary); font-family: var(--font-mono);
+            text-align: center; flex-shrink: 0;
+        }
+        .bar-zero-label {
+            position: absolute; right: -22px; bottom: 50%;
+            font-size: 0.6rem; color: var(--text-secondary); font-family: var(--font-mono);
+            transform: translateY(50%);
+        }
+        .bars-legend {
+            display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 0.72rem; color: var(--text-secondary);
+        }
+        .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+        /* ── Lab Guide ───────────────────────────────────── */
+        .lab-guide-section { display: none; }
+        .lab-guide-section.active { display: block; }
+        .lg-heading {
+            font-family: var(--font-display); font-size: 0.95rem; font-weight: 700;
+            color: var(--section-heading); margin-bottom: 10px;
+        }
+        .lg-text {
+            font-size: 0.82rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 10px;
+        }
+        .lg-text strong { color: var(--text-main); }
+        .eq-box {
+            background: var(--readout-bg); border: 1px solid var(--readout-border);
+            border-radius: 8px; padding: 10px 14px; margin: 8px 0;
+            font-family: var(--font-mono); font-size: 0.78rem; color: var(--brand-primary);
+            line-height: 1.8;
+        }
+        .eq-box .eq-sym { font-weight: 700; }
+        .force-pill {
+            display: inline-block; border-radius: 4px; padding: 1px 7px;
+            font-size: 0.72rem; font-weight: 600; margin: 1px 2px;
+        }
+        .pill-int { background: rgba(16,185,129,0.15); color: #059669; }
+        .pill-ext { background: rgba(147,51,234,0.15); color: #9333ea; }
+        .pill-th  { background: rgba(245,158,11,0.15); color: #d97706; }
+
+        /* ── SVG elements (class-based colors for dark mode) ── */
+        .ramp-fill { fill: var(--ramp-fill); }
+        .ramp-stroke { fill: none; stroke: var(--ramp-stroke); stroke-width: 2; }
+        .ground-line { stroke: var(--ground-stroke); stroke-width: 2; }
+
+        /* ── Footer ──────────────────────────────────────── */
+        footer {
+            text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-secondary);
+            border-top: 1px solid var(--card-border);
+        }
+        footer a { color: var(--brand-primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Conservation of Energy Lab</div>
+        <div class="banner-actions">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme">&#9728;&#65039;</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="sim-grid">
+            <!-- ═══ LEFT COLUMN ═══════════════════════════════════════════ -->
+            <div class="left-col">
+                <!-- SVG Canvas -->
+                <div class="card">
+                    <div class="card-title">Simulation</div>
+                    <div class="svg-wrap">
+                        <svg id="sim-svg" viewBox="0 0 600 350" width="600" height="350">
+                            <defs>
+                                <marker id="arr-normal" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#ef4444"/>
+                                </marker>
+                                <marker id="arr-friction" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#9333ea"/>
+                                </marker>
+                                <marker id="arr-gravity" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#10b981"/>
+                                </marker>
+                            </defs>
+
+                            <!-- Ground -->
+                            <line id="svg-ground" x1="0" y1="310" x2="600" y2="310" class="ground-line" stroke="#64748b" stroke-width="2"/>
+
+                            <!-- Ramp triangle -->
+                            <polygon id="svg-ramp" class="ramp-fill" stroke="var(--ramp-stroke)" stroke-width="2" points="40,310 456,310 40,310"/>
+
+                            <!-- Angle arc group -->
+                            <g id="svg-angle-group"></g>
+
+                            <!-- Block -->
+                            <g id="svg-block-group">
+                                <rect id="svg-block" x="-14" y="-14" width="28" height="28"
+                                    rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1.5"/>
+                            </g>
+
+                            <!-- Force vectors -->
+                            <g id="svg-forces"></g>
+
+                            <!-- Legend -->
+                            <g id="svg-legend" transform="translate(590,20)" text-anchor="end" font-family="Inter, sans-serif" font-size="11">
+                                <rect x="-120" y="-6" width="125" height="76" rx="6" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1" opacity="0.9"/>
+                                <line x1="-110" y1="10" x2="-90" y2="10" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arr-normal)"/>
+                                <text x="-84" y="14" fill="var(--text-secondary)">Normal (N)</text>
+                                <line x1="-110" y1="28" x2="-90" y2="28" stroke="#10b981" stroke-width="2.5" marker-end="url(#arr-gravity)"/>
+                                <text x="-84" y="32" fill="var(--text-secondary)">Gravity (mg)</text>
+                                <line x1="-110" y1="46" x2="-90" y2="46" stroke="#9333ea" stroke-width="2.5" marker-end="url(#arr-friction)"/>
+                                <text x="-84" y="50" fill="var(--text-secondary)">Friction (f)</text>
+                                <line x1="-110" y1="64" x2="-90" y2="64" stroke="#f59e0b" stroke-width="2.5"/>
+                                <text x="-84" y="68" fill="var(--text-secondary)">Height ref</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- Playback Controls -->
+                    <div class="playback-row">
+                        <button id="btn-playpause" class="btn btn-primary">&#9654; Play</button>
+                        <button id="btn-reset" class="btn btn-secondary">&#8635; Reset</button>
+                        <div class="time-readout">t = <span id="readout-time">0.00</span> s &nbsp;|&nbsp; x = <span id="readout-pos">0.00</span> m &nbsp;|&nbsp; v = <span id="readout-vel">0.00</span> m/s</div>
+                    </div>
+                </div>
+
+                <!-- Parameter Sliders -->
+                <div class="card">
+                    <div class="card-title">Parameters</div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Ramp Angle (θ)</span>
+                            <span class="val" id="val-angle">30°</span>
+                        </div>
+                        <input type="range" id="sl-angle" min="10" max="60" step="1" value="30">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Mass (m)</span>
+                            <span class="val" id="val-mass">2.0 kg</span>
+                        </div>
+                        <input type="range" id="sl-mass" min="0.5" max="10" step="0.5" value="2">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Friction Coefficient (μ)</span>
+                            <span class="val" id="val-mu">0.10</span>
+                        </div>
+                        <input type="range" id="sl-mu" min="0" max="0.8" step="0.05" value="0.1">
+                    </div>
+                </div>
+            </div><!-- end left-col -->
+
+            <!-- ═══ RIGHT COLUMN ══════════════════════════════════════════ -->
+            <div class="right-col">
+                <!-- System Boundary Toggle -->
+                <div class="card">
+                    <div class="card-title">System Boundary</div>
+                    <div class="system-toggle">
+                        <button id="sys-btn-0" class="active" onclick="setSystem(0)">Block<br>Only</button>
+                        <button id="sys-btn-1" onclick="setSystem(1)">Block +<br>Earth</button>
+                        <button id="sys-btn-2" onclick="setSystem(2)">Block + Earth<br>+ Surface</button>
+                    </div>
+                </div>
+
+                <!-- Energy Bars -->
+                <div class="card">
+                    <div class="card-title">Energy Bar Chart</div>
+
+                    <div class="energy-bars-container" id="energy-bars-container">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <div class="bars-legend" id="bars-legend">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Lab Guide -->
+                <div class="card">
+                    <div class="card-title">Lab Guide</div>
+
+                    <!-- System 0: Block Only -->
+                    <div id="lg-0" class="lab-guide-section active">
+                        <div class="lg-heading">System: Block Only</div>
+                        <p class="lg-text">
+                            The system boundary encloses <strong>only the block</strong>. Both gravity and friction act
+                            as <strong>external forces</strong> — they do work on the block, changing its kinetic energy.
+                            The block has no internal potential energy.
+                        </p>
+                        <p class="lg-text">Forces:
+                            <span class="force-pill pill-ext">Gravity (ext)</span>
+                            <span class="force-pill pill-ext">Friction (ext)</span>
+                        </p>
+                        <div class="eq-box">
+                            <div class="eq-sym">Work-Energy Theorem:</div>
+                            K<sub>f</sub> = K<sub>i</sub> + W<sub>net</sub>
+                            <br>K<sub>f</sub> = W<sub>gravity</sub> + W<sub>friction</sub>
+                        </div>
+                        <div class="eq-box" id="lg0-numeric">
+                            K = — J
+                        </div>
+                        <p class="lg-text">
+                            As the block slides down, gravity does <strong>positive work</strong> (increases KE) and
+                            friction does <strong>negative work</strong> (decreases KE). The net work equals the
+                            change in kinetic energy. The block speeds up as long as |W<sub>g</sub>| &gt; |W<sub>f</sub>|.
+                        </p>
+                    </div>
+
+                    <!-- System 1: Block + Earth -->
+                    <div id="lg-1" class="lab-guide-section">
+                        <div class="lg-heading">System: Block + Earth</div>
+                        <p class="lg-text">
+                            Expanding the boundary to include the <strong>Earth</strong> brings gravity
+                            <em>inside</em> the system. Gravity is no longer an external force doing work — instead,
+                            it stores energy as <strong>gravitational potential energy U<sub>g</sub></strong>.
+                            Only friction remains external.
+                        </p>
+                        <p class="lg-text">Forces:
+                            <span class="force-pill pill-int">Gravity → U<sub>g</sub> (int)</span>
+                            <span class="force-pill pill-ext">Friction (ext)</span>
+                        </p>
+                        <div class="eq-box">
+                            <div class="eq-sym">Conservation with External Work:</div>
+                            ΔE<sub>mech</sub> = W<sub>friction</sub>
+                            <br>ΔK + ΔU<sub>g</sub> = W<sub>friction</sub>
+                            <br>(K + U<sub>g</sub>)<sub>f</sub> − (K + U<sub>g</sub>)<sub>i</sub> = W<sub>f</sub>
+                        </div>
+                        <div class="eq-box" id="lg1-numeric">
+                            ΔE<sub>mech</sub> = — J
+                        </div>
+                        <p class="lg-text">
+                            The total mechanical energy (K + U<sub>g</sub>) is <strong>not conserved</strong> because
+                            friction removes energy from the system. The ghost line on the total bar shows the
+                            initial mechanical energy — watch it decrease as friction does negative work.
+                        </p>
+                    </div>
+
+                    <!-- System 2: Block + Earth + Surface -->
+                    <div id="lg-2" class="lab-guide-section">
+                        <div class="lg-heading">System: Block + Earth + Surface</div>
+                        <p class="lg-text">
+                            The largest system boundary includes the <strong>block, Earth, and the ramp surface</strong>.
+                            Now both gravity (U<sub>g</sub>) and friction (E<sub>th</sub>) are internal.
+                            This is an <strong>isolated system</strong> — no external work is done.
+                        </p>
+                        <p class="lg-text">Forces:
+                            <span class="force-pill pill-int">Gravity → U<sub>g</sub> (int)</span>
+                            <span class="force-pill pill-th">Friction → E<sub>th</sub> (int)</span>
+                        </p>
+                        <div class="eq-box">
+                            <div class="eq-sym">Conservation of Energy (Isolated System):</div>
+                            ΔE<sub>sys</sub> = 0
+                            <br>ΔK + ΔU<sub>g</sub> + ΔE<sub>th</sub> = 0
+                            <br>K + U<sub>g</sub> + E<sub>th</sub> = constant
+                        </div>
+                        <div class="eq-box" id="lg2-numeric">
+                            E<sub>sys</sub> = — J
+                        </div>
+                        <p class="lg-text">
+                            Total system energy is perfectly conserved! The energy bars show U<sub>g</sub>
+                            converting to K and E<sub>th</sub>. Thermal energy is <strong>irreversible</strong> —
+                            it cannot spontaneously convert back to mechanical energy, making friction a
+                            dissipative (non-conservative) force.
+                        </p>
+                    </div>
+                </div><!-- end card lab guide -->
+            </div><!-- end right-col -->
+        </div><!-- end sim-grid -->
+    </div><!-- end main-content -->
+
+    <footer>
+        &copy; <a href="/">PanPhy Labs</a> |
+        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+    </footer>
+
+    <script>
+    (function() {
+        // ════════════════════════════════════════════════════════════════
+        // CONSTANTS & STATE
+        // ════════════════════════════════════════════════════════════════
+        const GRAVITY = 9.81;
+        const RAMP_LENGTH = 10; // metres
+
+        let angle   = 30;   // degrees
+        let mass    = 2.0;  // kg
+        let mu      = 0.10; // coefficient of kinetic friction
+        let systemType = 0; // 0, 1, 2
+
+        let position = 0;   // m along ramp
+        let velocity = 0;   // m/s along ramp
+        let simTime  = 0;   // s
+        let isRunning = false;
+        let lastTimestamp = null;
+        let maxEnergy = 0;  // J — recalculated only at reset / slider change
+
+        // ════════════════════════════════════════════════════════════════
+        // DOM REFS
+        // ════════════════════════════════════════════════════════════════
+        const btnPlay   = document.getElementById('btn-playpause');
+        const btnReset  = document.getElementById('btn-reset');
+        const slAngle   = document.getElementById('sl-angle');
+        const slMass    = document.getElementById('sl-mass');
+        const slMu      = document.getElementById('sl-mu');
+        const valAngle  = document.getElementById('val-angle');
+        const valMass   = document.getElementById('val-mass');
+        const valMu     = document.getElementById('val-mu');
+        const rdTime    = document.getElementById('readout-time');
+        const rdPos     = document.getElementById('readout-pos');
+        const rdVel     = document.getElementById('readout-vel');
+
+        // SVG elements
+        const svgRamp       = document.getElementById('svg-ramp');
+        const svgBlock      = document.getElementById('svg-block');
+        const svgBlockGroup = document.getElementById('svg-block-group');
+        const svgForces     = document.getElementById('svg-forces');
+        const svgAngleGroup = document.getElementById('svg-angle-group');
+
+        // ════════════════════════════════════════════════════════════════
+        // PHYSICS HELPERS
+        // ════════════════════════════════════════════════════════════════
+        function getAngleRad() { return angle * Math.PI / 180; }
+
+        function computeGeometry() {
+            const angleRad = getAngleRad();
+            const rampBaseX = 40, rampBaseY = 310;
+            const rampWidth = (600 - 80) * 0.8; // 416
+            const rampHeight = rampWidth * Math.tan(angleRad);
+
+            let scale = 1;
+            if (rampHeight > 270) scale = 270 / rampHeight;
+
+            const scaledW = rampWidth * scale;
+            const scaledH = rampHeight * scale;
+
+            const topX = rampBaseX;
+            const topY = rampBaseY - scaledH;
+            const botX = rampBaseX + scaledW;
+            const botY = rampBaseY;
+
+            const pxPerMeter = Math.sqrt((botX - topX) ** 2 + (botY - topY) ** 2) / RAMP_LENGTH;
+
+            return { angleRad, topX, topY, botX, botY, pxPerMeter, rampBaseX, rampBaseY };
+        }
+
+        function computeEnergies() {
+            const angleRad = getAngleRad();
+            const h_start   = RAMP_LENGTH * Math.sin(angleRad);
+            const h_current = (RAMP_LENGTH - position) * Math.sin(angleRad);
+
+            const K         = 0.5 * mass * velocity * velocity;
+            const Ug        = mass * GRAVITY * h_current;
+            const W_gravity = mass * GRAVITY * Math.sin(angleRad) * position;
+            const W_friction = -(mu * mass * GRAVITY * Math.cos(angleRad)) * position;
+            const E_thermal = Math.abs(W_friction);
+            const E_initial = mass * GRAVITY * h_start;
+
+            return { K, Ug, W_gravity, W_friction, E_thermal, E_initial };
+        }
+
+        function stepPhysics(dt) {
+            if (dt > 0.1) dt = 0.1;
+            const angleRad = getAngleRad();
+            const F_gravity = mass * GRAVITY * Math.sin(angleRad);
+            const F_normal  = mass * GRAVITY * Math.cos(angleRad);
+            const F_friction = mu * F_normal;
+            const F_net = F_gravity - F_friction;
+            const accel = F_net / mass;
+
+            // Stop if net deceleration and velocity near zero
+            if (accel <= 0 && velocity <= 0) {
+                isRunning = false;
+                velocity = 0;
+                updatePlayButton();
+                return;
+            }
+
+            velocity += accel * dt;
+            if (velocity < 0) velocity = 0;
+            position += velocity * dt;
+
+            if (position >= RAMP_LENGTH) {
+                position = RAMP_LENGTH;
+                velocity = 0;
+                isRunning = false;
+                updatePlayButton();
+            }
+
+            simTime += dt;
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // SVG RENDERING
+        // ════════════════════════════════════════════════════════════════
+        function renderSVG() {
+            const geo = computeGeometry();
+            const { angleRad, topX, topY, botX, botY, pxPerMeter } = geo;
+
+            // Ramp triangle
+            svgRamp.setAttribute('points', `${topX},${topY} ${botX},${botY} ${topX},${botY}`);
+
+            // Block position along ramp
+            const blockDistPx = position * pxPerMeter;
+            const blockX = topX + blockDistPx * Math.cos(angleRad);
+            const blockY = topY + blockDistPx * Math.sin(angleRad);
+
+            svgBlockGroup.setAttribute('transform',
+                `translate(${blockX},${blockY}) rotate(${angle})`);
+
+            // Force vectors
+            const blockSize = 28;
+            const energies  = computeEnergies();
+
+            // Scale arrows: use fixed scale relative to a reference force
+            const refForce  = mass * GRAVITY; // weight
+            const arrowScale = 40 / refForce;  // 40px per 'weight unit'
+
+            const F_normal_mag  = mass * GRAVITY * Math.cos(angleRad);
+            const F_grav_par    = mass * GRAVITY * Math.sin(angleRad);
+            const F_fric_mag    = mu * F_normal_mag;
+
+            // Lengths in px
+            const lenN = F_normal_mag * arrowScale;
+            const lenG = refForce     * arrowScale;
+            const lenF = F_fric_mag   * arrowScale;
+
+            let forcesHTML = '';
+
+            // Normal force: perpendicular to ramp (pointing up-left from block centre)
+            // In block-rotated frame: straight up (negative y), perpendicular to ramp
+            // Global coords: direction is (-sin θ, -cos θ)
+            const nDx = -Math.sin(angleRad);
+            const nDy = -Math.cos(angleRad);
+            const nx2 = blockX + nDx * (blockSize / 2 + lenN);
+            const ny2 = blockY + nDy * (blockSize / 2 + lenN);
+            const nx1 = blockX + nDx * (blockSize / 2 + 2);
+            const ny1 = blockY + nDy * (blockSize / 2 + 2);
+            forcesHTML += `<line x1="${nx1.toFixed(1)}" y1="${ny1.toFixed(1)}" x2="${nx2.toFixed(1)}" y2="${ny2.toFixed(1)}"
+                stroke="#ef4444" stroke-width="2.5" marker-end="url(#arr-normal)"/>`;
+
+            // Gravity: straight down
+            const gx1 = blockX;
+            const gy1 = blockY + blockSize / 2 + 2;
+            const gx2 = blockX;
+            const gy2 = blockY + blockSize / 2 + 2 + lenG;
+            forcesHTML += `<line x1="${gx1.toFixed(1)}" y1="${gy1.toFixed(1)}" x2="${gx2.toFixed(1)}" y2="${gy2.toFixed(1)}"
+                stroke="#10b981" stroke-width="2.5" marker-end="url(#arr-gravity)"/>`;
+
+            // Friction: along ramp backward (up the slope) if mu > 0
+            if (mu > 0 && velocity > 0.001) {
+                // Direction up the ramp: (-cos θ, -sin θ)
+                const fDx = -Math.cos(angleRad);
+                const fDy = -Math.sin(angleRad);
+                const fx1 = blockX + (-fDx) * (blockSize / 2 + 2);
+                const fy1 = blockY + (-fDy) * (blockSize / 2 + 2);
+                const fx2 = blockX + fDx * (blockSize / 2 + lenF + 2);
+                const fy2 = blockY + fDy * (blockSize / 2 + lenF + 2);
+                forcesHTML += `<line x1="${fx1.toFixed(1)}" y1="${fy1.toFixed(1)}" x2="${fx2.toFixed(1)}" y2="${fy2.toFixed(1)}"
+                    stroke="#9333ea" stroke-width="2.5" marker-end="url(#arr-friction)"/>`;
+            }
+
+            // Height reference line (amber dashed): from block to ground level
+            if (position < RAMP_LENGTH - 0.1) {
+                const hLineY = blockY;
+                // Draw from block position straight down to y=310
+                forcesHTML += `<line x1="${blockX.toFixed(1)}" y1="${(blockY + blockSize/2).toFixed(1)}"
+                    x2="${blockX.toFixed(1)}" y2="310" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.7"/>`;
+                // h label
+                const h_val = (RAMP_LENGTH - position) * Math.sin(angleRad);
+                if (h_val > 0.05) {
+                    forcesHTML += `<text x="${(blockX + 6).toFixed(1)}" y="${((blockY + blockSize/2 + 310) / 2).toFixed(1)}"
+                        fill="#f59e0b" font-size="11" font-family="JetBrains Mono, monospace" font-weight="600">h=${h_val.toFixed(2)}m</text>`;
+                }
+            }
+
+            svgForces.innerHTML = forcesHTML;
+
+            // Angle arc
+            const arcR = 30;
+            const arcX = botX;
+            const arcY = botY;
+            const arcEndX = botX - arcR * Math.cos(angleRad);
+            const arcEndY = botY - arcR * Math.sin(angleRad);
+            const midAngleRad = angleRad / 2;
+            const labelX = botX - (arcR + 14) * Math.cos(midAngleRad);
+            const labelY = botY - (arcR + 14) * Math.sin(midAngleRad);
+
+            svgAngleGroup.innerHTML = `
+                <path d="M ${(arcX - arcR).toFixed(1)} ${arcY}
+                         A ${arcR} ${arcR} 0 0 0 ${arcEndX.toFixed(1)} ${arcEndY.toFixed(1)}"
+                      fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+                <text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}"
+                      fill="#a78bfa" font-size="12" font-family="Inter, sans-serif"
+                      font-weight="600" text-anchor="middle" dominant-baseline="central">${angle}°</text>`;
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // ENERGY BARS
+        // ════════════════════════════════════════════════════════════════
+        function getBarConfig() {
+            const en = computeEnergies();
+            const mE = maxEnergy || 1;
+
+            if (systemType === 0) {
+                // Block Only: Internal=[K], Work Ext=[Wg, Wf], Total=[K]
+                return {
+                    groups: [
+                        {
+                            label: 'Internal',
+                            bars: [
+                                { value: en.K, color: '#f59e0b', sublabel: 'K' }
+                            ]
+                        },
+                        {
+                            label: 'Ext. Work',
+                            bars: [
+                                { value: en.W_gravity, color: '#10b981', sublabel: 'Wg' },
+                                { value: en.W_friction, color: '#9333ea', sublabel: 'Wf' }
+                            ]
+                        },
+                        {
+                            label: 'Total (E_sys)',
+                            bars: [
+                                { value: en.K, color: '#475569', sublabel: 'K' }
+                            ],
+                            ghost: null
+                        }
+                    ],
+                    legend: [
+                        { color: '#f59e0b', label: 'K (kinetic)' },
+                        { color: '#10b981', label: 'Wg (work by gravity)' },
+                        { color: '#9333ea', label: 'Wf (work by friction)' }
+                    ]
+                };
+            } else if (systemType === 1) {
+                // Block + Earth: Internal=[K, Ug], Work Ext=[Wf], Total=[K+Ug] + ghost
+                return {
+                    groups: [
+                        {
+                            label: 'Internal',
+                            bars: [
+                                { value: en.K,  color: '#f59e0b', sublabel: 'K' },
+                                { value: en.Ug, color: '#10b981', sublabel: 'Ug' }
+                            ]
+                        },
+                        {
+                            label: 'Ext. Work',
+                            bars: [
+                                { value: en.W_friction, color: '#9333ea', sublabel: 'Wf' }
+                            ]
+                        },
+                        {
+                            label: 'Total (E_mech)',
+                            bars: [
+                                { value: en.K + en.Ug, color: '#475569', sublabel: 'K+Ug' }
+                            ],
+                            ghost: en.E_initial
+                        }
+                    ],
+                    legend: [
+                        { color: '#f59e0b', label: 'K (kinetic)' },
+                        { color: '#10b981', label: 'Ug (gravitational PE)' },
+                        { color: '#9333ea', label: 'Wf (work by friction)' },
+                        { color: '#475569', label: 'E_mech total' }
+                    ]
+                };
+            } else {
+                // Block + Earth + Surface: Internal=[K, Ug, Eth], Ext=0, Total=[K+Ug+Eth]
+                return {
+                    groups: [
+                        {
+                            label: 'Internal',
+                            bars: [
+                                { value: en.K,           color: '#f59e0b', sublabel: 'K' },
+                                { value: en.Ug,          color: '#10b981', sublabel: 'Ug' },
+                                { value: en.E_thermal,   color: '#9333ea', sublabel: 'Eth' }
+                            ]
+                        },
+                        {
+                            label: 'Ext. Work',
+                            bars: [
+                                { value: 0, color: '#94a3b8', sublabel: '0 J' }
+                            ]
+                        },
+                        {
+                            label: 'Total (E_sys)',
+                            bars: [
+                                { value: en.K + en.Ug + en.E_thermal, color: '#475569', sublabel: 'E_sys' }
+                            ],
+                            ghost: en.E_initial
+                        }
+                    ],
+                    legend: [
+                        { color: '#f59e0b', label: 'K (kinetic)' },
+                        { color: '#10b981', label: 'Ug (gravitational PE)' },
+                        { color: '#9333ea', label: 'Eth (thermal energy)' },
+                        { color: '#475569', label: 'E_sys total' }
+                    ]
+                };
+            }
+        }
+
+        // Build bar HTML once (structure), update heights on each frame
+        let barsBuilt = false;
+        let barGroupEls = []; // array of arrays of {barEl, valEl, ghostEl} per group
+
+        function buildBarsDOM() {
+            const config = getBarConfig();
+            const container = document.getElementById('energy-bars-container');
+            const legendEl  = document.getElementById('bars-legend');
+            container.innerHTML = '';
+            legendEl.innerHTML  = '';
+            barGroupEls = [];
+
+            config.groups.forEach(function(grp, gi) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'bar-group';
+
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'bar-group-label';
+                labelDiv.textContent = grp.label;
+                groupDiv.appendChild(labelDiv);
+
+                const groupBars = [];
+
+                grp.bars.forEach(function(bar) {
+                    const stackDiv = document.createElement('div');
+                    stackDiv.className = 'bar-stack';
+
+                    const innerDiv = document.createElement('div');
+                    innerDiv.className = 'bar-inner';
+                    innerDiv.style.background = bar.color;
+                    innerDiv.style.height = '2px';
+
+                    const valSpan = document.createElement('span');
+                    valSpan.className = 'bar-val';
+                    innerDiv.appendChild(valSpan);
+
+                    stackDiv.appendChild(innerDiv);
+
+                    // Ghost line if first bar in total group
+                    let ghostEl = null;
+                    if (grp.ghost !== undefined && grp.ghost !== null && grp.bars.indexOf(bar) === 0) {
+                        ghostEl = document.createElement('div');
+                        ghostEl.className = 'bar-ghost';
+                        stackDiv.appendChild(ghostEl);
+                    }
+
+                    groupDiv.appendChild(stackDiv);
+
+                    const subLabel = document.createElement('div');
+                    subLabel.className = 'bar-sub-label';
+                    subLabel.textContent = bar.sublabel;
+                    groupDiv.appendChild(subLabel);
+
+                    groupBars.push({ barEl: innerDiv, valEl: valSpan, ghostEl: ghostEl, config: bar });
+                });
+
+                container.appendChild(groupDiv);
+                barGroupEls.push({ group: grp, bars: groupBars });
+            });
+
+            // Legend
+            config.legend.forEach(function(item) {
+                const li = document.createElement('div');
+                li.className = 'legend-item';
+                li.innerHTML = `<span class="legend-swatch" style="background:${item.color}"></span><span>${item.label}</span>`;
+                legendEl.appendChild(li);
+            });
+
+            barsBuilt = true;
+        }
+
+        function updateBarsValues() {
+            if (!barsBuilt) return;
+            const config = getBarConfig();
+            const mE = maxEnergy || 1;
+
+            barGroupEls.forEach(function(grpEl, gi) {
+                const grpConfig = config.groups[gi];
+                if (!grpConfig) return;
+
+                grpEl.bars.forEach(function(barEl, bi) {
+                    const barConfig = grpConfig.bars[bi];
+                    if (!barConfig || !barEl) return;
+
+                    const val  = barConfig.value;
+                    const frac = Math.min(Math.abs(val) / mE, 1.0);
+                    const heightPct = frac * 50; // 50% of container = full
+
+                    barEl.barEl.style.height = Math.max(heightPct, 0.5) + '%';
+
+                    // Position: positive bars go UP from zero line (bottom: 50%)
+                    // We keep bottom: 50% always (grows upward)
+                    if (val >= 0) {
+                        barEl.barEl.style.bottom = '50%';
+                        barEl.barEl.style.borderRadius = '4px 4px 0 0';
+                    } else {
+                        // Negative bar grows downward
+                        barEl.barEl.style.bottom = (50 - heightPct) + '%';
+                        barEl.barEl.style.borderRadius = '0 0 4px 4px';
+                    }
+
+                    barEl.valEl.textContent = val.toFixed(1) + 'J';
+
+                    // Ghost line
+                    if (barEl.ghostEl && grpConfig.ghost != null) {
+                        const ghostFrac = Math.min(grpConfig.ghost / mE, 1.0);
+                        const ghostPct  = ghostFrac * 50;
+                        // Bottom of stack is 0%, so ghost at (50 + ghostPct)% from bottom
+                        barEl.ghostEl.style.bottom = (50 + ghostPct) + '%';
+                        barEl.ghostEl.style.display = 'block';
+                    }
+                });
+            });
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // LAB GUIDE UPDATES
+        // ════════════════════════════════════════════════════════════════
+        function updateLabGuide() {
+            const en = computeEnergies();
+
+            // System 0
+            const lg0 = document.getElementById('lg0-numeric');
+            if (lg0) {
+                const Wnet = en.W_gravity + en.W_friction;
+                lg0.innerHTML =
+                    `K = W<sub>net</sub><br>` +
+                    `<strong>${en.K.toFixed(2)} J</strong> = ` +
+                    `${en.W_gravity.toFixed(2)} + (${en.W_friction.toFixed(2)}) = ` +
+                    `<strong>${Wnet.toFixed(2)} J</strong>`;
+            }
+
+            // System 1
+            const lg1 = document.getElementById('lg1-numeric');
+            if (lg1) {
+                const dEmech = (en.K + en.Ug) - en.E_initial;
+                lg1.innerHTML =
+                    `ΔE<sub>mech</sub> = W<sub>friction</sub><br>` +
+                    `(K+U<sub>g</sub>) − E<sub>initial</sub> = W<sub>f</sub><br>` +
+                    `(${en.K.toFixed(2)}+${en.Ug.toFixed(2)}) − ${en.E_initial.toFixed(2)} = ` +
+                    `<strong>${dEmech.toFixed(2)} J</strong> ≈ W<sub>f</sub> = <strong>${en.W_friction.toFixed(2)} J</strong>`;
+            }
+
+            // System 2
+            const lg2 = document.getElementById('lg2-numeric');
+            if (lg2) {
+                const Esys = en.K + en.Ug + en.E_thermal;
+                lg2.innerHTML =
+                    `K + U<sub>g</sub> + E<sub>th</sub> = E<sub>initial</sub><br>` +
+                    `${en.K.toFixed(2)} + ${en.Ug.toFixed(2)} + ${en.E_thermal.toFixed(2)} = ` +
+                    `<strong>${Esys.toFixed(2)} J</strong> ≈ E₀ = <strong>${en.E_initial.toFixed(2)} J</strong>`;
+            }
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // SYSTEM SELECTION
+        // ════════════════════════════════════════════════════════════════
+        function setSystem(s) {
+            systemType = s;
+            [0,1,2].forEach(function(i) {
+                document.getElementById('sys-btn-' + i).classList.toggle('active', i === s);
+                document.getElementById('lg-' + i).classList.toggle('active', i === s);
+            });
+            buildBarsDOM();
+            updateBarsValues();
+            updateLabGuide();
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // READOUTS
+        // ════════════════════════════════════════════════════════════════
+        function updateReadouts() {
+            rdTime.textContent = simTime.toFixed(2);
+            rdPos.textContent  = position.toFixed(2);
+            rdVel.textContent  = velocity.toFixed(2);
+        }
+
+        function updatePlayButton() {
+            btnPlay.innerHTML = isRunning ? '&#9646;&#9646; Pause' : '&#9654; Play';
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // RESET
+        // ════════════════════════════════════════════════════════════════
+        function resetSim() {
+            position  = 0;
+            velocity  = 0;
+            simTime   = 0;
+            isRunning = false;
+            lastTimestamp = null;
+            // Recalculate max energy
+            const angleRad = getAngleRad();
+            const h_start  = RAMP_LENGTH * Math.sin(angleRad);
+            maxEnergy = mass * GRAVITY * h_start;
+            updatePlayButton();
+            buildBarsDOM();
+            renderSVG();
+            updateBarsValues();
+            updateLabGuide();
+            updateReadouts();
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // ANIMATION LOOP
+        // ════════════════════════════════════════════════════════════════
+        function loop(ts) {
+            if (isRunning) {
+                if (lastTimestamp !== null) {
+                    const dt = Math.min((ts - lastTimestamp) / 1000, 0.1);
+                    stepPhysics(dt);
+                }
+                lastTimestamp = ts;
+            } else {
+                lastTimestamp = null;
+            }
+
+            renderSVG();
+            updateBarsValues();
+            updateLabGuide();
+            updateReadouts();
+
+            requestAnimationFrame(loop);
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // EVENT LISTENERS
+        // ════════════════════════════════════════════════════════════════
+        btnPlay.addEventListener('click', function() {
+            if (position >= RAMP_LENGTH) return; // already done
+            isRunning = !isRunning;
+            if (isRunning) lastTimestamp = null;
+            updatePlayButton();
+        });
+
+        btnReset.addEventListener('click', resetSim);
+
+        function onSliderChange() {
+            angle = parseFloat(slAngle.value);
+            mass  = parseFloat(slMass.value);
+            mu    = parseFloat(slMu.value);
+            valAngle.textContent = angle + '°';
+            valMass.textContent  = mass.toFixed(1) + ' kg';
+            valMu.textContent    = mu.toFixed(2);
+            resetSim();
+        }
+        slAngle.addEventListener('input', onSliderChange);
+        slMass.addEventListener('input',  onSliderChange);
+        slMu.addEventListener('input',    onSliderChange);
+
+        // ════════════════════════════════════════════════════════════════
+        // THEME TOGGLE
+        // ════════════════════════════════════════════════════════════════
+        const DARK_KEY  = 'cons-energy-systems-dark';
+        const LIGHT_KEY = 'cons-energy-systems-light';
+        const themeBtn  = document.getElementById('theme-button');
+
+        function applyChromeMeta(theme) {
+            const tc = document.querySelector('meta[name="theme-color"]');
+            const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            const dark = theme === 'dark';
+            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+        }
+        function updateThemeEmoji(theme) {
+            themeBtn.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+        }
+
+        const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', initTheme);
+        applyChromeMeta(initTheme);
+        updateThemeEmoji(initTheme);
+
+        window.addEventListener('pageshow', function() {
+            applyChromeMeta(document.documentElement.getAttribute('data-theme'));
+        });
+
+        themeBtn.addEventListener('click', function() {
+            const curr = document.documentElement.getAttribute('data-theme');
+            const next = curr === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') {
+                localStorage.setItem(DARK_KEY, 'true');
+                localStorage.removeItem(LIGHT_KEY);
+            } else {
+                localStorage.setItem(LIGHT_KEY, 'true');
+                localStorage.removeItem(DARK_KEY);
+            }
+            applyChromeMeta(next);
+            updateThemeEmoji(next);
+        });
+
+        // Offline font fallback
+        function updateOfflineFontState() {
+            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
+        }
+        window.addEventListener('online',  updateOfflineFontState);
+        window.addEventListener('offline', updateOfflineFontState);
+        updateOfflineFontState();
+
+        // ════════════════════════════════════════════════════════════════
+        // INIT
+        // ════════════════════════════════════════════════════════════════
+        buildBarsDOM();
+        resetSim();
+        requestAnimationFrame(loop);
+
+    })();
+    </script>
+
+    <script>
+    (function() {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function(el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+
+</html>
