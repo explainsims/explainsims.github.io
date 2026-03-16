@@ -20,15 +20,15 @@
       }
     })();
     </script>
-    <title>ExplAIn Sims</title>
+    <title>Tools — ExplAIn Sims</title>
     <meta name="description"
-        content="Interactive physics simulations, tools, and educational games for teachers and students.">
-    <meta property="og:title" content="ExplAIn Sims">
+        content="Browser-based physics tools for data analysis, scientific documents, and sound exploration.">
+    <meta property="og:title" content="Tools — ExplAIn Sims">
     <meta property="og:description"
-        content="Interactive physics simulations, tools, and educational games for teachers and students.">
-    <meta name="twitter:title" content="ExplAIn Sims">
+        content="Browser-based physics tools for data analysis, scientific documents, and sound exploration.">
+    <meta name="twitter:title" content="Tools — ExplAIn Sims">
     <meta name="twitter:description"
-        content="Interactive physics simulations, tools, and educational games for teachers and students.">
+        content="Browser-based physics tools for data analysis, scientific documents, and sound exploration.">
 
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
@@ -698,6 +698,25 @@
                 transform: none;
             }
         }
+
+        .logo-link {
+            display: block;
+            text-decoration: none;
+            animation: heroFadeUp 0.8s ease-out both;
+        }
+        nav a[aria-current="page"] {
+            color: var(--text-main);
+        }
+        nav a[aria-current="page"]::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+        .section-desc {
+            font-size: 1.05rem;
+            max-width: 720px;
+            color: var(--text-secondary);
+            line-height: 1.85;
+            margin: -1.5rem 0 2.5rem 0;
+        }
     </style>
 </head>
 
@@ -707,7 +726,7 @@
     </div>
 
     <nav>
-        <a href="/tools.html">Tools</a>
+        <a href="/tools.html" aria-current="page">Tools</a>
         <a href="/simulations.html">Sims</a>
         <a href="/teachers.html">Teachers</a>
         <a href="/fun.html">Fun</a>
@@ -717,34 +736,45 @@
     </nav>
 
     <header>
-        <img src="/assets/ExplAIn%20Sims.png" class="logo" alt="ExplAIn Sims">
+        <a href="/" class="logo-link">
+            <img src="/assets/ExplAIn%20Sims.png" class="logo" alt="ExplAIn Sims">
+        </a>
         <h1>Expl<span class="ai-highlight">AI</span>n</h1>
         <div class="site-subtitle">Sims</div>
         <div class="hero-rule"></div>
         <p>Physics apps, tools, sims, and some random stuff.</p>
     </header>
 
-    <div class="section" id="featured" data-section="01">
-        <h2>Featured <span class="section-label">Today's Pick</span></h2>
-        <div class="grid" id="featured-grid">
-            <!-- Populated by JS — one random card from each section -->
+    <div class="section" id="tools" data-section="01">
+        <h2>Tools <span class="section-label">Explore</span></h2>
+        <p class="section-desc">Analyse data, create scientific documents, and explore sound with this collection of browser-based physics tools.</p>
+        <div class="grid">
+            <div class="card">
+                <h3>Markdown + LaTeX</h3>
+                <p>Write, preview, and present scientific documents with LaTeX support.</p>
+                <a href="/tools/markdown_editor.html">Open Editor</a>
+            </div>
+            <div class="card">
+                <h3>Data Plotting &amp; Fitting</h3>
+                <p>Process data, plot graphs, add uncertainties, and run best-fit analysis.</p>
+                <a href="/tools/panphyplot.html">Plot Data</a>
+            </div>
+            <div class="card">
+                <h3>Motion Tracker</h3>
+                <p>Step through video frames, click to track objects, and extract motion data.</p>
+                <a href="/tools/motion_tracker.html">Track Motion</a>
+            </div>
+            <div class="card">
+                <h3>Sound Analyzer</h3>
+                <p>Visualize live audio as a frequency spectrum and waveform.</p>
+                <a href="/tools/sound_analyzer.html">Analyze Sound</a>
+            </div>
+            <div class="card">
+                <h3>Tone Generator</h3>
+                <p>Dual-channel sine wave mixing.</p>
+                <a href="/tools/tone_generator.html">Generate Tone</a>
+            </div>
         </div>
-    </div>
-
-    <div class="section" id="about" data-section="02">
-        <h2>About</h2>
-        <p>
-            The tools, simulations, and games here are built with AI and
-            designed to be interactive and educational. While there are many great web tools and physics simulations
-            online, not all meet my needs. On school-managed devices, students and teachers often don't have the
-            admin rights to install software, so I build my own web apps: simple, browser-based, and ready for
-            everyone to explore and enjoy.
-            <br><br>
-            Most apps are also offline-friendly. After your first visit, the site caches each app in the
-            background &mdash; look for the <strong>Offline ready</strong> badge on each card. Once cached,
-            those tools, simulations, and games work without an internet connection. A few features that rely on
-            external services (Asteroid Storm's leaderboard and the EAL Companion) still require internet access.
-        </p>
     </div>
 
     <footer>
@@ -1129,49 +1159,6 @@
         })();
     </script>
     <script>
-        // Featured section — pick one random card from each category
-        (function () {
-            var FEATURED_POOL = {
-                tools: [
-                    { t: 'Markdown + LaTeX', d: 'Write, preview, and present scientific documents with LaTeX support.', h: '/tools/markdown_editor.html', c: 'Open Editor' },
-                    { t: 'Data Plotting & Fitting', d: 'Process data, plot graphs, add uncertainties, and run best-fit analysis.', h: '/tools/panphyplot.html', c: 'Plot Data' },
-                    { t: 'Motion Tracker', d: 'Step through video frames, click to track objects, and extract motion data.', h: '/tools/motion_tracker.html', c: 'Track Motion' },
-                    { t: 'Sound Analyzer', d: 'Visualize live audio as a frequency spectrum and waveform.', h: '/tools/sound_analyzer.html', c: 'Analyze Sound' },
-                    { t: 'Tone Generator', d: 'Dual-channel sine wave mixing.', h: '/tools/tone_generator.html', c: 'Generate Tone' }
-                ],
-                sims: [
-                    { t: 'Wave Superposition', d: 'Learn how waves interact.', h: '/simulations/superposition.html', c: 'Launch Sim' },
-                    { t: 'Interference', d: 'Explore two-source wave interference in a 3D ripple tank.', h: '/simulations/interference.html', c: 'Launch Sim' },
-                    { t: 'Standing Wave', d: 'Visualize standing waves with different boundary conditions.', h: '/simulations/standing_wave.html', c: 'Launch Sim' },
-                    { t: 'Collision Lab', d: 'Experiment with collision physics using interactive, real-time motion.', h: '/simulations/collision.html', c: 'Launch Sim' },
-                    { t: 'States of Matter', d: 'Compare solids, liquids, gases, and phase changes in a 3D particle model.', h: '/simulations/states.html', c: 'Launch Sim' },
-                    { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/simulations/physical_pendulum.html', c: 'Launch Sim' },
-                    { t: 'Lorentz Transform', d: 'Learn how spacetime transforms between inertial frames.', h: '/simulations/lorentz.html', c: 'Launch Sim' }
-                ],
-                teachers: [
-                    { t: 'Exam Timer', d: 'Manage exam times with an automatic extra-time timer.', h: '/for_teachers/timer.html', c: 'Open Timer' },
-                    { t: 'Camera Visualizer', d: 'Project your device camera to the big screen, then snap &amp; sketch.', h: '/for_teachers/visualizer.html', c: 'Use Camera' },
-                    { t: 'EAL Companion', d: 'AI-powered language support for EAL learners.', h: 'https://panphy-eal.streamlit.app/', c: 'Open App', ext: true }
-                ],
-                fun: [
-                    { t: 'Asteroid Storm', d: 'Survive the asteroid storm! Beat top survivors worldwide!', h: '/fun/dodge.html', c: 'Play Now' },
-                    { t: 'Hit Me!', d: 'Wait for it... tap when green! Tracks your best and average times.', h: '/fun/react.html', c: 'Play Now' },
-                    { t: 'ASCII Camera', d: 'See yourself in 8-bit color ASCII characters.', h: '/fun/ascii_cam.html', c: 'Open Camera' }
-                ]
-            };
-            var grid = document.getElementById('featured-grid');
-            if (!grid) return;
-            Object.values(FEATURED_POOL).forEach(function (pool) {
-                var item = pool[Math.floor(Math.random() * pool.length)];
-                var div = document.createElement('div');
-                div.className = 'card';
-                var linkExtra = item.ext ? ' target="_blank" rel="noopener noreferrer"' : '';
-                div.innerHTML = '<h3>' + item.t + '</h3><p>' + item.d + '</p><a href="' + item.h + '"' + linkExtra + '>' + item.c + '</a>';
-                grid.appendChild(div);
-            });
-        })();
-    </script>
-    <script>
         // Theme Toggle Functionality
         const themeButton = document.getElementById('theme-button');
         const DARK_THEME_KEY = "theme-dark";
@@ -1250,38 +1237,7 @@
                 'https://cdn.jsdelivr.net/npm/chart.js'
             ],
             '/tools/sound_analyzer.html': ['/tools/sound_analyzer.html'],
-            '/tools/tone_generator.html': ['/tools/tone_generator.html'],
-            '/simulations/superposition.html': ['/simulations/superposition.html'],
-            '/simulations/standing_wave.html': ['/simulations/standing_wave.html'],
-            '/simulations/physical_pendulum.html': ['/simulations/physical_pendulum.html'],
-            '/simulations/lorentz.html': ['/simulations/lorentz.html'],
-            '/simulations/interference.html': [
-                '/simulations/interference.html',
-                'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js'
-            ],
-            '/simulations/collision.html': [
-                '/simulations/collision.html',
-                '/simulations/collision/app.js',
-                'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js',
-                '/simulations/collision/collision_assets/models/hand_landmarker.task',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/vision_bundle.mjs',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_internal.js',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_internal.wasm',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_nosimd_internal.js',
-                '/simulations/collision/collision_assets/mediapipe/tasks-vision-0.10.32/wasm/vision_wasm_nosimd_internal.wasm'
-            ],
-            '/simulations/states.html': [
-                '/simulations/states.html',
-                'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js',
-                'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js'
-            ],
-            '/for_teachers/timer.html': [
-                '/for_teachers/timer.html',
-                '/for_teachers/timer_beep.mp3'
-            ],
-            '/for_teachers/visualizer.html': ['/for_teachers/visualizer.html'],
-            '/fun/react.html': ['/fun/react.html'],
-            '/fun/ascii_cam.html': ['/fun/ascii_cam.html']
+            '/tools/tone_generator.html': ['/tools/tone_generator.html']
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(

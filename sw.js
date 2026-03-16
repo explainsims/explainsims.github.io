@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-03-16T17:00:00Z';
+const BUILD_ID = '2026-03-16T18:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -10,6 +10,10 @@ const CORS_REQUIRED_ASSETS = new Set([
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/tools.html',
+  '/simulations.html',
+  '/teachers.html',
+  '/fun.html',
   '/assets/favicon.png',
   '/assets/apple-touch-icon.png',
   '/assets/panphy.png',
