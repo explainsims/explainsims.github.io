@@ -321,8 +321,7 @@
     </div>
 
     <footer>
-        &copy; <a href="/">PanPhy Labs</a> |
-        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+        <p>Free to use, share, and remix. &nbsp;|&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p>
     </footer>
 
     <script>
@@ -461,8 +460,9 @@
             fT.setAttribute('y2', bob.y - tensVecLen * Math.cos(angleRad));
 
             const fTlbl = svgEl('force-t-lbl');
-            fTlbl.setAttribute('x', bob.x - 30 * Math.sin(angleRad));
-            fTlbl.setAttribute('y', bob.y - 30 * Math.cos(angleRad));
+            // Place T label near the arrow tip, offset perpendicularly away from the string
+            fTlbl.setAttribute('x', bob.x - tensVecLen * Math.sin(angleRad) - 14 * Math.cos(angleRad));
+            fTlbl.setAttribute('y', bob.y - tensVecLen * Math.cos(angleRad) + 14 * Math.sin(angleRad));
 
             // Force: Gravity
             const fFg = svgEl('force-fg');
@@ -470,8 +470,10 @@
             fFg.setAttribute('x2', bob.x); fFg.setAttribute('y2', bob.y + gravVecY);
 
             const fFgLbl = svgEl('force-fg-lbl');
-            fFgLbl.setAttribute('x', bob.x - 14);
-            fFgLbl.setAttribute('y', bob.y + gravVecY / 2);
+            // Place Fg label at the arrow tip, offset to the right
+            fFgLbl.setAttribute('text-anchor', 'start');
+            fFgLbl.setAttribute('x', bob.x + 8);
+            fFgLbl.setAttribute('y', bob.y + gravVecY - 6);
 
             // Force: Centripetal
             const fFc = svgEl('force-fc');
@@ -479,8 +481,9 @@
             fFc.setAttribute('x2', bob.x - fcVecX); fFc.setAttribute('y2', bob.y);
 
             const fFcLbl = svgEl('force-fc-lbl');
-            fFcLbl.setAttribute('x', bob.x - fcVecX / 2);
-            fFcLbl.setAttribute('y', bob.y + 16);
+            // Place Fc label at the arrow tip, offset above
+            fFcLbl.setAttribute('x', bob.x - fcVecX - 4);
+            fFcLbl.setAttribute('y', bob.y - 12);
 
             // Bob
             const bobEl = svgEl('bob');

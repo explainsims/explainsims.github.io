@@ -410,8 +410,7 @@
     </div>
 
     <footer>
-        &copy; <a href="/">PanPhy Labs</a> |
-        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+        <p>Free to use, share, and remix. &nbsp;|&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p>
     </footer>
 
     <script>
@@ -620,9 +619,10 @@
             ctx.fillStyle = testColor; ctx.fill();
             ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
 
-            // Label
+            // Label (clamped so it stays within the canvas when the test mass is far right)
             ctx.fillStyle = labelColor; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText(`r = ${fieldDist.toFixed(2)}R`, cx + testPos / 2, cy + 24);
+            var labelX = Math.min(cx + testPos / 2, size - 36);
+            ctx.fillText(`r = ${fieldDist.toFixed(2)}R`, labelX, cy + 24);
         }
 
         function updateFieldReadout() {

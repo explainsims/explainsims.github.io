@@ -600,8 +600,8 @@
         m2Label.setAttribute('x', off2);  m2Label.setAttribute('y', r2 - 5);
         m2Kg.setAttribute('x', off2);     m2Kg.setAttribute('y', r2 + 10);
 
-        // Pulley rotation
-        var rotDeg = (displacement / PULLEY_R_M) * (180 / Math.PI);
+        // Pulley rotation: when m1 goes down (positive displacement), pulley rotates CCW (negative angle in SVG)
+        var rotDeg = -(displacement / PULLEY_R_M) * (180 / Math.PI);
         pulleyGroup.setAttribute('transform', 'translate(200,' + PULLEY_Y + ') rotate(' + rotDeg + ')');
 
         // Time

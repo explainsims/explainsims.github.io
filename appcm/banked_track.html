@@ -315,8 +315,7 @@
     </div>
 
     <footer>
-        &copy; <a href="/">PanPhy Labs</a> |
-        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
+        <p>Free to use, share, and remix. &nbsp;|&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p>
     </footer>
 
     <script>
@@ -462,11 +461,14 @@
             </g>`;
 
             // Normal force arrow
+            // Offset label perpendicular to the normal direction (to the left of the arrow)
+            const N_lbl_x = N_x2 - Math.cos(angleRad) * 18;
+            const N_lbl_y = N_y2 + Math.sin(angleRad) * 18;
             html += `<g>
                 <line x1="${cax}" y1="${cay}" x2="${N_x2}" y2="${N_y2}"
                     stroke="#F59E0B" stroke-width="2.5" marker-end="url(#arr-n)"/>
-                <text x="${N_x2 - 20}" y="${N_y2 - 15}" fill="#F59E0B" font-size="14" font-weight="bold"
-                    dominant-baseline="central">N</text>
+                <text x="${N_lbl_x}" y="${N_lbl_y}" fill="#F59E0B" font-size="14" font-weight="bold"
+                    dominant-baseline="central" text-anchor="middle">N</text>
             </g>`;
 
             // Friction arrow (only if non-trivial)
@@ -486,8 +488,8 @@
                 html += `<g>
                     <line x1="${cax}" y1="${cay}" x2="${Fc_x2}" y2="${Fc_y2}"
                         stroke="#A855F7" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arr-fc)"/>
-                    <text x="${Fc_x2}" y="${Fc_y2 - 20}" fill="#A855F7" font-size="14" font-weight="bold"
-                        dominant-baseline="central" text-anchor="middle">F꜀</text>
+                    <text x="${Fc_x2}" y="${Fc_y2 - 18}" fill="#A855F7" font-size="14" font-weight="bold"
+                        dominant-baseline="central" text-anchor="middle">F<tspan dy="4" font-size="10">c</tspan></text>
                 </g>`;
             }
 
