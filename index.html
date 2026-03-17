@@ -331,18 +331,7 @@
         }
 
         .section[data-section]::before {
-            content: attr(data-section);
-            font-family: var(--font-mono);
-            font-size: 6rem;
-            font-weight: 400;
-            color: var(--section-num-color);
-            position: absolute;
-            top: -2rem;
-            left: 1.5rem;
-            line-height: 1;
-            pointer-events: none;
-            user-select: none;
-            transition: color 0.4s ease;
+            content: none;
         }
 
         .section h2 {
@@ -722,7 +711,7 @@
         <h1>Expl<span class="ai-highlight">AI</span>n</h1>
         <div class="site-subtitle">Sims</div>
         <div class="hero-rule"></div>
-        <p>Physics apps, tools, sims, and some random stuff.</p>
+        <p>Apps built by AI for physics concepts, education, and more.</p>
     </header>
 
     <div class="section" id="featured" data-section="01">
@@ -735,21 +724,19 @@
     <div class="section" id="about" data-section="02">
         <h2>About</h2>
         <p>
-            The tools, simulations, and games here are built with AI and
-            designed to be interactive and educational. While there are many great web tools and physics simulations
-            online, not all meet my needs. On school-managed devices, students and teachers often don't have the
-            admin rights to install software, so I build my own web apps: simple, browser-based, and ready for
-            everyone to explore and enjoy.
+            Every app here was built by AI — designed to be interactive, visual, and useful for learning physics.
+            The goal is to make high-quality simulations and tools that work on any device, in any browser,
+            without installation. No apps to download, no accounts to create. Just open and explore.
             <br><br>
-            Most apps are also offline-friendly. After your first visit, the site caches each app in the
-            background &mdash; look for the <strong>Offline ready</strong> badge on each card. Once cached,
-            those tools, simulations, and games work without an internet connection. A few features that rely on
-            external services (Asteroid Storm's leaderboard and the EAL Companion) still require internet access.
+            Most apps work offline too. After your first visit, the site caches each app in the background &mdash;
+            look for the <strong>Offline ready</strong> badge on each card. Once cached, those tools and
+            simulations work without an internet connection, making them ideal for classroom use even with
+            unreliable Wi-Fi.
         </p>
     </div>
 
     <footer>
-        <p>h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p>
+        <p>Free to use, share, and remix. &nbsp;·&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p>
     </footer>
 
     <script>
@@ -1130,24 +1117,30 @@
         })();
     </script>
     <script>
-        // Featured section — pick one random card from each category
+        // Featured section — pick 6 random cards from the combined pool
         (function () {
-            var FEATURED_POOL = {
-                sims: [
-                    { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/appcm/physical_pendulum.html', c: 'Launch Sim' },
-                    { t: 'Elevator Physics Simulator', d: 'Explore Newton\'s 2nd law through an elevator\'s motion — apparent weight, free-body diagrams, and staged sequences.', h: '/appcm/elevator_physics.html', c: 'Launch Sim' },
-                    { t: 'Conical Pendulum Interactive Lab', d: 'Adjust string length, mass, and angle to see how tension, centripetal force, velocity, and period change.', h: '/appcm/conical_pendulum.html', c: 'Launch Sim' },
-                    { t: 'Gravitas — Gravitational Force Simulator', d: 'Explore Newton\'s law of gravitation, the Shell Theorem, gravitational field strength, and a built-in quiz.', h: '/appcm/gravitas.html', c: 'Launch Sim' },
-                    { t: 'Banked Track Physics Simulator', d: 'Investigate circular motion on a banked curve — visualise forces and calculate ideal, min, and max speeds.', h: '/appcm/banked_track.html', c: 'Launch Sim' },
-                    { t: 'Conservation of Energy Lab', d: 'Slide a block down a ramp and explore how system boundary choice changes the energy conservation equation.', h: '/appcm/cons_energy_systems.html', c: 'Launch Sim' },
-                    { t: 'Work & Energy: Spring System Explorer', d: 'Drag a spring-mass block on a ramp and watch kinetic, spring potential, gravitational, and thermal energy trade off.', h: '/appcm/cons_spring_energy_systems.html', c: 'Launch Sim' },
-                    { t: 'Power: Rate of Energy Transfer', d: 'Explore P = dW/dt and P = F\u00b7v with interactive force-velocity dot product and calculus relationship visualisations.', h: '/appcm/power.html', c: 'Launch Sim' }
-                ]
-            };
+            var FEATURED_POOL = [
+                { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/appcm/physical_pendulum.html', c: 'Launch Sim' },
+                { t: 'Elevator Physics Simulator', d: 'Explore Newton\'s 2nd law through an elevator\'s motion — apparent weight, free-body diagrams, and staged sequences.', h: '/appcm/elevator_physics.html', c: 'Launch Sim' },
+                { t: 'Conical Pendulum Interactive Lab', d: 'Adjust string length, mass, and angle to see how tension, centripetal force, velocity, and period change.', h: '/appcm/conical_pendulum.html', c: 'Launch Sim' },
+                { t: 'Gravitas — Gravitational Force Simulator', d: 'Explore Newton\'s law of gravitation, the Shell Theorem, gravitational field strength, and a built-in quiz.', h: '/appcm/gravitas.html', c: 'Launch Sim' },
+                { t: 'Banked Track Physics Simulator', d: 'Investigate circular motion on a banked curve — visualise forces and calculate ideal, min, and max speeds.', h: '/appcm/banked_track.html', c: 'Launch Sim' },
+                { t: 'Conservation of Energy Lab', d: 'Slide a block down a ramp and explore how system boundary choice changes the energy conservation equation.', h: '/appcm/cons_energy_systems.html', c: 'Launch Sim' },
+                { t: 'Work & Energy: Spring System Explorer', d: 'Drag a spring-mass block on a ramp and watch kinetic, spring potential, gravitational, and thermal energy trade off.', h: '/appcm/cons_spring_energy_systems.html', c: 'Launch Sim' },
+                { t: 'Power: Rate of Energy Transfer', d: 'Explore P = dW/dt and P = F\u00b7v with interactive force-velocity dot product and calculus relationship visualisations.', h: '/appcm/power.html', c: 'Launch Sim' },
+                { t: 'Rotational Motion Simulator', d: 'Visualise angular velocity and angular acceleration on a spinning disk with live velocity, tangential, and centripetal vectors.', h: '/appcm/rotational_motion.html', c: 'Launch Sim' },
+                { t: 'Rotational Atwood Machine', d: 'Explore how a massive pulley changes the acceleration of an Atwood machine via rotational inertia.', h: '/appcm/rotational_atwood.html', c: 'Launch Sim' },
+                { t: 'Parallel-Axis Theorem', d: 'Discover why a cylinder rolls slower than it falls, and how rotational inertia changes with axis position.', h: '/appcm/parallel_axis.html', c: 'Launch Sim' }
+            ];
             var grid = document.getElementById('featured-grid');
             if (!grid) return;
-            Object.values(FEATURED_POOL).forEach(function (pool) {
-                var item = pool[Math.floor(Math.random() * pool.length)];
+            // Fisher-Yates shuffle then take 6
+            var pool = FEATURED_POOL.slice();
+            for (var i = pool.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+            }
+            pool.slice(0, 6).forEach(function (item) {
                 var div = document.createElement('div');
                 div.className = 'card';
                 var linkExtra = item.ext ? ' target="_blank" rel="noopener noreferrer"' : '';

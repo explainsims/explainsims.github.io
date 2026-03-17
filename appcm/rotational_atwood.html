@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#E8F3FD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('rotational-atwood-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#15243E');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Rotational Atwood Machine — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
+
+            --brand-primary: #1A56DB;
+            --brand-accent: #D97706;
+
+            --card-bg: #FFFFFF;
+            --card-border: #C5DCF0;
+            --card-shadow: 0 4px 16px rgba(26, 86, 219, 0.06);
+
+            --canvas-bg: #FFFFFF;
+
+            --slider-track: #C5DCF0;
+            --slider-thumb: #1A56DB;
+
+            --nav-bg: rgba(255, 255, 255, 0.92);
+            --nav-border: rgba(30, 80, 160, 0.10);
+
+            --info-bg: rgba(26, 86, 219, 0.05);
+            --info-border: rgba(26, 86, 219, 0.15);
+
+            --math-bg: #F0F6FF;
+            --math-border: #C5DCF0;
+
+            --accel-highlight: rgba(26, 86, 219, 0.08);
+            --accel-border: rgba(26, 86, 219, 0.2);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
+
+            --brand-primary: #F6C90E;
+            --brand-accent: #60A5FA;
+
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+            --canvas-bg: #15243E;
+
+            --slider-track: #2A4270;
+            --slider-thumb: #F6C90E;
+
+            --nav-bg: rgba(21, 36, 62, 0.90);
+            --nav-border: rgba(255, 255, 255, 0.08);
+
+            --info-bg: rgba(246, 201, 14, 0.06);
+            --info-border: rgba(246, 201, 14, 0.15);
+
+            --math-bg: rgba(21, 36, 62, 0.6);
+            --math-border: #2A4270;
+
+            --accel-highlight: rgba(246, 201, 14, 0.08);
+            --accel-border: rgba(246, 201, 14, 0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .offline-font { --font-sans: 'Inter', sans-serif; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 1px, transparent 1px);
+            background-size: 28px 28px;
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* ── Banner ── */
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.6rem 1.2rem;
+            background: var(--nav-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--nav-border);
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .banner-logo { display: flex; align-items: center; gap: 0.4rem; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: 1rem; font-weight: 700;
+            color: var(--text-main); letter-spacing: -0.01em;
+        }
+
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        .banner-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+        #theme-button {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; padding: 0.3rem; border-radius: 8px;
+            line-height: 1; transition: background-color 0.2s;
+        }
+
+        #theme-button:hover { background: var(--card-border); }
+
+        /* ── Layout ── */
+        .main-content { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.2rem 3rem; }
+
+        .sim-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 860px) { .sim-grid { grid-template-columns: 1fr; } }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px; padding: 1.4rem;
+            box-shadow: var(--card-shadow);
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 0.88rem; font-weight: 700;
+            color: var(--text-main);
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Info ── */
+        .info-box {
+            background: var(--info-bg); border: 1px solid var(--info-border);
+            border-radius: 10px; padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem; font-size: 0.9rem;
+            color: var(--text-secondary); line-height: 1.7;
+        }
+
+        /* ── SVG canvas ── */
+        .svg-wrap {
+            background: var(--canvas-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px; overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .svg-wrap svg { display: block; width: 100%; height: auto; }
+
+        /* ── Sliders ── */
+        .slider-group { margin-bottom: 1rem; }
+
+        .slider-header {
+            display: flex; justify-content: space-between;
+            align-items: baseline; margin-bottom: 0.3rem;
+        }
+
+        .slider-label { font-size: 0.83rem; font-weight: 600; color: var(--text-secondary); }
+        .slider-value { font-family: var(--font-mono); font-size: 0.83rem; font-weight: 700; color: var(--brand-primary); }
+
+        input[type="range"] {
+            width: 100%; height: 6px;
+            -webkit-appearance: none; appearance: none;
+            background: var(--slider-track);
+            border-radius: 3px; outline: none; cursor: pointer;
+        }
+
+        input[type="range"]:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            border-radius: 50%; background: var(--slider-thumb);
+            border: 2px solid var(--card-bg); box-shadow: 0 1px 4px rgba(0,0,0,0.2); cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--slider-thumb); border: 2px solid var(--card-bg); cursor: pointer;
+        }
+
+        /* ── Toggle ── */
+        .toggle-row {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding: 0.7rem 0;
+            border-top: 1px solid var(--card-border);
+            margin-top: 0.4rem;
+        }
+
+        .toggle-switch { position: relative; width: 40px; height: 22px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+        .toggle-slider {
+            position: absolute; inset: 0;
+            background: var(--slider-track); border-radius: 22px;
+            cursor: pointer; transition: background-color 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: ''; position: absolute;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #fff; left: 3px; top: 3px; transition: transform 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider { background: var(--brand-primary); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+        /* ── Buttons ── */
+        .btn-row { display: flex; gap: 0.6rem; margin-bottom: 1.2rem; }
+
+        .btn {
+            padding: 0.55rem 1rem; border: none; border-radius: 8px;
+            font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 0.4rem;
+            transition: opacity 0.2s, background-color 0.2s;
+        }
+
+        .btn-play { background: var(--brand-primary); color: #fff; flex: 1; justify-content: center; }
+        [data-theme="dark"] .btn-play { color: #0D1B2A; }
+        .btn-play:hover { opacity: 0.88; }
+
+        .btn-reset { background: var(--card-border); color: var(--text-secondary); }
+        .btn-reset:hover { background: var(--slider-track); }
+
+        /* ── Accel readout ── */
+        .accel-readout {
+            background: var(--accel-highlight);
+            border: 1px solid var(--accel-border);
+            border-radius: 10px; padding: 1rem;
+            text-align: center; margin-top: 1rem;
+        }
+
+        .accel-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.06em; color: var(--brand-primary); margin-bottom: 0.3rem; }
+
+        .accel-value { font-family: var(--font-mono); font-size: 2rem; font-weight: 700; color: var(--text-main); }
+
+        .accel-unit { font-size: 0.85rem; font-weight: 400; color: var(--text-secondary); }
+
+        .accel-note { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.3rem; }
+
+        /* ── Math derivation ── */
+        .derivation { margin-top: 1.5rem; }
+
+        .deriv-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 12px; padding: 1.1rem 1.2rem;
+            margin-bottom: 0.8rem;
+            transition: background-color 0.4s ease;
+        }
+
+        .deriv-title {
+            font-size: 0.78rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--brand-primary); margin-bottom: 0.6rem;
+        }
+
+        .deriv-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.65; }
+
+        .math-block {
+            font-family: var(--font-mono); font-size: 0.85rem;
+            background: var(--math-bg); border: 1px solid var(--math-border);
+            border-radius: 6px; padding: 0.5rem 0.8rem;
+            margin: 0.5rem 0; color: var(--text-main); line-height: 1.8;
+        }
+
+        .result-highlight {
+            background: var(--accel-highlight); border: 1px solid var(--accel-border);
+            border-radius: 8px; padding: 0.6rem 1rem; margin-top: 0.8rem;
+            font-family: var(--font-mono); font-size: 1rem; font-weight: 700;
+            color: var(--brand-primary); text-align: center;
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center; padding: 2.5rem 1.5rem;
+            color: var(--text-secondary); font-size: 0.82rem;
+            border-top: 1px solid var(--card-border); margin-top: 2rem;
+            transition: border-color 0.4s ease;
+        }
+
+        footer a { color: var(--brand-primary); text-decoration: none; font-weight: 600; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 600px) { .main-content { padding: 1rem 0.8rem 2rem; } }
+
+        @media (pointer: coarse) { .btn, input[type="range"] { min-height: 44px; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Rotational Atwood Machine</div>
+        <div class="banner-actions">
+            <button id="theme-button" aria-label="Toggle theme">☀️</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="info-box">
+            Explore the dynamics of coupled masses over a pulley. Adjust m₁, m₂, and the pulley mass M to see
+            how rotational inertia affects the system's linear acceleration. Toggle the massless pulley
+            assumption to compare classical and rotational solutions.
+        </div>
+
+        <div class="sim-grid">
+            <!-- Left: simulation -->
+            <div>
+                <div class="svg-wrap" id="svg-container">
+                    <svg id="atwood-svg" viewBox="0 0 400 450" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Ceiling -->
+                        <line x1="150" y1="10" x2="250" y2="10" stroke-width="4" stroke-linecap="round" id="ceil-bar"/>
+                        <line x1="200" y1="10" x2="200" y2="50" stroke-width="2" id="ceil-rod"/>
+
+                        <!-- Strings -->
+                        <line id="string-left" x1="160" y1="50" x2="160" y2="250" stroke-width="2"/>
+                        <line id="string-right" x1="240" y1="50" x2="240" y2="250" stroke-width="2"/>
+
+                        <!-- Pulley group (rotates) -->
+                        <g id="pulley-group" transform="translate(200,50)">
+                            <circle id="pulley-circle" cx="0" cy="0" r="40" stroke-width="2"/>
+                            <g id="pulley-spokes">
+                                <line x1="-35" y1="0" x2="35" y2="0" stroke-width="2" stroke="#94a3b8"/>
+                                <line x1="0" y1="-35" x2="0" y2="35" stroke-width="2" stroke="#94a3b8"/>
+                                <circle cx="0" cy="0" r="4" fill="#f8fafc"/>
+                            </g>
+                            <circle id="pulley-center-dot" cx="0" cy="0" r="4"/>
+                        </g>
+
+                        <!-- Mass 1 (left, blue) -->
+                        <g id="mass1-group" transform="translate(160,250)">
+                            <rect id="mass1-rect" x="-20" y="0" width="40" height="40" rx="4"/>
+                            <text id="m1-label" x="-30" y="15" text-anchor="end" dominant-baseline="middle"
+                                font-size="14" font-weight="bold">m₁</text>
+                            <text id="m1-kg" x="-30" y="30" text-anchor="end" dominant-baseline="middle"
+                                font-size="11">5.0 kg</text>
+                        </g>
+
+                        <!-- Mass 2 (right, red) -->
+                        <g id="mass2-group" transform="translate(240,250)">
+                            <rect id="mass2-rect" x="-20" y="0" width="40" height="40" rx="4"/>
+                            <text id="m2-label" x="30" y="15" text-anchor="start" dominant-baseline="middle"
+                                font-size="14" font-weight="bold">m₂</text>
+                            <text id="m2-kg" x="30" y="30" text-anchor="start" dominant-baseline="middle"
+                                font-size="11">3.0 kg</text>
+                        </g>
+
+                        <!-- Floor -->
+                        <rect id="floor-rect" x="0" y="410" width="400" height="10"/>
+                        <line id="floor-line" x1="0" y1="410" x2="400" y2="410" stroke-dasharray="5 3" stroke-width="1"/>
+
+                        <!-- Time display -->
+                        <text id="svg-time" x="200" y="430" text-anchor="middle" font-size="13"
+                            font-family="'JetBrains Mono', monospace" font-weight="600">t = 0.00 s</text>
+                    </svg>
+                </div>
+
+                <!-- Physics explanation -->
+                <div class="derivation" id="derivation">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Right: controls -->
+            <div>
+                <div class="card">
+                    <div class="card-title">Controls</div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-play" id="btn-play">▶ Start</button>
+                        <button class="btn btn-reset" id="btn-reset">↺ Reset</button>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Mass 1 (m₁)</span>
+                            <span class="slider-value" id="m1-val">5.0 kg</span>
+                        </div>
+                        <input type="range" id="m1-slider" min="0.1" max="10" step="0.1" value="5">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Mass 2 (m₂)</span>
+                            <span class="slider-value" id="m2-val" style="color:#dc2626;">3.0 kg</span>
+                        </div>
+                        <input type="range" id="m2-slider" min="0.1" max="10" step="0.1" value="3">
+                    </div>
+
+                    <div class="slider-group" id="pulley-mass-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Pulley Mass (M)</span>
+                            <span class="slider-value" id="M-val">2.0 kg</span>
+                        </div>
+                        <input type="range" id="M-slider" min="0.1" max="5" step="0.1" value="2">
+                    </div>
+
+                    <div class="toggle-row">
+                        <span class="slider-label">Assume massless pulley</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="massless-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="accel-readout">
+                        <div class="accel-label">System Acceleration</div>
+                        <div>
+                            <span class="accel-value" id="accel-display">3.27</span>
+                            <span class="accel-unit"> m/s²</span>
+                        </div>
+                        <div class="accel-note" id="accel-note">m₁ moves down</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Free to use, share, and remix. &nbsp;|&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank"
+                rel="noopener noreferrer">PanPhy</a></p>
+    </footer>
+
+    <script>
+    // ── Physics state ──────────────────────────────────────────────
+    var m1 = 5.0, m2 = 3.0, M = 2.0, g = 9.8;
+    var isMassless = false;
+    var isRunning = false;
+    var velocity = 0, displacement = 0, simTime = 0;
+    var lastFrameTime = 0;
+    var rafId = null;
+    var MAX_DISP = 1.35; // metres
+
+    var PULLEY_Y = 50;
+    var ORIGIN_Y = 250;
+    var SCALE = 80;           // px per metre
+    var PULLEY_R = 40;        // px
+    var PULLEY_R_M = 0.2;     // virtual pulley radius in metres
+
+    function calcAccel() {
+        var eff = isMassless ? 0 : M;
+        var num = (m1 - m2) * g;
+        var den = m1 + m2 + 0.5 * eff;
+        return den === 0 ? 0 : num / den;
+    }
+
+    function getRadius(mass) {
+        return Math.min(Math.max(Math.sqrt(mass) * 8, 15), 35);
+    }
+
+    // ── SVG element refs ───────────────────────────────────────────
+    var svgEl         = document.getElementById('atwood-svg');
+    var stringLeft    = document.getElementById('string-left');
+    var stringRight   = document.getElementById('string-right');
+    var pulleyGroup   = document.getElementById('pulley-group');
+    var pulleyCircle  = document.getElementById('pulley-circle');
+    var pulleySpokes  = document.getElementById('pulley-spokes');
+    var pulseyCenter  = document.getElementById('pulley-center-dot');
+    var mass1Group    = document.getElementById('mass1-group');
+    var mass2Group    = document.getElementById('mass2-group');
+    var mass1Rect     = document.getElementById('mass1-rect');
+    var mass2Rect     = document.getElementById('mass2-rect');
+    var m1Label       = document.getElementById('m1-label');
+    var m2Label       = document.getElementById('m2-label');
+    var m1Kg          = document.getElementById('m1-kg');
+    var m2Kg          = document.getElementById('m2-kg');
+    var ceilBar       = document.getElementById('ceil-bar');
+    var ceilRod       = document.getElementById('ceil-rod');
+    var floorRect     = document.getElementById('floor-rect');
+    var floorLine     = document.getElementById('floor-line');
+    var svgTime       = document.getElementById('svg-time');
+
+    function getCSSVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function updateSVGColors() {
+        var textMain  = getCSSVar('--text-main');
+        var textSec   = getCSSVar('--text-secondary');
+        var cardBorder = getCSSVar('--card-border');
+        var canvasBg  = getCSSVar('--canvas-bg');
+        var isDark    = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        ceilBar.setAttribute('stroke', textMain);
+        ceilRod.setAttribute('stroke', textMain);
+        stringLeft.setAttribute('stroke', textMain);
+        stringRight.setAttribute('stroke', textMain);
+        floorRect.setAttribute('fill', cardBorder);
+        floorLine.setAttribute('stroke', textSec);
+        svgTime.setAttribute('fill', textSec);
+        m1Label.setAttribute('fill', textMain);
+        m2Label.setAttribute('fill', textMain);
+        m1Kg.setAttribute('fill', textSec);
+        m2Kg.setAttribute('fill', textSec);
+
+        var pulleyColor = isMassless ? getCSSVar('--card-border') : (isDark ? '#4A6380' : '#475569');
+        pulleyCircle.setAttribute('fill', pulleyColor);
+        pulleyCircle.setAttribute('stroke', textMain);
+        if (pulleySpokes) pulleySpokes.style.display = isMassless ? 'none' : '';
+        pulseyCenter.setAttribute('fill', isDark ? '#EEF5FD' : '#1e293b');
+
+        mass1Rect.setAttribute('fill', '#3b82f6');
+        mass1Rect.setAttribute('stroke', '#1d4ed8');
+        mass2Rect.setAttribute('fill', '#ef4444');
+        mass2Rect.setAttribute('stroke', '#b91c1c');
+    }
+
+    function updatePositions() {
+        var y1 = ORIGIN_Y + displacement * SCALE;
+        var y2 = ORIGIN_Y - displacement * SCALE;
+        var r1 = getRadius(m1);
+        var r2 = getRadius(m2);
+
+        // Strings (from bottom of pulley to top of mass)
+        var strLeftY2 = y1;
+        var strRightY2 = y2;
+        stringLeft.setAttribute('x1', 200 - PULLEY_R);
+        stringLeft.setAttribute('y1', PULLEY_Y);
+        stringLeft.setAttribute('x2', 200 - PULLEY_R);
+        stringLeft.setAttribute('y2', strLeftY2);
+
+        stringRight.setAttribute('x1', 200 + PULLEY_R);
+        stringRight.setAttribute('y1', PULLEY_Y);
+        stringRight.setAttribute('x2', 200 + PULLEY_R);
+        stringRight.setAttribute('y2', strRightY2);
+
+        // Mass positions
+        mass1Group.setAttribute('transform', 'translate(' + (200 - PULLEY_R) + ',' + y1 + ')');
+        mass2Group.setAttribute('transform', 'translate(' + (200 + PULLEY_R) + ',' + y2 + ')');
+
+        // Mass rectangles sized to mass
+        mass1Rect.setAttribute('x', -r1);
+        mass1Rect.setAttribute('y', 0);
+        mass1Rect.setAttribute('width', r1 * 2);
+        mass1Rect.setAttribute('height', r1 * 2);
+        mass2Rect.setAttribute('x', -r2);
+        mass2Rect.setAttribute('y', 0);
+        mass2Rect.setAttribute('width', r2 * 2);
+        mass2Rect.setAttribute('height', r2 * 2);
+
+        // Label offsets
+        var off1 = r1 + 8, off2 = r2 + 8;
+        m1Label.setAttribute('x', -off1); m1Label.setAttribute('y', r1 - 5);
+        m1Kg.setAttribute('x', -off1);    m1Kg.setAttribute('y', r1 + 10);
+        m2Label.setAttribute('x', off2);  m2Label.setAttribute('y', r2 - 5);
+        m2Kg.setAttribute('x', off2);     m2Kg.setAttribute('y', r2 + 10);
+
+        // Pulley rotation
+        var rotDeg = (displacement / PULLEY_R_M) * (180 / Math.PI);
+        pulleyGroup.setAttribute('transform', 'translate(200,' + PULLEY_Y + ') rotate(' + rotDeg + ')');
+
+        // Time
+        svgTime.textContent = 't = ' + simTime.toFixed(2) + ' s';
+    }
+
+    function updateMassLabels() {
+        m1Kg.textContent = m1.toFixed(1) + ' kg';
+        m2Kg.textContent = m2.toFixed(1) + ' kg';
+        updateAccelDisplay();
+        updateDerivation();
+    }
+
+    function updateAccelDisplay() {
+        var a = calcAccel();
+        document.getElementById('accel-display').textContent = Math.abs(a).toFixed(2);
+        var note = document.getElementById('accel-note');
+        if (a > 0.001) note.textContent = 'm₁ moves down';
+        else if (a < -0.001) note.textContent = 'm₁ moves up';
+        else note.textContent = 'Equilibrium';
+    }
+
+    // ── Physics loop ───────────────────────────────────────────────
+    function animate(ts) {
+        if (!isRunning) return;
+
+        if (lastFrameTime === 0) { lastFrameTime = ts; }
+        var dt = Math.min((ts - lastFrameTime) / 1000, 0.05);
+        lastFrameTime = ts;
+
+        var a = calcAccel();
+        velocity += a * dt;
+        displacement += velocity * dt;
+        simTime += dt;
+
+        if (Math.abs(displacement) >= MAX_DISP) {
+            displacement = Math.sign(displacement) * MAX_DISP;
+            velocity = 0;
+            isRunning = false;
+            document.getElementById('btn-play').textContent = '▶ Start';
+        }
+
+        updatePositions();
+        updateSVGColors();
+
+        if (isRunning) {
+            rafId = requestAnimationFrame(animate);
+        }
+    }
+
+    // ── Derivation HTML ────────────────────────────────────────────
+    function updateDerivation() {
+        var a = calcAccel();
+        var eff = isMassless ? 0 : M;
+        var html = '';
+
+        if (isMassless) {
+            html = '<div class="deriv-card"><div class="deriv-title">Case: Massless Pulley</div>' +
+                '<p>Applying Newton\'s 2nd Law to each mass (with T the string tension):</p>' +
+                '<div class="math-block">m₁g − T = m₁a<br>T − m₂g = m₂a</div>' +
+                '<p>Adding both equations eliminates T:</p>' +
+                '<div class="math-block">a = g(m₁ − m₂) / (m₁ + m₂)</div>' +
+                '<div class="result-highlight">a = ' + g + '(' + m1.toFixed(1) + ' − ' + m2.toFixed(1) + ') / (' + m1.toFixed(1) + ' + ' + m2.toFixed(1) + ')' +
+                '<br>a = ' + a.toFixed(3) + ' m/s²</div></div>';
+        } else {
+            html = '<div class="deriv-card"><div class="deriv-title">Case: Massive Pulley (M = ' + M.toFixed(1) + ' kg)</div>' +
+                '<p>The pulley\'s rotational inertia (I = ½MR²) means we must account for the torque on the pulley. The net equation becomes:</p>' +
+                '<div class="math-block">m₁g − T₁ = m₁a<br>T₂ − m₂g = m₂a<br>(T₁ − T₂)R = Iα = (½MR²)(a/R)</div>' +
+                '<p>Combining all three:</p>' +
+                '<div class="math-block">a = g(m₁ − m₂) / (m₁ + m₂ + ½M)</div>' +
+                '<div class="result-highlight">a = ' + g + '(' + m1.toFixed(1) + ' − ' + m2.toFixed(1) + ') / (' + m1.toFixed(1) + ' + ' + m2.toFixed(1) + ' + ½·' + M.toFixed(1) + ')' +
+                '<br>a = ' + a.toFixed(3) + ' m/s²</div></div>';
+        }
+
+        document.getElementById('derivation').innerHTML = html;
+    }
+
+    // ── Event listeners ────────────────────────────────────────────
+    document.getElementById('m1-slider').addEventListener('input', function() {
+        if (isRunning) return;
+        m1 = parseFloat(this.value);
+        document.getElementById('m1-val').textContent = m1.toFixed(1) + ' kg';
+        updateMassLabels();
+        updatePositions();
+        updateSVGColors();
+    });
+
+    document.getElementById('m2-slider').addEventListener('input', function() {
+        if (isRunning) return;
+        m2 = parseFloat(this.value);
+        document.getElementById('m2-val').textContent = m2.toFixed(1) + ' kg';
+        updateMassLabels();
+        updatePositions();
+        updateSVGColors();
+    });
+
+    document.getElementById('M-slider').addEventListener('input', function() {
+        if (isRunning) return;
+        M = parseFloat(this.value);
+        document.getElementById('M-val').textContent = M.toFixed(1) + ' kg';
+        updateAccelDisplay();
+        updateDerivation();
+    });
+
+    document.getElementById('massless-toggle').addEventListener('change', function() {
+        if (isRunning) return;
+        isMassless = this.checked;
+        document.getElementById('pulley-mass-group').style.opacity = isMassless ? '0.4' : '1';
+        document.getElementById('M-slider').disabled = isMassless;
+        updateSVGColors();
+        updateAccelDisplay();
+        updateDerivation();
+    });
+
+    document.getElementById('btn-play').addEventListener('click', function() {
+        if (isRunning) {
+            isRunning = false;
+            this.textContent = '▶ Resume';
+            if (rafId) cancelAnimationFrame(rafId);
+        } else {
+            // If hit end, reset displacement
+            if (Math.abs(displacement) >= MAX_DISP - 0.01) {
+                velocity = 0; displacement = 0; simTime = 0;
+            }
+            isRunning = true;
+            lastFrameTime = 0;
+            this.textContent = '⏸ Pause';
+            rafId = requestAnimationFrame(animate);
+        }
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', function() {
+        if (rafId) cancelAnimationFrame(rafId);
+        isRunning = false;
+        velocity = 0; displacement = 0; simTime = 0; lastFrameTime = 0;
+        document.getElementById('btn-play').textContent = '▶ Start';
+        updatePositions();
+        updateSVGColors();
+    });
+
+    // ── Initial render ─────────────────────────────────────────────
+    updatePositions();
+    updateSVGColors();
+    updateMassLabels();
+
+    // Update colours on theme change
+    var observer = new MutationObserver(function() { updateSVGColors(); });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    </script>
+
+    <!-- Theme toggle -->
+    <script>
+    (function() {
+        var btn = document.getElementById('theme-button');
+        var DARK_KEY = 'rotational-atwood-dark';
+        var LIGHT_KEY = 'rotational-atwood-light';
+
+        function getTheme() { return localStorage.getItem(DARK_KEY) ? 'dark' : 'light'; }
+
+        function applyTheme(t) {
+            document.documentElement.setAttribute('data-theme', t);
+            var tc = document.querySelector('meta[name="theme-color"]');
+            var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            var dark = t === 'dark';
+            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+            btn.textContent = dark ? '🌙' : '☀️';
+        }
+
+        applyTheme(getTheme());
+
+        btn.addEventListener('click', function() {
+            var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            if (next === 'dark') { localStorage.setItem(DARK_KEY, '1'); localStorage.removeItem(LIGHT_KEY); }
+            else { localStorage.setItem(LIGHT_KEY, '1'); localStorage.removeItem(DARK_KEY); }
+            applyTheme(next);
+        });
+
+        window.addEventListener('pageshow', function() {
+            applyTheme(document.documentElement.getAttribute('data-theme'));
+        });
+
+        function updateFontState() { document.documentElement.classList.toggle('offline-font', !navigator.onLine); }
+        window.addEventListener('online', updateFontState);
+        window.addEventListener('offline', updateFontState);
+        updateFontState();
+    })();
+    </script>
+
+    <!-- Brave iOS gradient text fix -->
+    <script>
+    (function() {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function(el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+</html>
