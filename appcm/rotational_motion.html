@@ -623,23 +623,23 @@
                     <div class="legend">
                         <div class="legend-item">
                             <div class="legend-dot" style="background:#16a34a;"></div>
-                            Tangential velocity <em>v</em>
+                            Tangential velocity &nbsp;<span style="font-style:italic;font-weight:700;font-size:0.9rem;">v</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-dot" style="background:#2563eb;"></div>
-                            Tangential acceleration <em>a</em><sub>t</sub>
+                            Tangential acceleration &nbsp;<span style="font-style:italic;font-weight:700;font-size:0.9rem;">a</span><sub style="font-style:italic;font-weight:700;">t</sub>
                         </div>
                         <div class="legend-item">
                             <div class="legend-dot" style="background:#dc2626;"></div>
-                            Centripetal acceleration <em>a</em><sub>c</sub>
+                            Centripetal acceleration &nbsp;<span style="font-style:italic;font-weight:700;font-size:0.9rem;">a</span><sub style="font-style:italic;font-weight:700;">c</sub>
                         </div>
                         <div class="legend-item">
                             <div class="legend-dot" style="background:#4f46e5; height:10px; width:10px; border-radius:50%;"></div>
-                            Point A (radius <em>r</em>)
+                            Point A (radius <span style="font-style:italic;font-weight:700;font-size:0.9rem;">r</span>)
                         </div>
                         <div class="legend-item">
                             <div class="legend-dot" style="background:#db2777; height:10px; width:10px; border-radius:50%;"></div>
-                            Point B (radius <em>2r</em>)
+                            Point B (radius <span style="font-style:italic;font-weight:700;font-size:0.9rem;">2r</span>)
                         </div>
                     </div>
                 </div>
@@ -869,15 +869,14 @@
         var bx = cx + r2 * cos;
         var by = cy - r2 * sin;
 
-        // Velocity direction: perpendicular to radius, tangential CCW
-        // In canvas (y-down): tangent CCW = (-sin(θ), -cos(θ)) ... but we want
-        // the correct tangent for the rotated coordinate.
-        // From derivation: vx = omega*vs*sin(angle), vy = -omega*vs*cos(angle)
-        var vx_dir = omega * vs * sin;      // = omega*vs*sin(angle)
+        // Tangential direction: d/dθ of position (cx + r*cos(θ), cy - r*sin(θ)) = (-r*sin(θ), -r*cos(θ))
+        // So unit tangential CCW = (-sin(θ), -cos(θ))
+        // For positive omega (CCW), velocity points in the tangential CCW direction.
+        var vx_dir = -omega * vs * sin;     // = -omega*vs*sin(angle)
         var vy_dir = -omega * vs * cos;     // = -omega*vs*cos(angle)
 
         // Tangential accel: same direction as velocity, scaled by alpha
-        var atx_dir = alpha * as * sin;
+        var atx_dir = -alpha * as * sin;
         var aty_dir = -alpha * as * cos;
 
         // Centripetal accel: toward center from each point
@@ -913,9 +912,9 @@
         }
 
         // ── Draw vectors for Point B ────────────────────────────────
-        var vx2 = omega * vs * 2 * sin;
+        var vx2 = -omega * vs * 2 * sin;
         var vy2 = -omega * vs * 2 * cos;
-        var atx2 = alpha * as * 2 * sin;
+        var atx2 = -alpha * as * 2 * sin;
         var aty2 = -alpha * as * 2 * cos;
 
         if (Math.abs(omega) > 0.01) {

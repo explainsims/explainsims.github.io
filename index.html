@@ -438,6 +438,33 @@
             100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
         }
 
+        .card-source-pill {
+            display: inline-flex;
+            align-items: center;
+            position: absolute;
+            top: 0.8rem;
+            left: 0.8rem;
+            z-index: 2;
+            padding: 0.22rem 0.45rem;
+            border-radius: 6px;
+            border: 1px solid rgba(109, 40, 217, 0.28);
+            background: rgba(109, 40, 217, 0.07);
+            color: #7C3AED;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            line-height: 1.1;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        [data-theme="dark"] .card-source-pill {
+            border-color: rgba(167, 139, 250, 0.3);
+            background: rgba(109, 40, 217, 0.15);
+            color: #A78BFA;
+        }
+
         .card-offline-pill {
             display: inline-flex;
             align-items: center;
@@ -532,7 +559,6 @@
            ======================================== */
         #about p {
             font-size: 1.05rem;
-            max-width: 720px;
             color: var(--text-secondary);
             line-height: 1.85;
         }
@@ -1120,17 +1146,17 @@
         // Featured section — pick 6 random cards from the combined pool
         (function () {
             var FEATURED_POOL = [
-                { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/appcm/physical_pendulum.html', c: 'Launch Sim' },
-                { t: 'Elevator Physics Simulator', d: 'Explore Newton\'s 2nd law through an elevator\'s motion — apparent weight, free-body diagrams, and staged sequences.', h: '/appcm/elevator_physics.html', c: 'Launch Sim' },
-                { t: 'Conical Pendulum Interactive Lab', d: 'Adjust string length, mass, and angle to see how tension, centripetal force, velocity, and period change.', h: '/appcm/conical_pendulum.html', c: 'Launch Sim' },
-                { t: 'Gravitas — Gravitational Force Simulator', d: 'Explore Newton\'s law of gravitation, the Shell Theorem, gravitational field strength, and a built-in quiz.', h: '/appcm/gravitas.html', c: 'Launch Sim' },
-                { t: 'Banked Track Physics Simulator', d: 'Investigate circular motion on a banked curve — visualise forces and calculate ideal, min, and max speeds.', h: '/appcm/banked_track.html', c: 'Launch Sim' },
-                { t: 'Conservation of Energy Lab', d: 'Slide a block down a ramp and explore how system boundary choice changes the energy conservation equation.', h: '/appcm/cons_energy_systems.html', c: 'Launch Sim' },
-                { t: 'Work & Energy: Spring System Explorer', d: 'Drag a spring-mass block on a ramp and watch kinetic, spring potential, gravitational, and thermal energy trade off.', h: '/appcm/cons_spring_energy_systems.html', c: 'Launch Sim' },
-                { t: 'Power: Rate of Energy Transfer', d: 'Explore P = dW/dt and P = F\u00b7v with interactive force-velocity dot product and calculus relationship visualisations.', h: '/appcm/power.html', c: 'Launch Sim' },
-                { t: 'Rotational Motion Simulator', d: 'Visualise angular velocity and angular acceleration on a spinning disk with live velocity, tangential, and centripetal vectors.', h: '/appcm/rotational_motion.html', c: 'Launch Sim' },
-                { t: 'Rotational Atwood Machine', d: 'Explore how a massive pulley changes the acceleration of an Atwood machine via rotational inertia.', h: '/appcm/rotational_atwood.html', c: 'Launch Sim' },
-                { t: 'Parallel-Axis Theorem', d: 'Discover why a cylinder rolls slower than it falls, and how rotational inertia changes with axis position.', h: '/appcm/parallel_axis.html', c: 'Launch Sim' }
+                { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/appcm/physical_pendulum.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Elevator Physics Simulator', d: 'Explore Newton\'s 2nd law through an elevator\'s motion — apparent weight, free-body diagrams, and staged sequences.', h: '/appcm/elevator_physics.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Conical Pendulum Interactive Lab', d: 'Adjust string length, mass, and angle to see how tension, centripetal force, velocity, and period change.', h: '/appcm/conical_pendulum.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Gravitas — Gravitational Force Simulator', d: 'Explore Newton\'s law of gravitation, the Shell Theorem, gravitational field strength, and a built-in quiz.', h: '/appcm/gravitas.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Banked Track Physics Simulator', d: 'Investigate circular motion on a banked curve — visualise forces and calculate ideal, min, and max speeds.', h: '/appcm/banked_track.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Conservation of Energy Lab', d: 'Slide a block down a ramp and explore how system boundary choice changes the energy conservation equation.', h: '/appcm/cons_energy_systems.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Work & Energy: Spring System Explorer', d: 'Drag a spring-mass block on a ramp and watch kinetic, spring potential, gravitational, and thermal energy trade off.', h: '/appcm/cons_spring_energy_systems.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Power: Rate of Energy Transfer', d: 'Explore P = dW/dt and P = F\u00b7v with interactive force-velocity dot product and calculus relationship visualisations.', h: '/appcm/power.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Rotational Motion Simulator', d: 'Visualise angular velocity and angular acceleration on a spinning disk with live velocity, tangential, and centripetal vectors.', h: '/appcm/rotational_motion.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Rotational Atwood Machine', d: 'Explore how a massive pulley changes the acceleration of an Atwood machine via rotational inertia.', h: '/appcm/rotational_atwood.html', c: 'Launch Sim', tab: 'AP PCM' },
+                { t: 'Parallel-Axis Theorem', d: 'Discover why a cylinder rolls slower than it falls, and how rotational inertia changes with axis position.', h: '/appcm/parallel_axis.html', c: 'Launch Sim', tab: 'AP PCM' }
             ];
             var grid = document.getElementById('featured-grid');
             if (!grid) return;
@@ -1144,7 +1170,8 @@
                 var div = document.createElement('div');
                 div.className = 'card';
                 var linkExtra = item.ext ? ' target="_blank" rel="noopener noreferrer"' : '';
-                div.innerHTML = '<h3>' + item.t + '</h3><p>' + item.d + '</p><a href="' + item.h + '"' + linkExtra + '>' + item.c + '</a>';
+                var sourcePill = item.tab ? '<span class="card-source-pill">' + item.tab + '</span>' : '';
+                div.innerHTML = sourcePill + '<h3>' + item.t + '</h3><p>' + item.d + '</p><a href="' + item.h + '"' + linkExtra + '>' + item.c + '</a>';
                 grid.appendChild(div);
             });
         })();
@@ -1219,6 +1246,16 @@
             ],
             '/appcm/superposition.html': ['/appcm/superposition.html'],
             '/appcm/physical_pendulum.html': ['/appcm/physical_pendulum.html'],
+            '/appcm/elevator_physics.html': ['/appcm/elevator_physics.html'],
+            '/appcm/conical_pendulum.html': ['/appcm/conical_pendulum.html'],
+            '/appcm/gravitas.html': ['/appcm/gravitas.html'],
+            '/appcm/banked_track.html': ['/appcm/banked_track.html'],
+            '/appcm/cons_energy_systems.html': ['/appcm/cons_energy_systems.html'],
+            '/appcm/cons_spring_energy_systems.html': ['/appcm/cons_spring_energy_systems.html'],
+            '/appcm/power.html': ['/appcm/power.html'],
+            '/appcm/rotational_motion.html': ['/appcm/rotational_motion.html'],
+            '/appcm/rotational_atwood.html': ['/appcm/rotational_atwood.html'],
+            '/appcm/parallel_axis.html': ['/appcm/parallel_axis.html'],
             '/appcm/lorentz.html': ['/appcm/lorentz.html'],
             '/for_teachers/timer.html': [
                 '/for_teachers/timer.html',
