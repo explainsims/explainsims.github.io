@@ -330,18 +330,7 @@
         }
 
         .section[data-section]::before {
-            content: attr(data-section);
-            font-family: var(--font-mono);
-            font-size: 6rem;
-            font-weight: 400;
-            color: var(--section-num-color);
-            position: absolute;
-            top: -2rem;
-            left: 1.5rem;
-            line-height: 1;
-            pointer-events: none;
-            user-select: none;
-            transition: color 0.4s ease;
+            content: none;
         }
 
         .section h2 {
@@ -446,6 +435,33 @@
             0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45); }
             70% { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
             100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        }
+
+        .card-source-pill {
+            display: inline-flex;
+            align-items: center;
+            position: absolute;
+            top: 0.8rem;
+            left: 0.8rem;
+            z-index: 2;
+            padding: 0.22rem 0.45rem;
+            border-radius: 6px;
+            border: 1px solid rgba(109, 40, 217, 0.28);
+            background: rgba(109, 40, 217, 0.07);
+            color: #7C3AED;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            line-height: 1.1;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        [data-theme="dark"] .card-source-pill {
+            border-color: rgba(167, 139, 250, 0.3);
+            background: rgba(109, 40, 217, 0.15);
+            color: #A78BFA;
         }
 
         .card-offline-pill {
@@ -732,16 +748,19 @@
         <p class="section-desc">AI-powered apps — enter the password or your own API key to get started.</p>
         <div class="grid">
             <div class="card">
+                <span class="card-source-pill">API</span>
                 <h3>Dictation</h3>
                 <p>This app uses AI to transcribe your voice in real-time and then automatically polishes the raw text into a well-formatted note.</p>
                 <a href="https://dictation-app-145857450332.us-west1.run.app/" target="_blank" rel="noopener noreferrer">Open Dictation</a>
             </div>
             <div class="card">
+                <span class="card-source-pill">API</span>
                 <h3>Video-to-Learning</h3>
                 <p>This app uses AI to analyze any YouTube video, produce a spec for an interactive app, and then codes and presents the app.</p>
                 <a href="https://video-to-learning-app-145857450332.us-west1.run.app/" target="_blank" rel="noopener noreferrer">Open Video-to-Learning</a>
             </div>
             <div class="card">
+                <span class="card-source-pill">API</span>
                 <h3>AP PCM Worksheet</h3>
                 <p>This app creates worksheets for AP Classroom Daily Videos for AP Physics C: Mechanics from the video and transcript.</p>
                 <a href="https://apc-worksheet-builder-145857450332.us-west1.run.app/" target="_blank" rel="noopener noreferrer">Open AP PCM Worksheet</a>
