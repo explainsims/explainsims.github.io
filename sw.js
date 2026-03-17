@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-03-16T22:00:00Z';
+const BUILD_ID = '2026-03-17T12:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -20,8 +20,6 @@ const ASSETS_TO_CACHE = [
   '/assets/sw-register.js',
 
   // Tools
-  '/tools/dictation.html',
-  'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js',
   '/tools/panphyplot.html',
   '/tools/panphyplot/css/panphyplot.css',
   '/tools/panphyplot/js/curve-fitting.js',
@@ -53,6 +51,9 @@ const ASSETS_TO_CACHE = [
   '/appcm/cons_energy_systems.html',
   '/appcm/cons_spring_energy_systems.html',
   '/appcm/power.html',
+  '/appcm/rotational_motion.html',
+  '/appcm/rotational_atwood.html',
+  '/appcm/parallel_axis.html',
 
   // For Teachers
   '/for_teachers/timer.html',

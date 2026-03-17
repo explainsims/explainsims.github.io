@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#E8F3FD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('rotational-motion-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#15243E');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Rotational Kinematics Simulator — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #E8F3FD;
+            --bg-pattern: #D5E8F7;
+            --text-main: #0D1B2A;
+            --text-secondary: #4A6380;
+
+            --brand-primary: #1A56DB;
+            --brand-secondary: #1D4ED8;
+            --brand-accent: #D97706;
+
+            --card-bg: #FFFFFF;
+            --card-border: #C5DCF0;
+            --card-shadow: 0 4px 16px rgba(26, 86, 219, 0.06);
+
+            --canvas-bg: #FFFFFF;
+            --canvas-border: #C5DCF0;
+
+            --slider-track: #C5DCF0;
+            --slider-thumb: #1A56DB;
+
+            --nav-bg: rgba(255, 255, 255, 0.92);
+            --nav-border: rgba(30, 80, 160, 0.10);
+
+            --readout-bg: #EDF5FF;
+            --readout-border: #C5DCF0;
+
+            --info-bg: rgba(26, 86, 219, 0.05);
+            --info-border: rgba(26, 86, 219, 0.15);
+
+            --disk-fill: #e2e8f0;
+            --disk-stroke: #64748b;
+            --disk-line: #94a3b8;
+            --crosshair: rgba(0, 0, 0, 0.08);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #15243E;
+            --bg-pattern: #1C2F52;
+            --text-main: #EEF5FD;
+            --text-secondary: #8BB3D4;
+
+            --brand-primary: #F6C90E;
+            --brand-secondary: #EAB308;
+            --brand-accent: #60A5FA;
+
+            --card-bg: #1C2F52;
+            --card-border: #2A4270;
+            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+            --canvas-bg: #15243E;
+            --canvas-border: #2A4270;
+
+            --slider-track: #2A4270;
+            --slider-thumb: #F6C90E;
+
+            --nav-bg: rgba(21, 36, 62, 0.90);
+            --nav-border: rgba(255, 255, 255, 0.08);
+
+            --readout-bg: rgba(246, 201, 14, 0.06);
+            --readout-border: #2A4270;
+
+            --info-bg: rgba(246, 201, 14, 0.06);
+            --info-border: rgba(246, 201, 14, 0.15);
+
+            --disk-fill: #2A3A5C;
+            --disk-stroke: #4A6380;
+            --disk-line: #3A5070;
+            --crosshair: rgba(255, 255, 255, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .offline-font {
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 1px, transparent 1px);
+            background-size: 28px 28px;
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* ── Banner ── */
+        .banner {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1.2rem;
+            background: var(--nav-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--nav-border);
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .banner-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+        }
+
+        .banner-logo img {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+        }
+
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #theme-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.3rem;
+            border-radius: 8px;
+            line-height: 1;
+            transition: background-color 0.2s;
+        }
+
+        #theme-button:hover { background: var(--card-border); }
+
+        /* ── Layout ── */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 1.2rem 3rem;
+        }
+
+        .sim-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .sim-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 1.4rem;
+            box-shadow: var(--card-shadow);
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .card h3 {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── Info box ── */
+        .info-box {
+            background: var(--info-bg);
+            border: 1px solid var(--info-border);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* ── Canvas ── */
+        .canvas-wrap {
+            background: var(--canvas-bg);
+            border: 1px solid var(--canvas-border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            aspect-ratio: 1 / 1;
+        }
+
+        .canvas-wrap canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .time-badge {
+            position: absolute;
+            top: 0.7rem;
+            left: 0.7rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--nav-bg);
+            border: 1px solid var(--nav-border);
+            border-radius: 6px;
+            padding: 0.2rem 0.5rem;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+        }
+
+        /* ── Sliders ── */
+        .slider-group {
+            margin-bottom: 1.1rem;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.35rem;
+        }
+
+        .slider-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .slider-value {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--brand-primary);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--slider-track);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--slider-thumb);
+            border: 2px solid var(--card-bg);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--slider-thumb);
+            border: 2px solid var(--card-bg);
+            cursor: pointer;
+        }
+
+        /* ── Buttons ── */
+        .btn-row {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.55rem 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .btn-play {
+            background: var(--brand-primary);
+            color: #fff;
+        }
+
+        [data-theme="dark"] .btn-play { color: #0D1B2A; }
+
+        .btn-play:hover { opacity: 0.88; }
+
+        .btn-reset {
+            background: var(--card-border);
+            color: var(--text-secondary);
+            flex: 0 0 auto;
+            padding: 0.55rem 1rem;
+        }
+
+        .btn-reset:hover { background: var(--slider-track); }
+
+        /* ── Toggle ── */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.7rem 0;
+            border-top: 1px solid var(--card-border);
+            margin-top: 0.6rem;
+        }
+
+        .toggle-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+        }
+
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--slider-track);
+            border-radius: 22px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            left: 3px;
+            top: 3px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider { background: var(--brand-primary); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+        /* ── Vector Legend ── */
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            margin-top: 0.8rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 4px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* ── Data table ── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            margin-top: 0.8rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 0.35rem 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .data-table td {
+            padding: 0.4rem 0.5rem;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.83rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .data-table tr:last-child td { border-bottom: none; }
+
+        /* ── Educational section ── */
+        .edu-section {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
+        }
+
+        .edu-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            transition: background-color 0.4s ease;
+        }
+
+        .edu-card h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .edu-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .edu-card .eq {
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            background: var(--readout-bg);
+            border: 1px solid var(--readout-border);
+            border-radius: 6px;
+            padding: 0.4rem 0.7rem;
+            margin-top: 0.5rem;
+            color: var(--text-main);
+            display: inline-block;
+        }
+
+        /* ── Warning badge ── */
+        .warn-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--brand-accent);
+            background: rgba(217, 119, 6, 0.1);
+            border: 1px solid rgba(217, 119, 6, 0.25);
+            border-radius: 4px;
+            padding: 0.1rem 0.35rem;
+            display: none;
+        }
+
+        .warn-badge.visible { display: inline-block; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            border-top: 1px solid var(--card-border);
+            margin-top: 2rem;
+            transition: border-color 0.4s ease;
+        }
+
+        footer a {
+            color: var(--brand-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 600px) {
+            .main-content { padding: 1rem 0.8rem 2rem; }
+            .banner-title { font-size: 0.85rem; }
+        }
+
+        @media (pointer: coarse) {
+            .btn, input[type="range"] { min-height: 44px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Rotational Kinematics</div>
+        <div class="banner-actions">
+            <button id="theme-button" aria-label="Toggle theme">☀️</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="info-box">
+            This simulator shows a rotating disk with two tracked points: <strong>Point A</strong> at radius
+            <em>r</em> and <strong>Point B</strong> at radius <em>2r</em>. Observe how velocity and acceleration
+            vectors scale with distance from the centre of rotation. Use <em>Dynamic</em> mode to let α change ω
+            over time.
+        </div>
+
+        <div class="sim-grid">
+            <!-- Left: controls -->
+            <div>
+                <div class="card" style="margin-bottom:1rem;">
+                    <h3>Controls</h3>
+
+                    <div class="btn-row">
+                        <button class="btn btn-play" id="btn-play">⏸ Pause</button>
+                        <button class="btn btn-reset" id="btn-reset" title="Reset">↺</button>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Angular Velocity ω</span>
+                            <span>
+                                <span class="slider-value" id="omega-val">2.0</span>
+                                <span class="slider-label"> rad/s</span>
+                                <span class="warn-badge" id="omega-warn">MAX</span>
+                            </span>
+                        </div>
+                        <input type="range" id="omega-slider" min="-3" max="3" step="0.1" value="2">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Angular Acceleration α</span>
+                            <span>
+                                <span class="slider-value" id="alpha-val">0.0</span>
+                                <span class="slider-label"> rad/s²</span>
+                            </span>
+                        </div>
+                        <input type="range" id="alpha-slider" min="-5" max="5" step="0.1" value="0">
+                    </div>
+
+                    <div class="toggle-row">
+                        <span class="toggle-label">Dynamic mode (α changes ω)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="dynamic-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom:1rem;">
+                    <h3>Vector Legend</h3>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#16a34a;"></div>
+                            Tangential velocity <em>v</em>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#2563eb;"></div>
+                            Tangential acceleration <em>a</em><sub>t</sub>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#dc2626;"></div>
+                            Centripetal acceleration <em>a</em><sub>c</sub>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#4f46e5; height:10px; width:10px; border-radius:50%;"></div>
+                            Point A (radius <em>r</em>)
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#db2777; height:10px; width:10px; border-radius:50%;"></div>
+                            Point B (radius <em>2r</em>)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Live Data</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Quantity</th>
+                                <th>Point A (r)</th>
+                                <th>Point B (2r)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>v (m/s)</td>
+                                <td id="va">0.00</td>
+                                <td id="vb">0.00</td>
+                            </tr>
+                            <tr>
+                                <td>a<sub>t</sub> (m/s²)</td>
+                                <td id="ata">0.00</td>
+                                <td id="atb">0.00</td>
+                            </tr>
+                            <tr>
+                                <td>a<sub>c</sub> (m/s²)</td>
+                                <td id="aca">0.00</td>
+                                <td id="acb">0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.6rem;">Assumes r = 1 m</p>
+                </div>
+            </div>
+
+            <!-- Right: canvas -->
+            <div>
+                <div class="canvas-wrap">
+                    <canvas id="sim-canvas"></canvas>
+                    <div class="time-badge">t = <span id="time-display">0.00</span>s</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Educational content -->
+        <div class="edu-section">
+            <div class="edu-card">
+                <h4>Tangential Velocity</h4>
+                <p>Every point on a rigid body rotates through the same angle, but points farther from the centre
+                    travel a longer arc — so they move faster.</p>
+                <span class="eq">v = r · ω</span>
+            </div>
+            <div class="edu-card">
+                <h4>Tangential Acceleration</h4>
+                <p>When angular acceleration α is non-zero, every point accelerates tangentially. The magnitude
+                    scales linearly with radius.</p>
+                <span class="eq">a<sub>t</sub> = r · α</span>
+            </div>
+            <div class="edu-card">
+                <h4>Centripetal Acceleration</h4>
+                <p>Even at constant ω, each point requires centripetal acceleration directed inward to maintain
+                    circular motion. It scales with ω².</p>
+                <span class="eq">a<sub>c</sub> = r · ω²</span>
+            </div>
+            <div class="edu-card">
+                <h4>AP Physics C Note</h4>
+                <p>The total linear acceleration is the vector sum of tangential and centripetal components.
+                    They are always perpendicular to each other.</p>
+                <span class="eq">a = √(a<sub>t</sub>² + a<sub>c</sub>²)</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Free to use, share, and remix. &nbsp;|&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank"
+                rel="noopener noreferrer">PanPhy</a></p>
+    </footer>
+
+    <script>
+    // ── Physics state ──────────────────────────────────────────────
+    var omega = 2.0;       // rad/s
+    var alpha = 0.0;       // rad/s²
+    var angle = 0.0;       // rad
+    var simTime = 0.0;     // s
+    var isPlaying = true;
+    var isDynamic = false;
+    var MAX_OMEGA = 3.0;
+    var previousTime = null;
+
+    // Rendering constants (in logical canvas units, before DPR scaling)
+    var CENTER_FRAC = 0.5;
+    var DISK_FRAC   = 0.40;  // disk radius as fraction of canvas width
+    var R1_FRAC     = 0.15;  // inner point radius fraction
+    var R2_FRAC     = 0.30;  // outer point radius fraction
+    var VEL_SCALE   = 0.055; // velocity arrow scale (fraction of canvas width per rad/s)
+    var ACC_SCALE   = 0.033; // tangential accel scale
+    var CENT_SCALE  = 0.020; // centripetal accel scale
+
+    // ── DOM refs ───────────────────────────────────────────────────
+    var canvas   = document.getElementById('sim-canvas');
+    var ctx      = canvas.getContext('2d');
+    var omegaSlider = document.getElementById('omega-slider');
+    var alphaSlider = document.getElementById('alpha-slider');
+    var omegaVal  = document.getElementById('omega-val');
+    var alphaVal  = document.getElementById('alpha-val');
+    var omegaWarn = document.getElementById('omega-warn');
+    var dynToggle  = document.getElementById('dynamic-toggle');
+    var btnPlay   = document.getElementById('btn-play');
+    var btnReset  = document.getElementById('btn-reset');
+    var timeDisp  = document.getElementById('time-display');
+
+    // ── Canvas sizing ──────────────────────────────────────────────
+    function resizeCanvas() {
+        var dpr = window.devicePixelRatio || 1;
+        var w = canvas.clientWidth;
+        var h = canvas.clientHeight;
+        canvas.width  = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // ── CSS variable helper ────────────────────────────────────────
+    function cssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    // ── Drawing helpers ────────────────────────────────────────────
+    function drawArrow(x1, y1, dx, dy, color) {
+        var x2 = x1 + dx, y2 = y1 + dy;
+        var len = Math.sqrt(dx*dx + dy*dy);
+        if (len < 2) return;
+        var hs = Math.min(14, Math.max(5, len * 0.28));
+        var ang = Math.atan2(dy, dx);
+
+        ctx.strokeStyle = color;
+        ctx.fillStyle   = color;
+        ctx.lineWidth   = 2.5;
+        ctx.lineCap     = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - hs*Math.cos(ang - Math.PI/6), y2 - hs*Math.sin(ang - Math.PI/6));
+        ctx.lineTo(x2 - hs*Math.cos(ang + Math.PI/6), y2 - hs*Math.sin(ang + Math.PI/6));
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawLabel(x, y, main, sub, color, cw) {
+        ctx.save();
+        ctx.fillStyle = color;
+        // Light shadow for readability
+        ctx.shadowColor = cssVar('--canvas-bg');
+        ctx.shadowBlur = 4;
+        var fs = Math.max(10, cw * 0.035);
+        ctx.font = 'bold ' + fs + 'px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(main, x, y);
+        if (sub) {
+            ctx.font = Math.max(8, cw * 0.026) + 'px "JetBrains Mono", monospace';
+            ctx.fillText(sub, x + fs * 0.55, y + fs * 0.55);
+        }
+        ctx.restore();
+    }
+
+    // ── Main draw ──────────────────────────────────────────────────
+    function draw() {
+        var cw = canvas.clientWidth;
+        var ch = canvas.clientHeight;
+        ctx.clearRect(0, 0, cw, ch);
+
+        var cx = cw * CENTER_FRAC;
+        var cy = ch * CENTER_FRAC;
+        var diskR = cw * DISK_FRAC;
+        var r1 = cw * R1_FRAC;
+        var r2 = cw * R2_FRAC;
+        var vs = cw * VEL_SCALE;
+        var as = cw * ACC_SCALE;
+        var cs = cw * CENT_SCALE;
+
+        // Crosshairs (static)
+        ctx.strokeStyle = cssVar('--crosshair');
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, ch); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(cw, cy); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Disk (rotating gradient)
+        var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, diskR);
+        grad.addColorStop(0, cssVar('--disk-fill'));
+        grad.addColorStop(0.85, cssVar('--disk-fill'));
+        grad.addColorStop(1, cssVar('--disk-stroke'));
+        ctx.fillStyle   = grad;
+        ctx.strokeStyle = cssVar('--disk-stroke');
+        ctx.lineWidth   = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, diskR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Reference lines on disk (rotate with disk)
+        ctx.strokeStyle = cssVar('--disk-line');
+        ctx.lineWidth   = 1;
+        var cos = Math.cos(angle), sin = Math.sin(angle);
+        ctx.beginPath();
+        ctx.moveTo(cx - diskR*cos, cy + diskR*sin);
+        ctx.lineTo(cx + diskR*cos, cy - diskR*sin);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx + diskR*sin, cy + diskR*cos);
+        ctx.lineTo(cx - diskR*sin, cy - diskR*cos);
+        ctx.stroke();
+
+        // ── Point positions in world space ─────────────────────────
+        // angle increases CCW on screen; point starts at [r, 0] local
+        var ax = cx + r1 * cos;
+        var ay = cy - r1 * sin;
+        var bx = cx + r2 * cos;
+        var by = cy - r2 * sin;
+
+        // Velocity direction: perpendicular to radius, tangential CCW
+        // In canvas (y-down): tangent CCW = (-sin(θ), -cos(θ)) ... but we want
+        // the correct tangent for the rotated coordinate.
+        // From derivation: vx = omega*vs*sin(angle), vy = -omega*vs*cos(angle)
+        var vx_dir = omega * vs * sin;      // = omega*vs*sin(angle)
+        var vy_dir = -omega * vs * cos;     // = -omega*vs*cos(angle)
+
+        // Tangential accel: same direction as velocity, scaled by alpha
+        var atx_dir = alpha * as * sin;
+        var aty_dir = -alpha * as * cos;
+
+        // Centripetal accel: toward center from each point
+        // Direction: (cx - ax, cy - ay) normalised, then scaled by omega²
+        var cent_scale_a = omega * omega * cs * r1 / (r1 > 0 ? r1 : 1);
+        var cax_dir = (cx - ax) / r1 * r1 * omega * omega * cs / (r1 > 0 ? r1 : 1);
+        var cay_dir = (cy - ay) / r1 * r1 * omega * omega * cs / (r1 > 0 ? r1 : 1);
+        // Simplify: centripetal accel direction from point toward center:
+        //   unit vector: ((cx-ax)/r1, (cy-ay)/r1) but cx-ax = -r1*cos, cy-ay = r1*sin
+        //   so direction: (-cos, sin) scaled by omega²*cs
+        var cax = -omega*omega*cs * cos;
+        var cay =  omega*omega*cs * sin;
+        // Point B: double magnitude
+        var cbx = -omega*omega*cs * 2 * cos;
+        var cby =  omega*omega*cs * 2 * sin;
+
+        // ── Draw vectors for Point A ────────────────────────────────
+        // Velocity
+        if (Math.abs(omega) > 0.01) {
+            drawArrow(ax, ay, vx_dir, vy_dir, '#16a34a');
+            var lx = ax + vx_dir + (vx_dir > 0 ? 16 : -16);
+            var ly = ay + vy_dir + (vy_dir > 0 ? 16 : -16);
+            drawLabel(lx, ly, 'v', null, '#16a34a', cw);
+        }
+        // Tangential accel
+        if (Math.abs(alpha) > 0.01) {
+            drawArrow(ax, ay, atx_dir, aty_dir, '#2563eb');
+        }
+        // Centripetal accel (offset slightly to avoid overlap)
+        if (Math.abs(omega) > 0.01) {
+            var off_a = cs * 0.12;
+            drawArrow(ax + vy_dir/vs * off_a, ay - vx_dir/vs * off_a, cax, cay, '#dc2626');
+        }
+
+        // ── Draw vectors for Point B ────────────────────────────────
+        var vx2 = omega * vs * 2 * sin;
+        var vy2 = -omega * vs * 2 * cos;
+        var atx2 = alpha * as * 2 * sin;
+        var aty2 = -alpha * as * 2 * cos;
+
+        if (Math.abs(omega) > 0.01) {
+            drawArrow(bx, by, vx2, vy2, '#16a34a');
+            var lx2 = bx + vx2 + (vx2 > 0 ? 16 : -16);
+            var ly2 = by + vy2 + (vy2 > 0 ? 16 : -16);
+            drawLabel(lx2, ly2, 'v', null, '#16a34a', cw);
+        }
+        if (Math.abs(alpha) > 0.01) {
+            drawArrow(bx, by, atx2, aty2, '#2563eb');
+        }
+        if (Math.abs(omega) > 0.01) {
+            var off_b = cs * 0.15;
+            drawArrow(bx - vy2/vs/2 * off_b, by + vx2/vs/2 * off_b, cbx, cby, '#dc2626');
+        }
+
+        // ── Point dots ─────────────────────────────────────────────
+        // Point A (indigo)
+        ctx.fillStyle   = '#4f46e5';
+        ctx.strokeStyle = cssVar('--canvas-bg');
+        ctx.lineWidth   = 2;
+        ctx.beginPath();
+        ctx.arc(ax, ay, Math.max(5, cw * 0.015), 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        // Point B (pink)
+        ctx.fillStyle   = '#db2777';
+        ctx.beginPath();
+        ctx.arc(bx, by, Math.max(5, cw * 0.015), 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        // Point labels
+        var fs = Math.max(11, cw * 0.032);
+        ctx.font = 'bold ' + fs + 'px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#4f46e5';
+        ctx.shadowColor = cssVar('--canvas-bg');
+        ctx.shadowBlur = 3;
+        ctx.fillText('A (r)', ax + cw*0.025, ay - cw*0.015);
+        ctx.fillStyle = '#db2777';
+        ctx.fillText('B (2r)', bx + cw*0.025, by - cw*0.015);
+        ctx.shadowBlur = 0;
+
+        // Center pivot
+        ctx.fillStyle   = cssVar('--text-main');
+        ctx.strokeStyle = cssVar('--canvas-bg');
+        ctx.lineWidth   = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, Math.max(4, cw * 0.012), 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+    }
+
+    // ── Animation loop ─────────────────────────────────────────────
+    function render(ts) {
+        if (isPlaying && previousTime !== null) {
+            var dt = Math.min((ts - previousTime) / 1000, 0.1);
+            if (isDynamic) {
+                omega = Math.max(-MAX_OMEGA, Math.min(MAX_OMEGA, omega + alpha * dt));
+                omegaSlider.value = omega;
+                omegaVal.textContent = omega.toFixed(1);
+                updateOmegaWarn();
+            }
+            angle = (angle + omega * dt) % (2 * Math.PI);
+            simTime += dt;
+            timeDisp.textContent = simTime.toFixed(2);
+            updateLiveData();
+        }
+        previousTime = ts;
+        draw();
+        requestAnimationFrame(render);
+    }
+
+    function updateLiveData() {
+        // r = 1 m assumed
+        document.getElementById('va').textContent  = Math.abs(omega * 1).toFixed(2);
+        document.getElementById('vb').textContent  = Math.abs(omega * 2).toFixed(2);
+        document.getElementById('ata').textContent = Math.abs(alpha * 1).toFixed(2);
+        document.getElementById('atb').textContent = Math.abs(alpha * 2).toFixed(2);
+        document.getElementById('aca').textContent = (omega * omega * 1).toFixed(2);
+        document.getElementById('acb').textContent = (omega * omega * 2).toFixed(2);
+    }
+
+    function updateOmegaWarn() {
+        var atMax = Math.abs(omega) >= MAX_OMEGA - 0.05;
+        omegaWarn.classList.toggle('visible', atMax);
+    }
+
+    // ── Event listeners ────────────────────────────────────────────
+    omegaSlider.addEventListener('input', function() {
+        omega = parseFloat(this.value);
+        omegaVal.textContent = omega.toFixed(1);
+        updateOmegaWarn();
+        updateLiveData();
+    });
+
+    alphaSlider.addEventListener('input', function() {
+        alpha = parseFloat(this.value);
+        alphaVal.textContent = alpha.toFixed(1);
+        updateLiveData();
+    });
+
+    dynToggle.addEventListener('change', function() {
+        isDynamic = this.checked;
+    });
+
+    btnPlay.addEventListener('click', function() {
+        isPlaying = !isPlaying;
+        btnPlay.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+        if (isPlaying) previousTime = null;
+    });
+
+    btnReset.addEventListener('click', function() {
+        omega = 2.0; alpha = 0.0; angle = 0.0; simTime = 0.0;
+        isPlaying = true; isDynamic = false;
+        omegaSlider.value = 2; alphaSlider.value = 0;
+        omegaVal.textContent = '2.0'; alphaVal.textContent = '0.0';
+        dynToggle.checked = false;
+        btnPlay.textContent = '⏸ Pause';
+        timeDisp.textContent = '0.00';
+        updateOmegaWarn();
+        updateLiveData();
+        previousTime = null;
+    });
+
+    // Start
+    updateLiveData();
+    requestAnimationFrame(render);
+    </script>
+
+    <!-- Theme toggle -->
+    <script>
+    (function() {
+        var btn = document.getElementById('theme-button');
+        var DARK_KEY = 'rotational-motion-dark';
+        var LIGHT_KEY = 'rotational-motion-light';
+
+        function getTheme() {
+            return localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+        }
+
+        function applyTheme(t) {
+            document.documentElement.setAttribute('data-theme', t);
+            var tc = document.querySelector('meta[name="theme-color"]');
+            var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            var dark = t === 'dark';
+            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+            btn.textContent = dark ? '🌙' : '☀️';
+        }
+
+        applyTheme(getTheme());
+
+        btn.addEventListener('click', function() {
+            var current = document.documentElement.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
+            if (next === 'dark') {
+                localStorage.setItem(DARK_KEY, '1');
+                localStorage.removeItem(LIGHT_KEY);
+            } else {
+                localStorage.setItem(LIGHT_KEY, '1');
+                localStorage.removeItem(DARK_KEY);
+            }
+            applyTheme(next);
+        });
+
+        window.addEventListener('pageshow', function() {
+            applyTheme(document.documentElement.getAttribute('data-theme'));
+        });
+
+        function updateFontState() {
+            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
+        }
+        window.addEventListener('online', updateFontState);
+        window.addEventListener('offline', updateFontState);
+        updateFontState();
+    })();
+    </script>
+
+    <!-- Brave iOS gradient text fix -->
+    <script>
+    (function() {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function(el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+</html>

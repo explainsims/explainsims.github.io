@@ -331,18 +331,7 @@
         }
 
         .section[data-section]::before {
-            content: attr(data-section);
-            font-family: var(--font-mono);
-            font-size: 6rem;
-            font-weight: 400;
-            color: var(--section-num-color);
-            position: absolute;
-            top: -2rem;
-            left: 1.5rem;
-            line-height: 1;
-            pointer-events: none;
-            user-select: none;
-            transition: color 0.4s ease;
+            content: none;
         }
 
         .section h2 {
@@ -866,8 +855,23 @@
 
         <div class="unit-block" id="unit5">
             <h3 class="unit-heading">Unit 5 <span class="section-label">Torque and Rotational Dynamics</span></h3>
-            <div class="grid"></div>
-            <p class="unit-no-sims">No simulations yet.</p>
+            <div class="grid">
+                <div class="card">
+                    <h3>Rotational Motion Simulator</h3>
+                    <p>Visualise angular velocity and angular acceleration on a spinning disk. Watch velocity, tangential, and centripetal acceleration vectors update in real time as you adjust ω and α.</p>
+                    <a href="/appcm/rotational_motion.html">Launch Sim</a>
+                </div>
+                <div class="card">
+                    <h3>Rotational Atwood Machine</h3>
+                    <p>Explore how a massive pulley changes the acceleration of an Atwood machine. Adjust the two hanging masses and pulley mass to see the effect of rotational inertia on the system.</p>
+                    <a href="/appcm/rotational_atwood.html">Launch Sim</a>
+                </div>
+                <div class="card">
+                    <h3>Parallel-Axis Theorem</h3>
+                    <p>Discover why a cylinder rolls slower than it falls. Use the Falling Roll and Pivoting Rod modes to explore how rotational inertia depends on axis position via the parallel-axis theorem.</p>
+                    <a href="/appcm/parallel_axis.html">Launch Sim</a>
+                </div>
+            </div>
         </div>
 
         <div class="unit-block" id="unit6">
@@ -888,7 +892,7 @@
         </div>
     </div>
 
-    <footer><p>h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p></footer>
+    <footer><p>Free to use, share, and remix. &nbsp;·&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p></footer>
 
     <script>
         // Cat Chase Animation
@@ -1331,6 +1335,9 @@
             '/appcm/cons_energy_systems.html': ['/appcm/cons_energy_systems.html'],
             '/appcm/cons_spring_energy_systems.html': ['/appcm/cons_spring_energy_systems.html'],
             '/appcm/power.html': ['/appcm/power.html'],
+            '/appcm/rotational_motion.html': ['/appcm/rotational_motion.html'],
+            '/appcm/rotational_atwood.html': ['/appcm/rotational_atwood.html'],
+            '/appcm/parallel_axis.html': ['/appcm/parallel_axis.html'],
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(

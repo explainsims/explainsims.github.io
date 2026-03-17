@@ -49,7 +49,13 @@
     <loc>https://panphy.github.io/appcm/power.html</loc>
   </url>
   <url>
-    <loc>https://panphy.github.io/tools/dictation.html</loc>
+    <loc>https://panphy.github.io/appcm/rotational_motion.html</loc>
+  </url>
+  <url>
+    <loc>https://panphy.github.io/appcm/rotational_atwood.html</loc>
+  </url>
+  <url>
+    <loc>https://panphy.github.io/appcm/parallel_axis.html</loc>
   </url>
   <url>
     <loc>https://panphy.github.io/tools/motion_tracker.html</loc>
