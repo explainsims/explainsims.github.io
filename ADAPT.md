@@ -198,7 +198,7 @@ Use this skeleton as your starting point:
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#E8F3FD">
+    <meta name="theme-color" content="#F4F4F8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
@@ -209,7 +209,7 @@ Use this skeleton as your starting point:
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (tc) tc.setAttribute('content', '#15243E');
+        if (tc) tc.setAttribute('content', '#0f1014');
         if (sb) sb.setAttribute('content', 'black-translucent');
       }
     })();
@@ -228,7 +228,7 @@ Use this skeleton as your starting point:
     <!-- Banner header -->
     <header class="banner">
         <div class="banner-logo">
-            <a href="/" class="banner-logo" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
             <!-- Back button (required — added March 2026) -->
             <button onclick="history.back()" title="Go back" aria-label="Go back" style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
         </div>
@@ -293,7 +293,7 @@ function updateAppChromeTheme(theme) {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     const appleStatusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
     const isDark = theme === 'dark';
-    if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#15243E' : '#E8F3FD');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#0f1014' : '#F4F4F8');
     if (appleStatusBarMeta) appleStatusBarMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
 }
 
@@ -385,25 +385,25 @@ Here is the core set of variables every simulation should define:
 :root {
     /* Fonts */
     --font-sans: 'Inter', sans-serif;
-    --font-display: 'Poppins', 'Inter', sans-serif;
+    --font-display: 'Space Grotesk', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
     /* Backgrounds */
-    --bg-color: #f8f9fa;
-    --bg-pattern: #e9ecef;
+    --bg-color: #F4F4F8;
+    --bg-pattern: #EAEAEF;
 
     /* Text */
-    --text-main: #2d3436;
-    --text-secondary: #636e72;
+    --text-main: #1A1A2E;
+    --text-secondary: #6B7280;
 
     /* Brand */
-    --brand-primary: #6c5ce7;
-    --brand-secondary: #a29bfe;
-    --brand-accent: #00cec9;
+    --brand-primary: #0891B2;
+    --brand-secondary: #0E7490;
+    --brand-accent: #F59E0B;
 
     /* Cards */
     --card-bg: #ffffff;
-    --card-border: #e9ecef;
+    --card-border: #E5E7EB;
     --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 
     /* Canvas */
@@ -411,28 +411,28 @@ Here is the core set of variables every simulation should define:
 
     /* Sliders */
     --slider-track: #e2e8f0;
-    --slider-thumb: #6c5ce7;
+    --slider-thumb: #0891B2;
 
     /* Navigation */
-    --nav-bg: rgba(255, 255, 255, 0.85);
-    --nav-border: rgba(255, 255, 255, 0.5);
+    --nav-bg: rgba(255, 255, 255, 0.92);
+    --nav-border: rgba(0, 0, 0, 0.10);
 }
 
 [data-theme="dark"] {
-    --bg-color: #0f1014;
-    --bg-pattern: #181a20;
-    --text-main: #dfe6e9;
-    --text-secondary: #b2bec3;
-    --brand-primary: #a29bfe;
-    --brand-secondary: #6c5ce7;
-    --brand-accent: #81ecec;
-    --card-bg: #1e2129;
-    --card-border: #2d3436;
+    --bg-color: #111118;
+    --bg-pattern: #1E1E28;
+    --text-main: #F0F0F5;
+    --text-secondary: #9CA3AF;
+    --brand-primary: #22D3EE;
+    --brand-secondary: #06B6D4;
+    --brand-accent: #FBBF24;
+    --card-bg: #1E1E28;
+    --card-border: #2A2A36;
     --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    --canvas-bg: #16181d;
-    --slider-track: #4a5568;
-    --slider-thumb: #a29bfe;
-    --nav-bg: rgba(22, 24, 29, 0.85);
+    --canvas-bg: #111118;
+    --slider-track: #2A2A36;
+    --slider-thumb: #22D3EE;
+    --nav-bg: rgba(17, 17, 24, 0.92);
     --nav-border: rgba(255, 255, 255, 0.08);
 }
 ```
@@ -462,7 +462,7 @@ This ensures canvas colours update when the theme toggles.
 - Touch targets: 44px minimum (`@media (pointer: coarse)`)
 - Respect reduced motion: `@media (prefers-reduced-motion: reduce)`
 - Use `viewport-fit=cover` for notched devices
-- Font import: `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap')`
+- Font import: `@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap')`
 
 ### 6d. Body background
 
@@ -476,7 +476,42 @@ body {
 
 ### 6e. Banner header (copy exactly)
 
-The banner header is identical across all simulations. Copy it from any existing sim and change only the title text.
+The banner is a **flat sticky bar** pinned to the top of the viewport. It is identical across all simulations — change only the title text and any extra action buttons.
+
+**Banner CSS (mandatory — do not change the layout):**
+
+```css
+/* Banner */
+header.banner {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--nav-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; height: 52px;
+}
+.banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+.banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+.banner-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+}
+.banner-title.gradient-text {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.banner-actions { display: flex; align-items: center; gap: 8px; }
+```
+
+**Key rules:**
+- **No floating pill** — no `border-radius`, no `margin`, no `box-shadow` on the banner
+- **Sticky, not fixed** — uses `position: sticky; top: 0`
+- **Title size** — always `clamp(1.1rem, 3vw, 1.4rem)`, never a fixed `px`/`rem` value
+- **Back button** — subtle opacity-based chevron, placed inside `.banner-logo` after the home icon (see HTML skeleton in §5)
 
 ### 6f. Footer (copy exactly)
 
@@ -589,7 +624,7 @@ If the simulation has external CDN dependencies, add those URLs too (they must m
 **Then bump the `BUILD_ID`:**
 
 ```javascript
-const BUILD_ID = '2026-03-15T22:30:00Z';  // Update to current timestamp
+const BUILD_ID = '2026-03-18T15:00:00Z';  // Update to current timestamp
 ```
 
 The `BUILD_ID` format is ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. Always update this when you change any cached asset.
@@ -803,9 +838,9 @@ import * as THREE from 'three';
 | `stone-200` | `--card-border` or `--rod-fill` |
 | `stone-400` | `--text-secondary` |
 | `stone-800` / `stone-900` | `--text-main` |
-| `indigo-600` | `--brand-primary` |
-| `indigo-700` | `--section-heading` |
-| `emerald-500` | `--brand-accent` (or a sim-specific variable) |
+| `teal-600` / `cyan-600` | `--brand-primary` |
+| `teal-700` / `cyan-700` | `--brand-secondary` |
+| `amber-500` | `--brand-accent` |
 | `amber-50` / `amber-200` | `--info-bg` / `--info-border` |
 
 ---
@@ -816,21 +851,21 @@ import * as THREE from 'three';
 
 | Variable | Light | Dark | Usage |
 |----------|-------|------|-------|
-| `--bg-color` | `#E8F3FD` | `#15243E` | Page background |
-| `--bg-pattern` | `#D5E8F7` | `#1C2F52` | Dot pattern overlay |
-| `--text-main` | `#0D1B2A` | `#EEF5FD` | Primary text |
-| `--text-secondary` | `#4A6380` | `#8BB3D4` | Secondary/muted text |
-| `--brand-primary` | `#1A56DB` | `#F6C90E` | Primary accent (blue / gold) |
-| `--brand-secondary` | `#1D4ED8` | `#EAB308` | Secondary accent |
-| `--brand-accent` | `#D97706` | `#60A5FA` | Amber / light-blue accent |
-| `--card-bg` | `#FFFFFF` | `#1C2F52` | Card backgrounds |
-| `--card-border` | `#C5DCF0` | `#2A4270` | Card borders |
-| `--card-shadow` | `0 4px 16px rgba(26,86,219,0.06)` | `0 4px 16px rgba(0,0,0,0.3)` | Card shadows |
-| `--canvas-bg` | `#FFFFFF` | `#15243E` | Canvas background |
-| `--slider-track` | `#C5DCF0` | `#2A4270` | Slider track |
-| `--slider-thumb` | `#1A56DB` | `#F6C90E` | Slider thumb |
-| `--nav-bg` | `rgba(255,255,255,0.92)` | `rgba(21,36,62,0.90)` | Header background |
-| `--nav-border` | `rgba(30,80,160,0.10)` | `rgba(255,255,255,0.08)` | Header border |
+| `--bg-color` | `#F4F4F8` | `#111118` | Page background |
+| `--bg-pattern` | `#EAEAEF` | `#1E1E28` | Dot pattern overlay |
+| `--text-main` | `#1A1A2E` | `#F0F0F5` | Primary text |
+| `--text-secondary` | `#6B7280` | `#9CA3AF` | Secondary/muted text |
+| `--brand-primary` | `#0891B2` | `#22D3EE` | Primary accent (teal / cyan) |
+| `--brand-secondary` | `#0E7490` | `#06B6D4` | Secondary accent |
+| `--brand-accent` | `#F59E0B` | `#FBBF24` | Amber accent |
+| `--card-bg` | `#FFFFFF` | `#1E1E28` | Card backgrounds |
+| `--card-border` | `#E5E7EB` | `#2A2A36` | Card borders |
+| `--card-shadow` | `0 10px 30px rgba(0,0,0,0.05)` | `0 10px 30px rgba(0,0,0,0.3)` | Card shadows |
+| `--canvas-bg` | `#FFFFFF` | `#111118` | Canvas background |
+| `--slider-track` | `#e2e8f0` | `#2A2A36` | Slider track |
+| `--slider-thumb` | `#0891B2` | `#22D3EE` | Slider thumb |
+| `--nav-bg` | `rgba(255,255,255,0.92)` | `rgba(17,17,24,0.92)` | Header background |
+| `--nav-border` | `rgba(0,0,0,0.10)` | `rgba(255,255,255,0.08)` | Header border |
 
 ### Simulation-specific variables (add as needed)
 
@@ -840,8 +875,8 @@ Define these for your simulation's unique visual elements. Example from Physical
 |----------|-------|------|-------|
 | `--rod-fill` | `#e7e5e4` | `#3d3d3d` | Rod body fill |
 | `--rod-stroke` | `#a8a29e` | `#6b6b6b` | Rod outline |
-| `--pivot-color` | `#6c5ce7` | `#a29bfe` | Pivot marker |
-| `--simple-bob` | `#00cec9` | `#81ecec` | Equivalent pendulum bob |
+| `--pivot-color` | `#0891B2` | `#22D3EE` | Pivot marker |
+| `--simple-bob` | `#F59E0B` | `#FBBF24` | Equivalent pendulum bob |
 | `--grid-line` | `rgba(0,0,0,0.04)` | `rgba(255,255,255,0.04)` | Canvas grid |
 
 ---
