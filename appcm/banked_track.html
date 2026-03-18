@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#E8F3FD">
+    <meta name="theme-color" content="#F4F4F8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <script>
@@ -13,7 +13,7 @@
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (tc) tc.setAttribute('content', '#15243E');
+        if (tc) tc.setAttribute('content', '#111118');
         if (sb) sb.setAttribute('content', 'black-translucent');
       }
     })();
@@ -22,57 +22,57 @@
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <script src="/assets/sw-register.js" defer></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
         :root {
             --font-sans: 'Inter', sans-serif;
-            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
 
-            --bg-color: #E8F3FD;
-            --bg-pattern: #D5E8F7;
-            --text-main: #0D1B2A;
-            --text-secondary: #4A6380;
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
 
-            --brand-primary: #1A56DB;
-            --brand-secondary: #1D4ED8;
-            --brand-accent: #D97706;
+            --brand-primary: #0891B2;
+            --brand-secondary: #0E7490;
+            --brand-accent: #F59E0B;
 
             --card-bg: #FFFFFF;
-            --card-border: #C5DCF0;
-            --card-shadow: 0 4px 16px rgba(26,86,219,0.06);
+            --card-border: #E5E7EB;
+            --card-shadow: 0 4px 16px rgba(8,145,178,0.06);
 
-            --slider-track: #C5DCF0;
-            --slider-thumb: #1A56DB;
+            --slider-track: #E5E7EB;
+            --slider-thumb: #0891B2;
 
             --nav-bg: rgba(255,255,255,0.92);
-            --nav-border: rgba(30,80,160,0.10);
+            --nav-border: rgba(0,0,0,0.10);
 
-            --readout-bg: #F0F7FF;
+            --readout-bg: #F0F0F5;
 
             /* SVG diagram colors */
             --diag-track: #6B7280;
             --diag-car: #06B6D4;
             --diag-grid: rgba(0,0,0,0.08);
-            --diag-theta: #A78BFA;
+            --diag-theta: #22D3EE;
         }
 
         [data-theme="dark"] {
-            --bg-color: #15243E;
-            --bg-pattern: #1C2F52;
-            --text-main: #EEF5FD;
-            --text-secondary: #8BB3D4;
-            --brand-primary: #F6C90E;
-            --brand-secondary: #EAB308;
-            --brand-accent: #60A5FA;
-            --card-bg: #1C2F52;
-            --card-border: #2A4270;
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+            --brand-primary: #22D3EE;
+            --brand-secondary: #06B6D4;
+            --brand-accent: #FBBF24;
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
             --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
-            --slider-track: #2A4270;
-            --slider-thumb: #F6C90E;
-            --nav-bg: rgba(21,36,62,0.90);
+            --slider-track: #2A2A36;
+            --slider-thumb: #22D3EE;
+            --nav-bg: rgba(17,17,24,0.92);
             --nav-border: rgba(255,255,255,0.08);
-            --readout-bg: #1C2F52;
+            --readout-bg: #1E1E28;
             --diag-track: #9CA3AF;
             --diag-car: #22D3EE;
             --diag-grid: rgba(255,255,255,0.07);
@@ -643,7 +643,7 @@
             const tc = document.querySelector('meta[name="theme-color"]');
             const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
             const dark = theme === 'dark';
-            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
             if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
         }
         function updateButtonEmoji(theme) {
