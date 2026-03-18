@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#E8F3FD">
+    <meta name="theme-color" content="#F4F4F8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <script>
@@ -13,7 +13,7 @@
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (tc) tc.setAttribute('content', '#15243E');
+        if (tc) tc.setAttribute('content', '#111118');
         if (sb) sb.setAttribute('content', 'black-translucent');
       }
     })();
@@ -22,80 +22,80 @@
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <script src="/assets/sw-register.js" defer></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
         :root {
             --font-sans: 'Inter', sans-serif;
-            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
 
-            --bg-color: #E8F3FD;
-            --bg-pattern: #D5E8F7;
-            --text-main: #0D1B2A;
-            --text-secondary: #4A6380;
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
 
-            --brand-primary: #1A56DB;
-            --brand-accent: #D97706;
+            --brand-primary: #0891B2;
+            --brand-accent: #F59E0B;
 
             --card-bg: #FFFFFF;
-            --card-border: #C5DCF0;
-            --card-shadow: 0 4px 16px rgba(26, 86, 219, 0.06);
+            --card-border: #E5E7EB;
+            --card-shadow: 0 4px 16px rgba(8, 145, 178, 0.06);
 
             --canvas-bg: #FFFFFF;
 
-            --slider-track: #C5DCF0;
-            --slider-thumb: #1A56DB;
+            --slider-track: #E5E7EB;
+            --slider-thumb: #0891B2;
 
             --nav-bg: rgba(255, 255, 255, 0.92);
-            --nav-border: rgba(30, 80, 160, 0.10);
+            --nav-border: rgba(0, 0, 0, 0.10);
 
-            --info-bg: rgba(26, 86, 219, 0.05);
-            --info-border: rgba(26, 86, 219, 0.15);
+            --info-bg: rgba(8, 145, 178, 0.05);
+            --info-border: rgba(8, 145, 178, 0.15);
 
             --math-bg: #F0F6FF;
-            --math-border: #C5DCF0;
+            --math-border: #E5E7EB;
 
-            --highlight-bg: rgba(26, 86, 219, 0.08);
-            --highlight-border: rgba(26, 86, 219, 0.2);
-            --highlight-text: #1A56DB;
+            --highlight-bg: rgba(8, 145, 178, 0.08);
+            --highlight-border: rgba(8, 145, 178, 0.2);
+            --highlight-text: #0891B2;
 
             --roll-border: #4f46e5;
             --roll-bg: #FFFFFF;
         }
 
         [data-theme="dark"] {
-            --bg-color: #15243E;
-            --bg-pattern: #1C2F52;
-            --text-main: #EEF5FD;
-            --text-secondary: #8BB3D4;
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
 
-            --brand-primary: #F6C90E;
-            --brand-accent: #60A5FA;
+            --brand-primary: #22D3EE;
+            --brand-accent: #FBBF24;
 
-            --card-bg: #1C2F52;
-            --card-border: #2A4270;
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
             --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 
-            --canvas-bg: #15243E;
+            --canvas-bg: #111118;
 
-            --slider-track: #2A4270;
-            --slider-thumb: #F6C90E;
+            --slider-track: #2A2A36;
+            --slider-thumb: #22D3EE;
 
-            --nav-bg: rgba(21, 36, 62, 0.90);
+            --nav-bg: rgba(17, 17, 24, 0.92);
             --nav-border: rgba(255, 255, 255, 0.08);
 
-            --info-bg: rgba(246, 201, 14, 0.06);
-            --info-border: rgba(246, 201, 14, 0.15);
+            --info-bg: rgba(34, 211, 238, 0.06);
+            --info-border: rgba(34, 211, 238, 0.15);
 
-            --math-bg: rgba(21, 36, 62, 0.6);
-            --math-border: #2A4270;
+            --math-bg: rgba(17, 17, 24, 0.6);
+            --math-border: #2A2A36;
 
-            --highlight-bg: rgba(246, 201, 14, 0.08);
-            --highlight-border: rgba(246, 201, 14, 0.2);
-            --highlight-text: #F6C90E;
+            --highlight-bg: rgba(34, 211, 238, 0.08);
+            --highlight-border: rgba(34, 211, 238, 0.2);
+            --highlight-text: #22D3EE;
 
             --roll-border: #818cf8;
-            --roll-bg: #1C2F52;
+            --roll-bg: #1E1E28;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -170,7 +170,7 @@
             background: var(--brand-primary); color: #fff;
         }
 
-        [data-theme="dark"] .mode-tab.active { color: #0D1B2A; }
+        [data-theme="dark"] .mode-tab.active { color: #1A1A2E; }
 
         /* ── Card ── */
         .card {
@@ -213,7 +213,7 @@
         }
 
         .btn-play { background: var(--brand-primary); color: #fff; flex: 1; justify-content: center; }
-        [data-theme="dark"] .btn-play { color: #0D1B2A; }
+        [data-theme="dark"] .btn-play { color: #1A1A2E; }
         .btn-play:hover { opacity: 0.88; }
         .btn-reset { background: var(--card-border); color: var(--text-secondary); }
         .btn-reset:hover { background: var(--slider-track); }
@@ -250,7 +250,7 @@
         }
 
         .ir-btn.active { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
-        [data-theme="dark"] .ir-btn.active { color: #0D1B2A; }
+        [data-theme="dark"] .ir-btn.active { color: #1A1A2E; }
 
         /* ── Animation area ── */
         .anim-area {
@@ -1003,7 +1003,7 @@
             var tc = document.querySelector('meta[name="theme-color"]');
             var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
             var dark = t === 'dark';
-            if (tc) tc.setAttribute('content', dark ? '#15243E' : '#E8F3FD');
+            if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
             if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
             btn.textContent = dark ? '🌙' : '☀️';
             // Re-draw pivot chart after theme switch

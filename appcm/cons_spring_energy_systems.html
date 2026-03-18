@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#E8F3FD">
+    <meta name="theme-color" content="#F4F4F8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
@@ -14,7 +14,7 @@
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (tc) tc.setAttribute('content', '#15243E');
+        if (tc) tc.setAttribute('content', '#111118');
         if (sb) sb.setAttribute('content', 'black-translucent');
       }
     })();
@@ -25,51 +25,51 @@
     <script src="/assets/sw-register.js" defer></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
         :root {
             --font-sans: 'Inter', sans-serif;
-            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
-            --bg-color: #E8F3FD;
-            --bg-pattern: #D5E8F7;
-            --text-main: #0D1B2A;
-            --text-secondary: #4A6380;
-            --brand-primary: #1A56DB;
-            --brand-secondary: #1D4ED8;
-            --brand-accent: #D97706;
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+            --brand-primary: #0891B2;
+            --brand-secondary: #0E7490;
+            --brand-accent: #F59E0B;
             --card-bg: #FFFFFF;
-            --card-border: #C5DCF0;
-            --card-shadow: 0 4px 16px rgba(26,86,219,0.06);
+            --card-border: #E5E7EB;
+            --card-shadow: 0 4px 16px rgba(8,145,178,0.06);
             --canvas-bg: #FFFFFF;
-            --slider-track: #C5DCF0;
-            --slider-thumb: #1A56DB;
+            --slider-track: #E5E7EB;
+            --slider-thumb: #0891B2;
             --nav-bg: rgba(255,255,255,0.92);
-            --nav-border: rgba(30,80,160,0.10);
-            --readout-bg: #E8F3FD;
-            --readout-border: #C5DCF0;
-            --section-heading: #1A56DB;
+            --nav-border: rgba(0,0,0,0.10);
+            --readout-bg: #F4F4F8;
+            --readout-border: #E5E7EB;
+            --section-heading: #0891B2;
         }
 
         [data-theme="dark"] {
-            --bg-color: #15243E;
-            --bg-pattern: #1C2F52;
-            --text-main: #EEF5FD;
-            --text-secondary: #8BB3D4;
-            --brand-primary: #F6C90E;
-            --brand-secondary: #EAB308;
-            --brand-accent: #60A5FA;
-            --card-bg: #1C2F52;
-            --card-border: #2A4270;
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+            --brand-primary: #22D3EE;
+            --brand-secondary: #06B6D4;
+            --brand-accent: #FBBF24;
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
             --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
-            --canvas-bg: #15243E;
-            --slider-track: #2A4270;
-            --slider-thumb: #F6C90E;
-            --nav-bg: rgba(21,36,62,0.90);
+            --canvas-bg: #111118;
+            --slider-track: #2A2A36;
+            --slider-thumb: #22D3EE;
+            --nav-bg: rgba(17,17,24,0.92);
             --nav-border: rgba(255,255,255,0.08);
-            --readout-bg: #1C2F52;
-            --readout-border: #2A4270;
-            --section-heading: #F6C90E;
+            --readout-bg: #1E1E28;
+            --readout-border: #2A2A36;
+            --section-heading: #22D3EE;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -530,18 +530,18 @@
                             <!-- Ramp surface -->
                             <line id="ramp-surface" x1="0" y1="0" x2="500" y2="0" stroke="#94a3b8" stroke-width="3"/>
                             <!-- Wall -->
-                            <line id="wall-line" x1="0" y1="0" x2="0" y2="-100" stroke="#0D1B2A" stroke-width="5"/>
+                            <line id="wall-line" x1="0" y1="0" x2="0" y2="-100" stroke="#1A1A2E" stroke-width="5"/>
                             <!-- Hatch marks on wall -->
-                            <line x1="-10" y1="-10" x2="0" y2="0" stroke="#0D1B2A" stroke-width="1.5"/>
-                            <line x1="-10" y1="-30" x2="0" y2="-20" stroke="#0D1B2A" stroke-width="1.5"/>
-                            <line x1="-10" y1="-50" x2="0" y2="-40" stroke="#0D1B2A" stroke-width="1.5"/>
-                            <line x1="-10" y1="-70" x2="0" y2="-60" stroke="#0D1B2A" stroke-width="1.5"/>
-                            <line x1="-10" y1="-90" x2="0" y2="-80" stroke="#0D1B2A" stroke-width="1.5"/>
+                            <line x1="-10" y1="-10" x2="0" y2="0" stroke="#1A1A2E" stroke-width="1.5"/>
+                            <line x1="-10" y1="-30" x2="0" y2="-20" stroke="#1A1A2E" stroke-width="1.5"/>
+                            <line x1="-10" y1="-50" x2="0" y2="-40" stroke="#1A1A2E" stroke-width="1.5"/>
+                            <line x1="-10" y1="-70" x2="0" y2="-60" stroke="#1A1A2E" stroke-width="1.5"/>
+                            <line x1="-10" y1="-90" x2="0" y2="-80" stroke="#1A1A2E" stroke-width="1.5"/>
                             <!-- Equilibrium marker -->
                             <line id="eq-marker" x1="200" y1="-60" x2="200" y2="10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
                             <text id="eq-label" x="200" y="-65" text-anchor="middle" font-size="11" fill="#64748b" font-family="Inter,sans-serif">Eq</text>
                             <!-- Spring path -->
-                            <path id="spring-path" d="" fill="none" stroke="#1A56DB" stroke-width="2"/>
+                            <path id="spring-path" d="" fill="none" stroke="#0891B2" stroke-width="2"/>
                             <!-- Block -->
                             <rect id="block-rect" x="170" y="-62" width="60" height="60" rx="6" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
                             <text id="block-label" x="200" y="-28" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="bold" fill="white" font-family="Inter,sans-serif">m</text>
@@ -555,7 +555,7 @@
                         </g>
                         <!-- Legend -->
                         <g id="legend-box">
-                            <rect x="478" y="10" width="112" height="96" rx="6" fill="white" fill-opacity="0.88" stroke="#C5DCF0" stroke-width="1"/>
+                            <rect x="478" y="10" width="112" height="96" rx="6" fill="white" fill-opacity="0.88" stroke="#E5E7EB" stroke-width="1"/>
                             <line x1="486" y1="28" x2="504" y2="28" stroke="#10b981" stroke-width="2.5"/>
                             <text x="508" y="32" font-size="11" fill="#334155" font-family="Inter,sans-serif">Gravity</text>
                             <line x1="486" y1="48" x2="504" y2="48" stroke="#334155" stroke-width="2.5"/>
@@ -694,7 +694,7 @@
         const themeColorMeta = document.querySelector('meta[name="theme-color"]');
         const appleStatusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
         const isDark = theme === 'dark';
-        if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#15243E' : '#E8F3FD');
+        if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#111118' : '#F4F4F8');
         if (appleStatusBarMeta) appleStatusBarMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
     }
 
@@ -1085,7 +1085,7 @@
 
     function updateSVGColors() {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const wallColor = isDark ? '#EEF5FD' : '#0D1B2A';
+        const wallColor = isDark ? '#F0F0F5' : '#1A1A2E';
         const wallLine = document.getElementById('wall-line');
         if (wallLine) {
             wallLine.setAttribute('stroke', wallColor);
@@ -1095,21 +1095,21 @@
         // Legend background
         const legendRect = document.querySelector('#legend-box rect');
         if (legendRect) {
-            legendRect.setAttribute('fill', isDark ? '#1C2F52' : 'white');
-            legendRect.setAttribute('stroke', isDark ? '#2A4270' : '#C5DCF0');
+            legendRect.setAttribute('fill', isDark ? '#1E1E28' : 'white');
+            legendRect.setAttribute('stroke', isDark ? '#2A2A36' : '#E5E7EB');
         }
         // Legend text
         document.querySelectorAll('#legend-box text').forEach(t => {
-            t.setAttribute('fill', isDark ? '#EEF5FD' : '#334155');
+            t.setAttribute('fill', isDark ? '#F0F0F5' : '#334155');
         });
         // Eq label
         const eqLbl = document.getElementById('eq-label');
-        if (eqLbl) eqLbl.setAttribute('fill', isDark ? '#8BB3D4' : '#64748b');
+        if (eqLbl) eqLbl.setAttribute('fill', isDark ? '#9CA3AF' : '#64748b');
         const eqMkr = document.getElementById('eq-marker');
-        if (eqMkr) eqMkr.setAttribute('stroke', isDark ? '#8BB3D4' : '#64748b');
+        if (eqMkr) eqMkr.setAttribute('stroke', isDark ? '#9CA3AF' : '#64748b');
         // Drag hint
         const dh = document.getElementById('drag-hint');
-        if (dh) dh.setAttribute('fill', isDark ? '#4A6380' : '#94a3b8');
+        if (dh) dh.setAttribute('fill', isDark ? '#6B7280' : '#94a3b8');
         // Normal force arrow
         fvNormal.setAttribute('stroke', isDark ? '#94a3b8' : '#334155');
         const darkMarker = document.getElementById('arrow-dark');
