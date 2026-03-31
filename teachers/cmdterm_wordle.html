@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Command Term Wordle — ExplAIn Sims</title>
+  <script src="/assets/sw-register.js" defer></script>
+  <style>
+    :root {
+      --bg: #F4F4F8;
+      --text: #1A1A2E;
+      --text-sub: #6B7280;
+      --card-bg: #FFFFFF;
+      --border: #E5E7EB;
+      --brand: #0891B2;
+      --correct: #059669;
+      --present: #D97706;
+      --absent-bg: #9CA3AF;
+      --absent-text: #fff;
+      --cell-border: #D1D5DB;
+      --cell-border-filled: #9CA3AF;
+      --cell-bg: #FFFFFF;
+      --key-bg: #E5E7EB;
+      --key-text: #1A1A2E;
+    }
+    [data-theme="dark"] {
+      --bg: #111118;
+      --text: #F0F0F5;
+      --text-sub: #9CA3AF;
+      --card-bg: #1E1E28;
+      --border: #2A2A36;
+      --brand: #22D3EE;
+      --correct: #34D399;
+      --present: #FBBF24;
+      --absent-bg: #374151;
+      --absent-text: #F0F0F5;
+      --cell-border: #3A3A50;
+      --cell-border-filled: #6B7280;
+      --cell-bg: #1E1E28;
+      --key-bg: #2A2A3C;
+      --key-text: #F0F0F5;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-bg);
+    }
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 15px;
+    }
+    nav a img { width: 26px; height: 26px; }
+    #theme-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 12px 36px;
+      gap: 16px;
+    }
+
+    h1 {
+      font-size: clamp(17px, 4vw, 24px);
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .controls label {
+      font-size: 13px;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+    select {
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      max-width: 220px;
+    }
+    .new-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: none;
+      background: var(--brand);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    [data-theme="dark"] .new-btn { color: #111118; }
+
+    /* ── Game info ── */
+    #game-info {
+      font-size: 12px;
+      color: var(--text-sub);
+      text-align: center;
+      min-height: 16px;
+    }
+
+    /* ── Message ── */
+    #message {
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      min-height: 22px;
+      color: var(--text);
+    }
+    #message.win  { color: var(--correct); }
+    #message.lose { color: #DC2626; }
+
+    /* ── Grid ── */
+    #grid {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .grid-row { display: flex; gap: 5px; }
+
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      text-transform: uppercase;
+      border: 2px solid var(--cell-border);
+      background: var(--cell-bg);
+      border-radius: 4px;
+      user-select: none;
+      transition: border-color 0.08s;
+    }
+    .cell.filled  { border-color: var(--cell-border-filled); }
+    .cell.correct { background: var(--correct);    border-color: var(--correct);    color: #fff; }
+    .cell.present { background: var(--present);    border-color: var(--present);    color: #fff; }
+    .cell.absent  { background: var(--absent-bg);  border-color: var(--absent-bg);  color: var(--absent-text); }
+
+    @keyframes pop {
+      0%,100% { transform: scale(1); }
+      40%      { transform: scale(1.14); }
+    }
+    .cell.pop { animation: pop 0.12s ease; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-5px); }
+      40%     { transform: translateX(5px); }
+      60%     { transform: translateX(-3px); }
+      80%     { transform: translateX(3px); }
+    }
+    .row-shake .cell { animation: shake 0.38s ease; }
+
+    @keyframes flip-in {
+      0%   { transform: scaleY(1); }
+      50%  { transform: scaleY(0); }
+      100% { transform: scaleY(1); }
+    }
+    .cell.flip { animation: flip-in 0.3s ease; }
+
+    /* ── Keyboard ── */
+    #keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      width: 100%;
+      max-width: 500px;
+    }
+    .key-row {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+    .key {
+      height: 52px;
+      min-width: 34px;
+      padding: 0 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--key-bg);
+      color: var(--key-text);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      user-select: none;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .key.wide { min-width: 54px; font-size: 11px; letter-spacing: 0; }
+    .key.correct { background: var(--correct);   border-color: var(--correct);   color: #fff; }
+    .key.present { background: var(--present);   border-color: var(--present);   color: #fff; }
+    .key.absent  { background: var(--absent-bg); border-color: var(--absent-bg); color: var(--absent-text); }
+    [data-theme="dark"] .key.correct { color: #111118; }
+    [data-theme="dark"] .key.present { color: #111118; }
+
+    @media (max-width: 380px) {
+      .key { min-width: 28px; height: 46px; font-size: 12px; }
+      .key.wide { min-width: 44px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/"><img src="/assets/favicon.png" alt="Home"> ExplAIn Sims</a>
+  <button id="theme-btn" aria-label="Toggle theme">☀️</button>
+</nav>
+
+<main>
+  <h1>Command Term Wordle</h1>
+
+  <div class="controls">
+    <label for="subject-select">Subject:</label>
+    <select id="subject-select"></select>
+    <button class="new-btn" id="new-btn">New word</button>
+  </div>
+
+  <div id="game-info"></div>
+  <div id="message" role="status" aria-live="polite"></div>
+  <div id="grid" aria-label="Game board"></div>
+  <div id="keyboard" aria-label="On-screen keyboard"></div>
+</main>
+
+<script>
+// ── Command term data (single-word only) ─────────────────────────────────────
+const SUBJECTS_RAW = {
+  "Language A: Literature":
+    "Analyse,Comment,Compare,Contrast,Describe,Discuss,Evaluate,Examine,Explain,Explore,Interpret,Investigate,Justify,List,Outline,Present",
+  "Language A: Language & Literature":
+    "Analyse,Comment,Compare,Contrast,Describe,Discuss,Evaluate,Examine,Explain,Explore,Interpret,Investigate,Justify,List,Outline,Present",
+  "Literature & Performance":
+    "Analyse,Comment,Compare,Contrast,Describe,Discuss,Evaluate,Examine,Explain,Explore,Interpret,Investigate,Justify,List,Outline,Present",
+  "Language Ab Initio":
+    "Analyse,Demonstrate,Describe,Discuss,Evaluate,Examine,Explain,Identify,Outline,Present,State",
+  "Language B":
+    "Analyse,Demonstrate,Describe,Discuss,Evaluate,Examine,Explain,Identify,Outline,Present,State",
+  "Business Management":
+    "Annotate,Apply,Calculate,Comment,Compare,Complete,Construct,Contrast,Define,Demonstrate,Describe,Discuss,Distinguish,Evaluate,Examine,Explain,Identify,Justify,Label,List,Outline,Plot,Prepare,Recommend,State,Suggest",
+  "Economics":
+    "Analyse,Apply,Calculate,Comment,Compare,Construct,Contrast,Define,Derive,Describe,Determine,Discuss,Distinguish,Draw,Evaluate,Examine,Explain,Identify,Justify,Label,List,Measure,Outline,Plot,Recommend,Show,Sketch,Solve,State,Suggest",
+  "History":
+    "Analyse,Discuss,Evaluate,Examine",
+  "Psychology":
+    "Analyse,Apply,Comment,Describe,Design,Discuss,Evaluate,Examine,Explain,Interpret,Predict,State,Suggest",
+  "Biology":
+    "Analyse,Annotate,Calculate,Comment,Compare,Construct,Deduce,Define,Describe,Design,Determine,Discuss,Distinguish,Draw,Estimate,Evaluate,Explain,Identify,Justify,Label,List,Measure,Outline,Predict,Sketch,State,Suggest",
+  "Chemistry":
+    "Analyse,Annotate,Calculate,Comment,Compare,Construct,Deduce,Define,Describe,Design,Determine,Discuss,Distinguish,Draw,Estimate,Evaluate,Explain,Identify,Justify,Label,List,Measure,Outline,Predict,Sketch,State,Suggest",
+  "Design Technology":
+    "Analyse,Apply,Construct,Demonstrate,Describe,Design,Evaluate,Explain,Identify,Justify,Label,List,Outline,Present,State",
+  "Environmental Systems & Societies":
+    "Analyse,Annotate,Apply,Calculate,Comment,Compare,Construct,Deduce,Define,Describe,Design,Determine,Discuss,Distinguish,Draw,Estimate,Evaluate,Explain,Identify,Interpret,Justify,Label,List,Measure,Outline,Predict,Sketch,State,Suggest",
+  "Physics":
+    "Analyse,Annotate,Calculate,Comment,Compare,Construct,Deduce,Define,Describe,Design,Determine,Discuss,Distinguish,Draw,Estimate,Evaluate,Explain,Identify,Justify,Label,List,Measure,Outline,Predict,Sketch,State,Suggest",
+  "Mathematics: Analysis & Approaches":
+    "Calculate,Comment,Compare,Construct,Contrast,Deduce,Determine,Draw,Explain,Find,Hence,Identify,Interpret,Investigate,Justify,Label,List,Plot,Predict,Prove,Show,Sketch,Solve,State,Suggest,Verify",
+  "Mathematics: Applications & Interpretation":
+    "Calculate,Comment,Compare,Construct,Contrast,Deduce,Determine,Draw,Explain,Find,Hence,Identify,Interpret,Investigate,Justify,Label,List,Plot,Predict,Prove,Show,Sketch,Solve,State,Suggest,Verify",
+  "Film":
+    "Analyse,Apply,Demonstrate,Describe,Discuss,Evaluate,Explain,Explore,Formulate,Identify,Interpret,Investigate,Justify,List",
+  "Music":
+    "Assemble,Approximate,Demonstrate,Describe,Distinguish,Exhibit,Explain,Explore,Formulate,Identify,Investigate,Justify,List,Outline,Recreate,Reiterate,Transmit",
+  "Theatre":
+    "Describe,Evaluate,Explain,List,Outline",
+  "Visual Arts":
+    "Analyse,Demonstrate,Describe,Evaluate,Examine,Explain,Justify,Outline,Present"
+};
+
+// Build per-subject arrays (deduplicated)
+const SUBJECTS = {};
+for (const [name, csv] of Object.entries(SUBJECTS_RAW)) {
+  SUBJECTS[name] = [...new Set(csv.split(',').map(t => t.trim()))];
+}
+
+// All-subjects pool
+const allTerms = [...new Set(Object.values(SUBJECTS).flat())].sort();
+SUBJECTS['All subjects'] = allTerms;
+
+const SUBJECT_NAMES = ['All subjects', ...Object.keys(SUBJECTS_RAW).sort()];
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const subjectEl = document.getElementById('subject-select');
+const newBtn    = document.getElementById('new-btn');
+const infoEl    = document.getElementById('game-info');
+const msgEl     = document.getElementById('message');
+const gridEl    = document.getElementById('grid');
+const kbEl      = document.getElementById('keyboard');
+
+// Populate dropdown
+SUBJECT_NAMES.forEach(name => {
+  const opt = document.createElement('option');
+  opt.value = opt.textContent = name;
+  subjectEl.appendChild(opt);
+});
+
+// ── Game state ────────────────────────────────────────────────────────────────
+let target = '', wordLen = 0, maxGuesses = 0;
+let currentRow = 0, currentCol = 0;
+let board = [];     // [row][col] = letter string
+let gameOver = false;
+let keyStates = {}; // letter → 'correct'|'present'|'absent'
+
+// ── Cell sizing ───────────────────────────────────────────────────────────────
+function calcCellSize(len) {
+  const gap = 5;
+  const available = Math.min(window.innerWidth - 24, 540);
+  const raw = Math.floor((available - gap * (len - 1)) / len);
+  return Math.min(54, Math.max(28, raw));
+}
+
+// ── Start / reset ─────────────────────────────────────────────────────────────
+function startGame() {
+  const pool = SUBJECTS[subjectEl.value];
+  target = pool[Math.floor(Math.random() * pool.length)].toUpperCase();
+  wordLen = target.length;
+  maxGuesses = Math.max(6, wordLen);
+  currentRow = 0;
+  currentCol = 0;
+  board = Array.from({ length: maxGuesses }, () => Array(wordLen).fill(''));
+  gameOver = false;
+  keyStates = {};
+  msgEl.textContent = '';
+  msgEl.className = '';
+  infoEl.textContent = `${wordLen} letters · ${maxGuesses} guesses`;
+  buildGrid();
+  buildKeyboard();
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+function buildGrid() {
+  gridEl.innerHTML = '';
+  const cs = calcCellSize(wordLen);
+  const fs = Math.round(cs * 0.42);
+
+  for (let r = 0; r < maxGuesses; r++) {
+    const row = document.createElement('div');
+    row.className = 'grid-row';
+    row.id = `row-${r}`;
+    for (let c = 0; c < wordLen; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = `cell-${r}-${c}`;
+      cell.style.cssText = `width:${cs}px;height:${cs}px;font-size:${fs}px`;
+      row.appendChild(cell);
+    }
+    gridEl.appendChild(row);
+  }
+}
+
+// ── Keyboard ──────────────────────────────────────────────────────────────────
+const KB = [
+  ['Q','W','E','R','T','Y','U','I','O','P'],
+  ['A','S','D','F','G','H','J','K','L'],
+  ['ENTER','Z','X','C','V','B','N','M','⌫']
+];
+
+function buildKeyboard() {
+  kbEl.innerHTML = '';
+  KB.forEach(row => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'key-row';
+    row.forEach(k => {
+      const btn = document.createElement('button');
+      btn.className = 'key' + (k.length > 1 ? ' wide' : '');
+      btn.textContent = k;
+      btn.dataset.k = k;
+      btn.addEventListener('pointerdown', e => { e.preventDefault(); handleKey(k); });
+      rowEl.appendChild(btn);
+    });
+    kbEl.appendChild(rowEl);
+  });
+}
+
+function refreshKeyboard() {
+  kbEl.querySelectorAll('.key').forEach(btn => {
+    const k = btn.dataset.k;
+    const st = keyStates[k];
+    btn.className = 'key' + (k.length > 1 ? ' wide' : '') + (st ? ` ${st}` : '');
+  });
+}
+
+// ── Input ─────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter')     handleKey('ENTER');
+  else if (e.key === 'Backspace') handleKey('⌫');
+  else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
+});
+
+function handleKey(k) {
+  if (gameOver) return;
+  if (k === 'ENTER') submitGuess();
+  else if (k === '⌫') deleteLetter();
+  else addLetter(k);
+}
+
+function addLetter(letter) {
+  if (currentCol >= wordLen) return;
+  board[currentRow][currentCol] = letter;
+  const cell = document.getElementById(`cell-${currentRow}-${currentCol}`);
+  cell.textContent = letter;
+  cell.classList.add('filled', 'pop');
+  cell.addEventListener('animationend', () => cell.classList.remove('pop'), { once: true });
+  currentCol++;
+}
+
+function deleteLetter() {
+  if (currentCol <= 0) return;
+  currentCol--;
+  board[currentRow][currentCol] = '';
+  const cell = document.getElementById(`cell-${currentRow}-${currentCol}`);
+  cell.textContent = '';
+  cell.classList.remove('filled');
+}
+
+function submitGuess() {
+  if (currentCol < wordLen) {
+    shakeRow(currentRow);
+    flash(`Need ${wordLen} letters`);
+    return;
+  }
+
+  const guess = board[currentRow].join('');
+  const result = scoreGuess(guess, target);
+
+  // Reveal with flip animation
+  result.forEach((state, c) => {
+    setTimeout(() => {
+      const cell = document.getElementById(`cell-${currentRow}-${c}`);
+      cell.classList.add('flip');
+      cell.addEventListener('animationend', () => {
+        cell.classList.remove('flip');
+        cell.classList.add(state);
+      }, { once: true });
+    }, c * 160);
+  });
+
+  const revealDone = wordLen * 160 + 80;
+  setTimeout(() => {
+    // Update key states (correct > present > absent)
+    for (let c = 0; c < wordLen; c++) {
+      const letter = guess[c];
+      const state  = result[c];
+      const prev   = keyStates[letter];
+      if (prev === 'correct') continue;
+      if (prev === 'present' && state !== 'correct') continue;
+      keyStates[letter] = state;
+    }
+    refreshKeyboard();
+
+    if (guess === target) {
+      gameOver = true;
+      const praise = ['Genius!','Magnificent!','Impressive!','Splendid!','Great!','Phew!'];
+      showMsg(praise[Math.min(currentRow, praise.length - 1)], 'win');
+    } else {
+      currentRow++;
+      currentCol = 0;
+      if (currentRow >= maxGuesses) {
+        gameOver = true;
+        showMsg(`The term was: ${target}`, 'lose');
+      }
+    }
+  }, revealDone);
+}
+
+// Standard Wordle scoring (handles duplicate letters correctly)
+function scoreGuess(guess, target) {
+  const result = Array(wordLen).fill('absent');
+  const tArr   = target.split('');
+  const gArr   = guess.split('');
+
+  // Pass 1: exact matches
+  for (let i = 0; i < wordLen; i++) {
+    if (gArr[i] === tArr[i]) {
+      result[i] = 'correct';
+      tArr[i]   = null;
+      gArr[i]   = null;
+    }
+  }
+  // Pass 2: present elsewhere
+  for (let i = 0; i < wordLen; i++) {
+    if (gArr[i] === null) continue;
+    const j = tArr.indexOf(gArr[i]);
+    if (j !== -1) {
+      result[i] = 'present';
+      tArr[j]   = null;
+    }
+  }
+  return result;
+}
+
+// ── Feedback helpers ──────────────────────────────────────────────────────────
+function shakeRow(r) {
+  const rowEl = document.getElementById(`row-${r}`);
+  rowEl.classList.add('row-shake');
+  rowEl.addEventListener('animationend', () => rowEl.classList.remove('row-shake'), { once: true });
+}
+
+let flashTimer;
+function flash(text) {
+  msgEl.textContent = text;
+  msgEl.className = '';
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { if (!gameOver) msgEl.textContent = ''; }, 1500);
+}
+
+function showMsg(text, cls = '') {
+  msgEl.textContent = text;
+  msgEl.className = cls;
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+const themeBtn = document.getElementById('theme-btn');
+(function () {
+  const saved = localStorage.getItem('theme-dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  themeBtn.textContent = saved === 'dark' ? '🌙' : '☀️';
+})();
+
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeBtn.textContent = dark ? '🌙' : '☀️';
+  localStorage.setItem('theme-dark', dark ? '1' : '');
+  if (!dark) localStorage.removeItem('theme-dark');
+});
+
+// ── Resize: rebuild grid if window resized ────────────────────────────────────
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(buildGrid, 200);
+});
+
+// ── Wire controls ─────────────────────────────────────────────────────────────
+subjectEl.addEventListener('change', startGame);
+newBtn.addEventListener('click', startGame);
+
+// ── Go ────────────────────────────────────────────────────────────────────────
+startGame();
+</script>
+</body>
+</html>
