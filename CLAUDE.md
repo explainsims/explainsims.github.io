@@ -346,6 +346,149 @@ function toggleTheme() {
 ```
 Use this only on published pages (not on `/beta/*` pages).
 
+### Standard App Banner (REQUIRED for every app)
+
+Every app page must use this exact header structure. Do not invent a custom nav or heading — always copy this pattern.
+
+**`<head>` boilerplate** (before `<style>`):
+```html
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('<APP-SLUG>-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>App Name — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>  <!-- published pages only -->
+```
+
+**Banner CSS** (inside `<style>`):
+```css
+/* Banner */
+.banner {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--nav-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; height: 52px;
+}
+.banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+.banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+.banner-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+}
+.banner-title.gradient-text {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.banner-actions { display: flex; align-items: center; gap: 8px; }
+#theme-button {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.2rem; padding: 6px; border-radius: 8px;
+    transition: background 0.15s; line-height: 1;
+}
+#theme-button:hover { background: var(--card-border); }
+```
+
+**Banner HTML** (first element inside `<body>`):
+```html
+<header class="banner">
+    <div class="banner-logo">
+        <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+        <button onclick="history.back()" title="Go back" aria-label="Go back"
+            style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+            onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+    </div>
+    <div class="banner-title">App Name</div>
+    <div class="banner-actions">
+        <div class="theme-toggle">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes">☀️</button>
+        </div>
+    </div>
+</header>
+```
+
+**Theme JS** (inside `<script>` near end of body, replace `<APP-SLUG>` with a unique key e.g. `elevator-physics`):
+```javascript
+const themeButton = document.getElementById('theme-button');
+const DARK_KEY = '<APP-SLUG>-dark';
+const LIGHT_KEY = '<APP-SLUG>-light';
+
+function updateAppChromeTheme(theme) {
+    const tc = document.querySelector('meta[name="theme-color"]');
+    const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    const dark = theme === 'dark';
+    if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+    if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+}
+function updateButtonEmoji(theme) {
+    themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+}
+const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+document.documentElement.setAttribute('data-theme', initTheme);
+updateAppChromeTheme(initTheme);
+updateButtonEmoji(initTheme);
+window.addEventListener('pageshow', function () {
+    updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+});
+themeButton.addEventListener('click', function () {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    if (next === 'dark') {
+        localStorage.setItem(DARK_KEY, 'true');
+        localStorage.removeItem(LIGHT_KEY);
+    } else {
+        localStorage.setItem(LIGHT_KEY, 'true');
+        localStorage.removeItem(DARK_KEY);
+    }
+    updateAppChromeTheme(next);
+    updateButtonEmoji(next);
+});
+```
+
+**Brave iOS gradient-text fix** (last `<script>` before `</body>`):
+```html
+<!-- Brave iOS gradient text fix -->
+<script>
+(function () {
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+    document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+})();
+</script>
+```
+
+Key rules:
+- The app title lives **only** in `<div class="banner-title">` — never add a separate `<h1>` for the app name
+- `<link rel="icon" type="image/png" href="/assets/favicon.png">` is required on every page for the browser-tab favicon
+- Use a **per-app** localStorage key (`<APP-SLUG>-dark`) so theme state doesn't bleed between apps
+- The gradient is applied by JS (not CSS class in HTML) to avoid the Brave iOS rendering bug
+
 ## Offline Behavior
 
 - **Guaranteed offline after install**: Pages/assets explicitly listed in `sw.js` `ASSETS_TO_CACHE`

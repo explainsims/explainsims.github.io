@@ -1,270 +1,319 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Command Term Wordle — ExplAIn Sims</title>
-  <script src="/assets/sw-register.js" defer></script>
-  <style>
-    :root {
-      --bg: #F4F4F8;
-      --text: #1A1A2E;
-      --text-sub: #6B7280;
-      --card-bg: #FFFFFF;
-      --border: #E5E7EB;
-      --brand: #0891B2;
-      --correct: #059669;
-      --present: #D97706;
-      --absent-bg: #9CA3AF;
-      --absent-text: #fff;
-      --cell-border: #D1D5DB;
-      --cell-border-filled: #9CA3AF;
-      --cell-bg: #FFFFFF;
-      --key-bg: #E5E7EB;
-      --key-text: #1A1A2E;
-    }
-    [data-theme="dark"] {
-      --bg: #111118;
-      --text: #F0F0F5;
-      --text-sub: #9CA3AF;
-      --card-bg: #1E1E28;
-      --border: #2A2A36;
-      --brand: #22D3EE;
-      --correct: #34D399;
-      --present: #FBBF24;
-      --absent-bg: #374151;
-      --absent-text: #F0F0F5;
-      --cell-border: #3A3A50;
-      --cell-border-filled: #6B7280;
-      --cell-bg: #1E1E28;
-      --key-bg: #2A2A3C;
-      --key-text: #F0F0F5;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('cmdterm-wordle-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Command Term Wordle — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
 
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
 
-    /* ── Nav ── */
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
-      background: var(--card-bg);
-    }
-    nav a {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      color: var(--text);
-      font-weight: 700;
-      font-size: 15px;
-    }
-    nav a img { width: 26px; height: 26px; }
-    #theme-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 5px 10px;
-      cursor: pointer;
-      font-size: 15px;
-      line-height: 1;
-    }
+            --brand-primary: #0891B2;
+            --brand-secondary: #0E7490;
+            --brand-accent: #F59E0B;
 
-    /* ── Main ── */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 12px 36px;
-      gap: 16px;
-    }
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
 
-    h1 {
-      font-size: clamp(17px, 4vw, 24px);
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
+            --nav-bg: rgba(255, 255, 255, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.10);
 
-    /* ── Controls ── */
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .controls label {
-      font-size: 13px;
-      color: var(--text-sub);
-      white-space: nowrap;
-    }
-    select {
-      padding: 7px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--card-bg);
-      color: var(--text);
-      font-size: 13px;
-      cursor: pointer;
-      max-width: 220px;
-    }
-    .new-btn {
-      padding: 7px 14px;
-      border-radius: 8px;
-      border: none;
-      background: var(--brand);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    [data-theme="dark"] .new-btn { color: #111118; }
+            --correct: #059669;
+            --present: #D97706;
+            --absent-bg: #9CA3AF;
+            --absent-text: #fff;
+            --cell-border: #D1D5DB;
+            --cell-border-filled: #9CA3AF;
+            --cell-bg: #FFFFFF;
+            --key-bg: #E5E7EB;
+            --key-text: #1A1A2E;
+        }
 
-    /* ── Game info ── */
-    #game-info {
-      font-size: 12px;
-      color: var(--text-sub);
-      text-align: center;
-      min-height: 16px;
-    }
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
 
-    /* ── Message ── */
-    #message {
-      font-size: 15px;
-      font-weight: 600;
-      text-align: center;
-      min-height: 22px;
-      color: var(--text);
-    }
-    #message.win  { color: var(--correct); }
-    #message.lose { color: #DC2626; }
+            --brand-primary: #22D3EE;
+            --brand-secondary: #06B6D4;
+            --brand-accent: #FBBF24;
 
-    /* ── Grid ── */
-    #grid {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .grid-row { display: flex; gap: 5px; }
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
 
-    .cell {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      text-transform: uppercase;
-      border: 2px solid var(--cell-border);
-      background: var(--cell-bg);
-      border-radius: 4px;
-      user-select: none;
-      transition: border-color 0.08s;
-    }
-    .cell.filled  { border-color: var(--cell-border-filled); }
-    .cell.correct { background: var(--correct);    border-color: var(--correct);    color: #fff; }
-    .cell.present { background: var(--present);    border-color: var(--present);    color: #fff; }
-    .cell.absent  { background: var(--absent-bg);  border-color: var(--absent-bg);  color: var(--absent-text); }
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.08);
 
-    @keyframes pop {
-      0%,100% { transform: scale(1); }
-      40%      { transform: scale(1.14); }
-    }
-    .cell.pop { animation: pop 0.12s ease; }
+            --correct: #34D399;
+            --present: #FBBF24;
+            --absent-bg: #374151;
+            --absent-text: #F0F0F5;
+            --cell-border: #3A3A50;
+            --cell-border-filled: #6B7280;
+            --cell-bg: #1E1E28;
+            --key-bg: #2A2A3C;
+            --key-text: #F0F0F5;
+        }
 
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      20%     { transform: translateX(-5px); }
-      40%     { transform: translateX(5px); }
-      60%     { transform: translateX(-3px); }
-      80%     { transform: translateX(3px); }
-    }
-    .row-shake .cell { animation: shake 0.38s ease; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    @keyframes flip-in {
-      0%   { transform: scaleY(1); }
-      50%  { transform: scaleY(0); }
-      100% { transform: scaleY(1); }
-    }
-    .cell.flip { animation: flip-in 0.3s ease; }
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
 
-    /* ── Keyboard ── */
-    #keyboard {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: center;
-      width: 100%;
-      max-width: 500px;
-    }
-    .key-row {
-      display: flex;
-      gap: 5px;
-      justify-content: center;
-    }
-    .key {
-      height: 52px;
-      min-width: 34px;
-      padding: 0 6px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--key-bg);
-      color: var(--key-text);
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-transform: uppercase;
-      user-select: none;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .key.wide { min-width: 54px; font-size: 11px; letter-spacing: 0; }
-    .key.correct { background: var(--correct);   border-color: var(--correct);   color: #fff; }
-    .key.present { background: var(--present);   border-color: var(--present);   color: #fff; }
-    .key.absent  { background: var(--absent-bg); border-color: var(--absent-bg); color: var(--absent-text); }
-    [data-theme="dark"] .key.correct { color: #111118; }
-    [data-theme="dark"] .key.present { color: #111118; }
+        /* ── Banner ── */
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; padding: 6px; border-radius: 8px;
+            transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
 
-    @media (max-width: 380px) {
-      .key { min-width: 28px; height: 46px; font-size: 12px; }
-      .key.wide { min-width: 44px; }
-    }
-  </style>
+        /* ── Main ── */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 12px 36px;
+            gap: 16px;
+        }
+
+        /* ── Controls ── */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .controls label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        select {
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-size: 13px;
+            cursor: pointer;
+            max-width: 220px;
+        }
+        .new-btn {
+            padding: 7px 14px;
+            border-radius: 8px;
+            border: none;
+            background: var(--brand-primary);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        [data-theme="dark"] .new-btn { color: #111118; }
+
+        /* ── Game info ── */
+        #game-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            min-height: 16px;
+        }
+
+        /* ── Message ── */
+        #message {
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+            min-height: 22px;
+            color: var(--text-main);
+        }
+        #message.win  { color: var(--correct); }
+        #message.lose { color: #DC2626; }
+
+        /* ── Grid ── */
+        #grid {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .grid-row { display: flex; gap: 5px; }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 2px solid var(--cell-border);
+            background: var(--cell-bg);
+            border-radius: 4px;
+            user-select: none;
+            transition: border-color 0.08s;
+        }
+        .cell.filled  { border-color: var(--cell-border-filled); }
+        .cell.correct { background: var(--correct);   border-color: var(--correct);   color: #fff; }
+        .cell.present { background: var(--present);   border-color: var(--present);   color: #fff; }
+        .cell.absent  { background: var(--absent-bg); border-color: var(--absent-bg); color: var(--absent-text); }
+
+        @keyframes pop {
+            0%,100% { transform: scale(1); }
+            40%     { transform: scale(1.14); }
+        }
+        .cell.pop { animation: pop 0.12s ease; }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%     { transform: translateX(-5px); }
+            40%     { transform: translateX(5px); }
+            60%     { transform: translateX(-3px); }
+            80%     { transform: translateX(3px); }
+        }
+        .row-shake .cell { animation: shake 0.38s ease; }
+
+        @keyframes flip-in {
+            0%   { transform: scaleY(1); }
+            50%  { transform: scaleY(0); }
+            100% { transform: scaleY(1); }
+        }
+        .cell.flip { animation: flip-in 0.3s ease; }
+
+        /* ── Keyboard ── */
+        #keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+        }
+        .key-row {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        .key {
+            height: 52px;
+            min-width: 34px;
+            padding: 0 6px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+            background: var(--key-bg);
+            color: var(--key-text);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            user-select: none;
+            transition: background 0.12s, color 0.12s, border-color 0.12s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .key.wide { min-width: 54px; font-size: 11px; letter-spacing: 0; }
+        .key.correct { background: var(--correct);   border-color: var(--correct);   color: #fff; }
+        .key.present { background: var(--present);   border-color: var(--present);   color: #fff; }
+        .key.absent  { background: var(--absent-bg); border-color: var(--absent-bg); color: var(--absent-text); }
+        [data-theme="dark"] .key.correct { color: #111118; }
+        [data-theme="dark"] .key.present { color: #111118; }
+
+        @media (max-width: 380px) {
+            .key { min-width: 28px; height: 46px; font-size: 12px; }
+            .key.wide { min-width: 44px; }
+        }
+    </style>
 </head>
 <body>
 
-<nav>
-  <a href="/"><img src="/assets/favicon.png" alt="Home"> ExplAIn Sims</a>
-  <button id="theme-btn" aria-label="Toggle theme">☀️</button>
-</nav>
+<header class="banner">
+    <div class="banner-logo">
+        <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+        <button onclick="history.back()" title="Go back" aria-label="Go back"
+            style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+            onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+    </div>
+    <div class="banner-title">Command Term Wordle</div>
+    <div class="banner-actions">
+        <div class="theme-toggle">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes">☀️</button>
+        </div>
+    </div>
+</header>
 
 <main>
-  <h1>Command Term Wordle</h1>
+    <div class="controls">
+        <label for="subject-select">Subject:</label>
+        <select id="subject-select"></select>
+        <button class="new-btn" id="new-btn">New word</button>
+    </div>
 
-  <div class="controls">
-    <label for="subject-select">Subject:</label>
-    <select id="subject-select"></select>
-    <button class="new-btn" id="new-btn">New word</button>
-  </div>
-
-  <div id="game-info"></div>
-  <div id="message" role="status" aria-live="polite"></div>
-  <div id="grid" aria-label="Game board"></div>
-  <div id="keyboard" aria-label="On-screen keyboard"></div>
+    <div id="game-info"></div>
+    <div id="message" role="status" aria-live="polite"></div>
+    <div id="grid" aria-label="Game board"></div>
+    <div id="keyboard" aria-label="On-screen keyboard"></div>
 </main>
 
 <script>
@@ -428,7 +477,7 @@ function refreshKeyboard() {
 // ── Input ─────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
-  if (e.key === 'Enter')     handleKey('ENTER');
+  if (e.key === 'Enter')          handleKey('ENTER');
   else if (e.key === 'Backspace') handleKey('⌫');
   else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
 });
@@ -555,22 +604,6 @@ function showMsg(text, cls = '') {
   msgEl.className = cls;
 }
 
-// ── Theme ─────────────────────────────────────────────────────────────────────
-const themeBtn = document.getElementById('theme-btn');
-(function () {
-  const saved = localStorage.getItem('theme-dark') ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', saved);
-  themeBtn.textContent = saved === 'dark' ? '🌙' : '☀️';
-})();
-
-themeBtn.addEventListener('click', () => {
-  const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-  themeBtn.textContent = dark ? '🌙' : '☀️';
-  localStorage.setItem('theme-dark', dark ? '1' : '');
-  if (!dark) localStorage.removeItem('theme-dark');
-});
-
 // ── Resize: rebuild grid if window resized ────────────────────────────────────
 let resizeTimer;
 window.addEventListener('resize', () => {
@@ -582,8 +615,53 @@ window.addEventListener('resize', () => {
 subjectEl.addEventListener('change', startGame);
 newBtn.addEventListener('click', startGame);
 
+// ── Theme ─────────────────────────────────────────────────────────────────────
+const themeButton = document.getElementById('theme-button');
+const DARK_KEY = 'cmdterm-wordle-dark';
+const LIGHT_KEY = 'cmdterm-wordle-light';
+
+function updateAppChromeTheme(theme) {
+    const tc = document.querySelector('meta[name="theme-color"]');
+    const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    const dark = theme === 'dark';
+    if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+    if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+}
+function updateButtonEmoji(theme) {
+    themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+}
+const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+document.documentElement.setAttribute('data-theme', initTheme);
+updateAppChromeTheme(initTheme);
+updateButtonEmoji(initTheme);
+window.addEventListener('pageshow', function () {
+    updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+});
+themeButton.addEventListener('click', function () {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    if (next === 'dark') {
+        localStorage.setItem(DARK_KEY, 'true');
+        localStorage.removeItem(LIGHT_KEY);
+    } else {
+        localStorage.setItem(LIGHT_KEY, 'true');
+        localStorage.removeItem(DARK_KEY);
+    }
+    updateAppChromeTheme(next);
+    updateButtonEmoji(next);
+});
+
 // ── Go ────────────────────────────────────────────────────────────────────────
 startGame();
+</script>
+
+<!-- Brave iOS gradient text fix -->
+<script>
+(function () {
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+    document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+})();
 </script>
 </body>
 </html>

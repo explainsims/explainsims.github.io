@@ -446,6 +446,29 @@
             100% { box-shadow: 0 0 0 0 rgba(8, 145, 178, 0); }
         }
 
+        .card-type-pill {
+            display: inline-flex;
+            align-items: center;
+            position: absolute;
+            top: 0.65rem;
+            left: 1rem;
+            z-index: 2;
+            padding: 0.22rem 0.45rem;
+            border-radius: 6px;
+            border: 1px solid var(--nav-border);
+            background: var(--nav-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 9px;
+            line-height: 1.1;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
         .card-offline-pill {
             display: inline-flex;
             align-items: center;
@@ -758,9 +781,9 @@
     <div class="section" id="games" data-section="02">
         <h2>Games <span class="section-label">Interactive</span></h2>
         <p class="section-desc">Educational games for classroom engagement and independent study.</p>
-        <h3 class="unit-heading">IB DP <span class="section-label">Command Terms</span></h3>
         <div class="grid">
             <div class="card">
+                <span class="card-type-pill">Game</span>
                 <h3>Command Term Wordle</h3>
                 <p>Guess the IB command term in as few attempts as possible. Choose a subject to narrow the pool, or play with all subjects combined.</p>
                 <a href="/teachers/cmdterm_wordle.html">Play</a>
@@ -1203,6 +1226,7 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
+            '/teachers/cmdterm_wordle.html': ['/teachers/cmdterm_wordle.html']
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(
