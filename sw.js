@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-03-18T16:00:00Z';
+const BUILD_ID = '2026-03-31T12:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -19,30 +19,30 @@ const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/assets/sw-register.js',
 
-  // Tools
-  '/tools/panphyplot.html',
-  '/tools/panphyplot/css/panphyplot.css',
-  '/tools/panphyplot/js/curve-fitting.js',
-  '/tools/panphyplot/js/data-processing.js',
-  '/tools/panphyplot/js/fit-core.js',
-  '/tools/panphyplot/js/fit-worker.js',
-  '/tools/panphyplot/js/latex-rendering.js',
-  '/tools/panphyplot/js/main.js',
-  '/tools/panphyplot/js/plotting.js',
-  '/tools/panphyplot/js/state.js',
-  '/tools/panphyplot/js/ui.js',
+  // PanPhy tools
+  '/panphy/panphyplot.html',
+  '/panphy/panphyplot/css/panphyplot.css',
+  '/panphy/panphyplot/js/curve-fitting.js',
+  '/panphy/panphyplot/js/data-processing.js',
+  '/panphy/panphyplot/js/fit-core.js',
+  '/panphy/panphyplot/js/fit-worker.js',
+  '/panphy/panphyplot/js/latex-rendering.js',
+  '/panphy/panphyplot/js/main.js',
+  '/panphy/panphyplot/js/plotting.js',
+  '/panphy/panphyplot/js/state.js',
+  '/panphy/panphyplot/js/ui.js',
   'https://cdn.plot.ly/plotly-basic-2.29.1.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js',
-  '/tools/panphyplot/panphyplot_manual.html',
-  '/tools/panphyplot/math_ref.html',
-  '/tools/motion_tracker.html',
+  '/panphy/panphyplot/panphyplot_manual.html',
+  '/panphy/panphyplot/math_ref.html',
+  '/panphy/motion_tracker.html',
   'https://cdn.jsdelivr.net/npm/chart.js',
 
   // Simulations
-  '/appcm/superposition.html',
+  '/panphy/superposition.html',
   '/appcm/physical_pendulum.html',
-  '/appcm/lorentz.html',
+  '/panphy/lorentz.html',
   '/appcm/lorentz_learn.html',
   '/appcm/elevator_physics.html',
   '/appcm/conical_pendulum.html',
@@ -55,10 +55,10 @@ const ASSETS_TO_CACHE = [
   '/appcm/rotational_atwood.html',
   '/appcm/parallel_axis.html',
 
-  // For Teachers
-  '/for_teachers/timer.html',
-  '/for_teachers/timer_beep.mp3',
-  '/for_teachers/visualizer.html',
+  // PanPhy teacher tools
+  '/panphy/timer.html',
+  '/panphy/timer_beep.mp3',
+  '/panphy/visualizer.html',
 ];
 
 // Install: pre-cache your core pages

@@ -747,32 +747,32 @@
             <div class="card">
                 <h3>Data Plotting &amp; Fitting</h3>
                 <p>Process data, plot graphs, add uncertainties, and run best-fit analysis.</p>
-                <a href="/tools/panphyplot.html">Plot Data</a>
+                <a href="/panphy/panphyplot.html">Plot Data</a>
             </div>
             <div class="card">
                 <h3>Motion Tracker</h3>
                 <p>Step through video frames, click to track objects, and extract motion data.</p>
-                <a href="/tools/motion_tracker.html">Track Motion</a>
+                <a href="/panphy/motion_tracker.html">Track Motion</a>
             </div>
             <div class="card">
                 <h3>Wave Superposition</h3>
                 <p>Learn how waves interact.</p>
-                <a href="/appcm/superposition.html">Launch Sim</a>
+                <a href="/panphy/superposition.html">Launch Sim</a>
             </div>
             <div class="card">
                 <h3>Lorentz Transform</h3>
                 <p>Learn how spacetime transforms between inertial frames.</p>
-                <a href="/appcm/lorentz.html">Launch Sim</a>
+                <a href="/panphy/lorentz.html">Launch Sim</a>
             </div>
             <div class="card">
                 <h3>Exam Timer</h3>
                 <p>Manage exam times with an automatic extra-time timer.</p>
-                <a href="/for_teachers/timer.html">Open Timer</a>
+                <a href="/panphy/timer.html">Open Timer</a>
             </div>
             <div class="card">
                 <h3>Camera Visualizer</h3>
                 <p>Project your device camera to the big screen, then snap &amp; sketch.</p>
-                <a href="/for_teachers/visualizer.html">Use Camera</a>
+                <a href="/panphy/visualizer.html">Use Camera</a>
             </div>
         </div>
     </div>
@@ -1214,25 +1214,25 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/tools/panphyplot.html': [
-                '/tools/panphyplot.html',
-                '/tools/panphyplot/js/main.js',
-                '/tools/panphyplot/js/fit-worker.js',
+            '/panphy/panphyplot.html': [
+                '/panphy/panphyplot.html',
+                '/panphy/panphyplot/js/main.js',
+                '/panphy/panphyplot/js/fit-worker.js',
                 'https://cdn.plot.ly/plotly-basic-2.29.1.min.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js'
             ],
-            '/tools/motion_tracker.html': [
-                '/tools/motion_tracker.html',
+            '/panphy/motion_tracker.html': [
+                '/panphy/motion_tracker.html',
                 'https://cdn.jsdelivr.net/npm/chart.js'
             ],
-            '/appcm/superposition.html': ['/appcm/superposition.html'],
-            '/appcm/lorentz.html': ['/appcm/lorentz.html'],
-            '/for_teachers/timer.html': [
-                '/for_teachers/timer.html',
-                '/for_teachers/timer_beep.mp3'
+            '/panphy/superposition.html': ['/panphy/superposition.html'],
+            '/panphy/lorentz.html': ['/panphy/lorentz.html'],
+            '/panphy/timer.html': [
+                '/panphy/timer.html',
+                '/panphy/timer_beep.mp3'
             ],
-            '/for_teachers/visualizer.html': ['/for_teachers/visualizer.html']
+            '/panphy/visualizer.html': ['/panphy/visualizer.html']
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(

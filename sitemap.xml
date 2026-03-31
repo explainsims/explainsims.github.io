@@ -19,10 +19,10 @@
     <loc>https://panphy.github.io/panphy.html</loc>
   </url>
   <url>
-    <loc>https://panphy.github.io/appcm/lorentz.html</loc>
+    <loc>https://panphy.github.io/panphy/lorentz.html</loc>
   </url>
   <url>
-    <loc>https://panphy.github.io/appcm/superposition.html</loc>
+    <loc>https://panphy.github.io/panphy/superposition.html</loc>
   </url>
   <url>
     <loc>https://panphy.github.io/appcm/physical_pendulum.html</loc>
@@ -58,18 +58,18 @@
     <loc>https://panphy.github.io/appcm/parallel_axis.html</loc>
   </url>
   <url>
-    <loc>https://panphy.github.io/tools/motion_tracker.html</loc>
+    <loc>https://panphy.github.io/panphy/motion_tracker.html</loc>
   </url>
   <url>
-    <loc>https://panphy.github.io/tools/panphyplot.html</loc>
+    <loc>https://panphy.github.io/panphy/panphyplot.html</loc>
   </url>
   <url>
-    <loc>https://panphy.github.io/tools/panphyplot/panphyplot_manual.html</loc>
+    <loc>https://panphy.github.io/panphy/panphyplot/panphyplot_manual.html</loc>
   </url>
   <url>
-    <loc>https://panphy.github.io/for_teachers/timer.html</loc>
+    <loc>https://panphy.github.io/panphy/timer.html</loc>
   </url>
   <url>
-    <loc>https://panphy.github.io/for_teachers/visualizer.html</loc>
+    <loc>https://panphy.github.io/panphy/visualizer.html</loc>
   </url>
 </urlset>

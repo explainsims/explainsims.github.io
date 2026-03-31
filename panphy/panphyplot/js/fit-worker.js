@@ -6,7 +6,7 @@ const MATH_JS_CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/ma
 let mathLibraryReadyPromise = null;
 
 try {
-	self.importScripts('/tools/panphyplot/js/fit-core.js');
+	self.importScripts('/panphy/panphyplot/js/fit-core.js');
 } catch (error) {
 	console.error('Failed to load shared fit core in worker:', error);
 }
