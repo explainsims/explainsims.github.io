@@ -371,6 +371,30 @@ for (const [name, csv] of Object.entries(SUBJECTS_RAW)) {
 const allTerms = [...new Set(Object.values(SUBJECTS).flat())].sort();
 SUBJECTS['All subjects'] = allTerms;
 
+// Session cache of validated words (pre-seeded with all command terms so
+// they never need a network round-trip)
+const wordCache = new Map(allTerms.map(t => [t.toUpperCase(), true]));
+
+// Returns true if the word is in a standard English dictionary.
+// Falls back to true if offline or the API is unavailable, so the
+// game never blocks a guess purely due to network conditions.
+async function isRealWord(word) {
+  const key = word.toUpperCase();
+  if (wordCache.has(key)) return wordCache.get(key);
+  try {
+    const res = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`,
+      { signal: AbortSignal.timeout(4000) }
+    );
+    const valid = res.ok;
+    wordCache.set(key, valid);
+    return valid;
+  } catch {
+    // Offline or timeout — give the benefit of the doubt
+    return true;
+  }
+}
+
 const SUBJECT_NAMES = ['All subjects', ...Object.keys(SUBJECTS_RAW).sort()];
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
@@ -508,7 +532,7 @@ function deleteLetter() {
   cell.classList.remove('filled');
 }
 
-function submitGuess() {
+async function submitGuess() {
   if (currentCol < wordLen) {
     shakeRow(currentRow);
     flash(`Need ${wordLen} letters`);
@@ -516,6 +540,20 @@ function submitGuess() {
   }
 
   const guess = board[currentRow].join('');
+
+  // Disable input while we check the dictionary
+  gameOver = true;
+  flash('Checking…');
+  const valid = await isRealWord(guess);
+  gameOver = false;
+
+  if (!valid) {
+    shakeRow(currentRow);
+    flash('Not in dictionary');
+    return;
+  }
+  msgEl.textContent = '';
+
   const result = scoreGuess(guess, target);
 
   // Reveal with flip animation

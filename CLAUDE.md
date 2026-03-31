@@ -489,6 +489,29 @@ Key rules:
 - Use a **per-app** localStorage key (`<APP-SLUG>-dark`) so theme state doesn't bleed between apps
 - The gradient is applied by JS (not CSS class in HTML) to avoid the Brave iOS rendering bug
 
+### Card Pills (tab-page cards only)
+
+Cards on the tab pages (appcm.html, tools.html, teachers.html, etc.) support two pills positioned at the top of each card:
+
+**Type pill** (top-left) — matches `section-label` style: brand-primary border and text, monospace, uppercase:
+```css
+.card-type-pill {
+    display: inline-flex; align-items: center;
+    position: absolute; top: 0.65rem; left: 1rem; z-index: 2;
+    padding: 0.22rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--brand-primary);
+    color: var(--brand-primary);
+    font-family: var(--font-mono); font-size: 9px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+    opacity: 0.7;
+    transition: color 0.4s ease, border-color 0.4s ease;
+}
+```
+Usage: `<span class="card-type-pill">Game</span>` (or "Sim", "Tool", etc.)
+
+**Offline pill** (top-right) — added dynamically by JS via `initOfflineCardPills()` when the card path appears in `OFFLINE_CARD_REQUIREMENTS`. Do not add this manually in HTML.
+
 ## Offline Behavior
 
 - **Guaranteed offline after install**: Pages/assets explicitly listed in `sw.js` `ASSETS_TO_CACHE`
