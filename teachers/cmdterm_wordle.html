@@ -371,6 +371,9 @@ for (const [name, csv] of Object.entries(SUBJECTS_RAW)) {
 const allTerms = [...new Set(Object.values(SUBJECTS).flat())].sort();
 SUBJECTS['All subjects'] = allTerms;
 
+// Valid guess set: any command term from any subject, uppercased
+const VALID_GUESSES = new Set(allTerms.map(t => t.toUpperCase()));
+
 const SUBJECT_NAMES = ['All subjects', ...Object.keys(SUBJECTS_RAW).sort()];
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
@@ -516,6 +519,12 @@ function submitGuess() {
   }
 
   const guess = board[currentRow].join('');
+  if (!VALID_GUESSES.has(guess)) {
+    shakeRow(currentRow);
+    flash('Not an IB command term');
+    return;
+  }
+
   const result = scoreGuess(guess, target);
 
   // Reveal with flip animation
