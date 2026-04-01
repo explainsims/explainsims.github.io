@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('jeopardy-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Fun Jeopardy — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+
+            --brand-primary: #0891B2;
+            --brand-secondary: #0E7490;
+            --brand-accent: #F59E0B;
+
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
+
+            --nav-bg: rgba(255, 255, 255, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.10);
+
+            /* Jeopardy-specific colors */
+            --jep-blue-dark: #1a237e;
+            --jep-blue-mid: #283593;
+            --jep-blue-light: #3949ab;
+            --jep-blue-lighter: #5c6bc0;
+            --jep-gold: #ffd600;
+            --jep-gold-dark: #ffab00;
+            --jep-text: #ffffff;
+            --jep-used: #1a1a3e;
+            --jep-used-text: #555577;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+
+            --brand-primary: #22D3EE;
+            --brand-secondary: #06B6D4;
+            --brand-accent: #FBBF24;
+
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
+
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.08);
+
+            --jep-blue-dark: #0d1247;
+            --jep-blue-mid: #151c6b;
+            --jep-blue-light: #1e2a7a;
+            --jep-blue-lighter: #3949ab;
+            --jep-gold: #ffd600;
+            --jep-gold-dark: #ffab00;
+            --jep-text: #f0f0f5;
+            --jep-used: #0a0a1e;
+            --jep-used-text: #444466;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Banner ── */
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; padding: 6px; border-radius: 8px;
+            transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* ── Main container ── */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 12px 36px;
+        }
+
+        /* ── Jeopardy game area ── */
+        #game-container {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        /* ── Setup screen ── */
+        .setup-panel {
+            background: linear-gradient(180deg, var(--jep-blue-mid), var(--jep-blue-dark));
+            border-radius: 12px;
+            padding: 24px;
+            color: var(--jep-text);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .setup-panel h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            text-align: center;
+            color: var(--jep-gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            margin-bottom: 8px;
+        }
+        .setup-divider {
+            width: 100%;
+            height: 4px;
+            background: var(--jep-gold);
+            border: none;
+            border-radius: 2px;
+            margin-bottom: 20px;
+        }
+        .setup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 640px) {
+            .setup-grid { grid-template-columns: 1fr; }
+        }
+        .setup-section {
+            background: linear-gradient(180deg, var(--jep-blue-light), var(--jep-blue-mid));
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .setup-section h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--jep-gold);
+            margin-bottom: 12px;
+        }
+        .setup-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--jep-gold);
+            margin-bottom: 10px;
+        }
+        .setup-section label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        /* Slider */
+        .slider-wrap {
+            display: flex;
+            align-items: center;
+            background: var(--jep-blue-dark);
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .slider-wrap input[type="range"] {
+            flex: 1;
+            margin-right: 12px;
+            accent-color: var(--jep-gold);
+        }
+        .slider-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--jep-gold);
+            min-width: 28px;
+            text-align: center;
+        }
+
+        /* Team name rows */
+        .team-row {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(90deg, var(--jep-blue-lighter), var(--jep-blue-light));
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            transition: background 0.2s;
+        }
+        .team-row:hover {
+            background: linear-gradient(90deg, #7986cb, var(--jep-blue-lighter));
+        }
+        .team-row span { flex: 1; font-weight: 700; }
+        .team-row input[type="text"] {
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.95rem;
+            color: #1a1a2e;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn:active { transform: scale(0.98); }
+        .btn-blue {
+            background: linear-gradient(180deg, var(--jep-blue-lighter), var(--jep-blue-light));
+            color: var(--jep-text);
+        }
+        .btn-purple {
+            background: linear-gradient(180deg, #7c4dff, #651fff);
+            color: #fff;
+        }
+        .btn-green {
+            background: linear-gradient(180deg, #4caf50, #388e3c);
+            color: #fff;
+        }
+        .btn-start {
+            background: linear-gradient(180deg, var(--jep-gold), var(--jep-gold-dark));
+            color: var(--jep-blue-dark);
+            font-size: 1.2rem;
+            padding: 14px 32px;
+        }
+        .btn-start:hover { transform: scale(1.1); }
+        .btn-red {
+            background: linear-gradient(180deg, #ef5350, #d32f2f);
+            color: #fff;
+        }
+        .btn-orange {
+            background: linear-gradient(180deg, #ff9800, #f57c00);
+            color: #fff;
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+
+        /* Buttons row */
+        .setup-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* Expandable sections (rules, editor, import) */
+        .expand-section {
+            margin-top: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .expand-section .panel {
+            background: var(--jep-blue-light);
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+        .expand-section .panel h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--jep-gold);
+            margin-bottom: 12px;
+        }
+        .expand-section ol {
+            padding-left: 20px;
+        }
+        .expand-section ol li {
+            margin-bottom: 6px;
+        }
+
+        /* ── Game board ── */
+        .board-header {
+            font-family: var(--font-display);
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: 700;
+            text-align: center;
+            color: var(--jep-gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            margin-bottom: 16px;
+        }
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .cat-cell {
+            background: var(--jep-blue-lighter);
+            text-align: center;
+            padding: 10px 4px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: clamp(0.7rem, 1.5vw, 0.95rem);
+            color: var(--jep-text);
+            word-break: break-word;
+        }
+        .q-cell {
+            background: var(--jep-blue-lighter);
+            text-align: center;
+            padding: 16px 4px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            color: var(--jep-gold);
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            border: none;
+            width: 100%;
+        }
+        .q-cell:hover:not(.used) {
+            background: #5c6bc0;
+            transform: scale(1.03);
+        }
+        .q-cell.used {
+            background: var(--jep-used);
+            color: var(--jep-used-text);
+            cursor: default;
+        }
+
+        /* ── Scores panel ── */
+        .scores-panel {
+            background: var(--jep-blue-mid);
+            padding: 16px;
+            border-radius: 10px;
+        }
+        .scores-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .scores-header h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .team-card {
+            background: var(--jep-blue-light);
+            padding: 12px;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+        .team-card.active {
+            background: var(--jep-gold);
+            color: var(--jep-blue-dark);
+        }
+        .team-card .team-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+        }
+        .team-card .team-info .score {
+            font-size: 1.2rem;
+        }
+        .team-card .team-btns {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .team-card .team-btns button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            transition: filter 0.15s;
+        }
+        .team-card .team-btns button:hover { filter: brightness(1.15); }
+        .team-card .team-btns .minus { background: #d32f2f; }
+        .team-card .team-btns .plus { background: #388e3c; }
+        .team-card .team-btns .select { background: var(--jep-blue-lighter); margin-left: auto; }
+
+        /* ── Question modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: linear-gradient(180deg, var(--jep-blue-light), var(--jep-blue-mid));
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 640px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            color: var(--jep-text);
+        }
+        .modal-cat {
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--jep-gold);
+            margin-bottom: 8px;
+        }
+        .modal-question {
+            background: linear-gradient(180deg, var(--jep-blue-mid), var(--jep-blue-dark));
+            padding: 24px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .modal-answer {
+            background: linear-gradient(180deg, var(--jep-gold), var(--jep-gold-dark));
+            color: var(--jep-blue-dark);
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .modal-teams-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .modal-teams-grid button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #fff;
+            transition: transform 0.1s, filter 0.1s;
+        }
+        .modal-teams-grid button:hover { transform: scale(1.04); filter: brightness(1.1); }
+        .modal-teams-grid .correct { background: linear-gradient(180deg, #4caf50, #388e3c); }
+        .modal-teams-grid .incorrect { background: linear-gradient(180deg, #ef5350, #d32f2f); }
+        .modal-close-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ── Editor ── */
+        .editor-panel {
+            background: var(--jep-blue-dark);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .editor-panel h3 {
+            color: var(--jep-gold);
+            font-size: 1.15rem;
+            margin-bottom: 12px;
+        }
+        .editor-panel h4 {
+            color: #ffd54f;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .editor-cats input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: none;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            color: #1a1a2e;
+        }
+        .editor-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+        .editor-mini-grid button,
+        .editor-mini-grid div {
+            text-align: center;
+            padding: 6px 2px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .editor-mini-grid .cat-label {
+            background: var(--jep-blue-lighter);
+            color: var(--jep-text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .editor-mini-grid .val-btn {
+            background: var(--jep-blue-lighter);
+            color: var(--jep-text);
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .editor-mini-grid .val-btn:hover { background: #5c6bc0; }
+
+        /* Editor form for a single question */
+        .editor-form {
+            background: var(--jep-blue-mid);
+            padding: 16px;
+            border-radius: 10px;
+            margin-top: 12px;
+        }
+        .editor-form label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: var(--jep-text);
+        }
+        .editor-form textarea,
+        .editor-form input[type="text"],
+        .editor-form input[type="number"] {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.9rem;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+        .editor-form textarea { resize: vertical; min-height: 60px; }
+        .editor-form .form-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* ── Import section ── */
+        .import-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 640px) {
+            .import-grid { grid-template-columns: 1fr; }
+        }
+        .import-box {
+            background: var(--jep-blue-mid);
+            border-radius: 10px;
+            padding: 14px;
+        }
+        .import-box h4 {
+            color: #ffd54f;
+            margin-bottom: 8px;
+        }
+        .import-box p {
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        .import-box ol {
+            padding-left: 20px;
+            font-size: 0.85rem;
+        }
+        .import-box ol li { margin-bottom: 4px; }
+        .import-box ul { padding-left: 20px; font-size: 0.82rem; }
+        .import-box ul li { margin-bottom: 2px; }
+        .import-error {
+            background: #d32f2f;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        .import-instructions {
+            background: var(--jep-blue-light);
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 10px;
+        }
+
+        /* Hidden file input */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<!-- ── Banner ── -->
+<header class="banner">
+    <div class="banner-logo">
+        <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+        <button onclick="history.back()" title="Go back" aria-label="Go back"
+            style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+            onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+    </div>
+    <div class="banner-title">Fun Jeopardy</div>
+    <div class="banner-actions">
+        <div class="theme-toggle">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes"></button>
+        </div>
+    </div>
+</header>
+
+<!-- ── Main ── -->
+<main>
+    <div id="game-container">
+        <!-- SETUP SCREEN -->
+        <div id="setup-screen" class="setup-panel">
+            <h1>Fun Jeopardy!</h1>
+            <hr class="setup-divider">
+
+            <div class="setup-grid">
+                <div class="setup-section">
+                    <h2>Game Setup</h2>
+                    <label>Number of Teams:</label>
+                    <div class="slider-wrap">
+                        <input type="range" id="num-teams" min="1" max="6" value="3">
+                        <span class="slider-value" id="num-teams-display">3</span>
+                    </div>
+                </div>
+                <div class="setup-section">
+                    <h3>Team Names:</h3>
+                    <div id="team-names-list"></div>
+                </div>
+            </div>
+
+            <div class="setup-actions">
+                <button class="btn btn-blue" id="btn-rules">Show Rules</button>
+                <button class="btn btn-purple" id="btn-editor">Edit Questions</button>
+                <button class="btn btn-green" id="btn-import">Import Questions</button>
+                <button class="btn btn-start" id="btn-start">Start Game!</button>
+            </div>
+
+            <!-- Rules section -->
+            <div id="rules-section" class="expand-section" style="display:none;">
+                <div class="panel">
+                    <h3>How to Play Fun Jeopardy</h3>
+                    <ol>
+                        <li>Teams take turns selecting categories and point values</li>
+                        <li>After a question is revealed, the first team to be selected answers</li>
+                        <li>Correct answers earn the point value shown</li>
+                        <li>Incorrect answers lose the point value shown</li>
+                        <li>The team with the most points at the end wins</li>
+                        <li>All answers should be phrased as a question (starting with "What is..." or "Who is...")</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Editor section -->
+            <div id="editor-section" class="expand-section" style="display:none;">
+                <div class="editor-panel">
+                    <h3>Question Editor</h3>
+                    <div class="setup-grid">
+                        <div>
+                            <h4>Categories</h4>
+                            <div id="editor-cats" class="editor-cats"></div>
+                        </div>
+                        <div>
+                            <h4>Question Grid</h4>
+                            <div id="editor-grid"></div>
+                        </div>
+                    </div>
+                    <div id="editor-form-area"></div>
+                    <div style="display:flex;justify-content:center;margin-top:14px;">
+                        <button class="btn btn-orange" id="btn-reset">Reset All Questions</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import section -->
+            <div id="import-section" class="expand-section" style="display:none;">
+                <div class="panel">
+                    <h3>Import Questions</h3>
+                    <div class="import-grid">
+                        <div class="import-box">
+                            <h4>Import Your Questions</h4>
+                            <p>Upload a CSV file with your custom questions:</p>
+                            <button class="btn btn-green" id="btn-select-csv" style="width:100%;">Select CSV File</button>
+                            <span style="font-size:0.85rem;display:block;margin-top:6px;">Make sure your CSV follows the template format.</span>
+                            <input type="file" id="file-input" accept=".csv" class="hidden">
+                            <div id="import-error" class="import-error" style="display:none;"></div>
+                        </div>
+                        <div class="import-box">
+                            <h4>CSV Template</h4>
+                            <p>Copy the template to your clipboard:</p>
+                            <button class="btn btn-green" id="btn-copy-template" style="width:100%;">Copy Template</button>
+                            <div class="import-instructions">
+                                <h4 style="font-size:0.95rem;">CSV Format Instructions:</h4>
+                                <p style="font-size:0.85rem;margin-bottom:6px;">To create your own questions using the template:</p>
+                                <ol>
+                                    <li>Click the "Copy Template" button above</li>
+                                    <li>Paste the contents (Ctrl+V or Cmd+V) into a spreadsheet</li>
+                                    <li>In Google Sheets:
+                                        <ul>
+                                            <li>Select all pasted data</li>
+                                            <li>Go to Data menu - "Split text to columns"</li>
+                                            <li>Select "Comma" as the delimiter</li>
+                                        </ul>
+                                    </li>
+                                    <li>Edit your questions in the spreadsheet</li>
+                                    <li>Make sure answers are in Jeopardy format (starting with "What is..." or "Who is...")</li>
+                                    <li>Save/export your spreadsheet as CSV before importing</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN (hidden initially) -->
+        <div id="game-screen" style="display:none;">
+            <div class="board-header">Fun Jeopardy!</div>
+            <div id="board-cats" class="board-grid"></div>
+            <div id="board-questions"></div>
+            <div class="scores-panel">
+                <div class="scores-header">
+                    <h2>Team Scores</h2>
+                    <button class="btn btn-purple btn-sm" id="btn-end-game">End Game</button>
+                </div>
+                <div id="scores-grid" class="scores-grid"></div>
+            </div>
+        </div>
+
+        <!-- QUESTION MODAL -->
+        <div id="question-modal" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-cat" id="modal-cat-label"></div>
+                <div class="modal-question" id="modal-question-text"></div>
+                <div id="modal-answer-area"></div>
+                <div id="modal-teams-correct" class="modal-teams-grid" style="display:none;"></div>
+                <div id="modal-teams-incorrect" class="modal-teams-grid" style="display:none;"></div>
+                <div class="modal-close-row">
+                    <button class="btn btn-purple" id="btn-close-modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ── Footer ── -->
+<div id="site-footer"></div>
+<script src="/assets/footer.js"></script>
+
+<!-- ── Theme toggle JS ── -->
+<script>
+const themeButton = document.getElementById('theme-button');
+const DARK_KEY = 'jeopardy-dark';
+const LIGHT_KEY = 'jeopardy-light';
+
+function updateAppChromeTheme(theme) {
+    var tc = document.querySelector('meta[name="theme-color"]');
+    var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    var dark = theme === 'dark';
+    if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+    if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+}
+function updateButtonEmoji(theme) {
+    themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+}
+var initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+document.documentElement.setAttribute('data-theme', initTheme);
+updateAppChromeTheme(initTheme);
+updateButtonEmoji(initTheme);
+window.addEventListener('pageshow', function () {
+    updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+});
+themeButton.addEventListener('click', function () {
+    var current = document.documentElement.getAttribute('data-theme');
+    var next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    if (next === 'dark') {
+        localStorage.setItem(DARK_KEY, 'true');
+        localStorage.removeItem(LIGHT_KEY);
+    } else {
+        localStorage.setItem(LIGHT_KEY, 'true');
+        localStorage.removeItem(DARK_KEY);
+    }
+    updateAppChromeTheme(next);
+    updateButtonEmoji(next);
+});
+</script>
+
+<!-- ── Game Logic ── -->
+<script>
+(function() {
+    // ── State ──
+    var scores = [0,0,0,0,0,0];
+    var activeTeam = 0;
+    var teamNames = ['Team 1','Team 2','Team 3','Team 4','Team 5','Team 6'];
+    var numTeams = 3;
+    var gameStarted = false;
+    var showAnswer = false;
+    var modalQ = null; // {categoryIndex, questionIndex, question, answer, value}
+    var editingName = -1;
+    var editingQ = null; // {categoryIndex, questionIndex, question, answer, value}
+
+    var categoriesData = ["History","Literature","Pop Culture","Geography","Science & Nature"];
+    var questionsData = [
+        [{question:"This ancient civilization built the pyramids of Giza.",answer:"What is Egypt?",value:100,used:false},{question:"The Renaissance began in this European country.",answer:"What is Italy?",value:200,used:false},{question:"The Magna Carta was signed in this year.",answer:"What is 1215?",value:300,used:false},{question:"This war, fought between 1914 and 1918, was known as the Great War.",answer:"What is World War I?",value:400,used:false},{question:"This president delivered the Gettysburg Address.",answer:"What is Abraham Lincoln?",value:500,used:false}],
+        [{question:"This playwright wrote 'Romeo and Juliet'.",answer:"Who is William Shakespeare?",value:100,used:false},{question:"This novel by Harper Lee features the character Atticus Finch.",answer:"What is 'To Kill a Mockingbird'?",value:200,used:false},{question:"This dystopian novel by George Orwell introduces the concept of 'Big Brother'.",answer:"What is '1984'?",value:300,used:false},{question:"This author wrote 'The Great Gatsby'.",answer:"Who is F. Scott Fitzgerald?",value:400,used:false},{question:"This epic poem by Homer tells the story of Odysseus's journey home.",answer:"What is 'The Odyssey'?",value:500,used:false}],
+        [{question:"This band performed the hit song 'Hey Jude'.",answer:"Who are The Beatles?",value:100,used:false},{question:"This superhero film released in 2018 featured the fictional African nation of Wakanda.",answer:"What is 'Black Panther'?",value:200,used:false},{question:"This TV show features the fictional Stark, Lannister, and Targaryen families.",answer:"What is 'Game of Thrones'?",value:300,used:false},{question:"This social media platform, launched in 2016, features short videos of up to 3 minutes.",answer:"What is TikTok?",value:400,used:false},{question:"This video game features a character named Mario who rescues Princess Peach.",answer:"What is Super Mario Bros.?",value:500,used:false}],
+        [{question:"This is the largest ocean on Earth.",answer:"What is the Pacific Ocean?",value:100,used:false},{question:"This mountain is the tallest in the world.",answer:"What is Mount Everest?",value:200,used:false},{question:"This South American country is home to the Amazon Rainforest.",answer:"What is Brazil?",value:300,used:false},{question:"This European city is known as the 'City of Light'.",answer:"What is Paris?",value:400,used:false},{question:"This desert is the largest hot desert in the world.",answer:"What is the Sahara Desert?",value:500,used:false}],
+        [{question:"This is the closest star to Earth.",answer:"What is the Sun?",value:100,used:false},{question:"This element has the chemical symbol 'O'.",answer:"What is Oxygen?",value:200,used:false},{question:"This planet is known for its beautiful rings.",answer:"What is Saturn?",value:300,used:false},{question:"This is the process by which plants make their own food using sunlight.",answer:"What is photosynthesis?",value:400,used:false},{question:"This scientist developed the theory of relativity.",answer:"Who is Albert Einstein?",value:500,used:false}]
+    ];
+
+    var categories = categoriesData.slice();
+    var questions = JSON.parse(JSON.stringify(questionsData));
+
+    // ── DOM refs ──
+    var $setup = document.getElementById('setup-screen');
+    var $game = document.getElementById('game-screen');
+    var $numTeams = document.getElementById('num-teams');
+    var $numTeamsDisplay = document.getElementById('num-teams-display');
+    var $teamNamesList = document.getElementById('team-names-list');
+    var $btnRules = document.getElementById('btn-rules');
+    var $btnEditor = document.getElementById('btn-editor');
+    var $btnImport = document.getElementById('btn-import');
+    var $btnStart = document.getElementById('btn-start');
+    var $rulesSection = document.getElementById('rules-section');
+    var $editorSection = document.getElementById('editor-section');
+    var $importSection = document.getElementById('import-section');
+    var $editorCats = document.getElementById('editor-cats');
+    var $editorGrid = document.getElementById('editor-grid');
+    var $editorFormArea = document.getElementById('editor-form-area');
+    var $btnReset = document.getElementById('btn-reset');
+    var $btnSelectCsv = document.getElementById('btn-select-csv');
+    var $fileInput = document.getElementById('file-input');
+    var $btnCopyTemplate = document.getElementById('btn-copy-template');
+    var $importError = document.getElementById('import-error');
+    var $boardCats = document.getElementById('board-cats');
+    var $boardQuestions = document.getElementById('board-questions');
+    var $scoresGrid = document.getElementById('scores-grid');
+    var $btnEndGame = document.getElementById('btn-end-game');
+    var $modal = document.getElementById('question-modal');
+    var $modalCat = document.getElementById('modal-cat-label');
+    var $modalQ = document.getElementById('modal-question-text');
+    var $modalAnswerArea = document.getElementById('modal-answer-area');
+    var $modalCorrect = document.getElementById('modal-teams-correct');
+    var $modalIncorrect = document.getElementById('modal-teams-incorrect');
+    var $btnCloseModal = document.getElementById('btn-close-modal');
+
+    // ── Setup screen rendering ──
+    function renderTeamNames() {
+        var html = '';
+        for (var i = 0; i < numTeams; i++) {
+            if (editingName === i) {
+                html += '<div class="team-row"><input type="text" id="edit-name-input" value="' + esc(teamNames[i]) + '" autofocus>' +
+                    '<button class="btn btn-green btn-sm" style="margin-left:8px;" onclick="G.saveTeamName()">Save</button></div>';
+            } else {
+                html += '<div class="team-row"><span>' + esc(teamNames[i]) + '</span>' +
+                    '<button class="btn btn-blue btn-sm" onclick="G.editTeamName(' + i + ')">Edit</button></div>';
+            }
+        }
+        $teamNamesList.innerHTML = html;
+        if (editingName >= 0) {
+            var inp = document.getElementById('edit-name-input');
+            if (inp) { inp.focus(); inp.select(); }
+        }
+    }
+
+    function editTeamName(i) {
+        editingName = i;
+        renderTeamNames();
+    }
+
+    function saveTeamName() {
+        var inp = document.getElementById('edit-name-input');
+        if (inp && inp.value.trim()) teamNames[editingName] = inp.value.trim();
+        editingName = -1;
+        renderTeamNames();
+    }
+
+    // ── Expand panels ──
+    function hideAllPanels() {
+        $rulesSection.style.display = 'none';
+        $editorSection.style.display = 'none';
+        $importSection.style.display = 'none';
+    }
+
+    function togglePanel(el, btnText, btnEl) {
+        var wasVisible = el.style.display !== 'none';
+        hideAllPanels();
+        if (!wasVisible) {
+            el.style.display = '';
+            if (el === $editorSection) renderEditor();
+        }
+        $btnRules.textContent = $rulesSection.style.display !== 'none' ? 'Hide Rules' : 'Show Rules';
+        $btnEditor.textContent = $editorSection.style.display !== 'none' ? 'Close Editor' : 'Edit Questions';
+        $btnImport.textContent = $importSection.style.display !== 'none' ? 'Close Import' : 'Import Questions';
+    }
+
+    // ── Editor ──
+    function renderEditor() {
+        // Category inputs
+        var chtml = '';
+        for (var i = 0; i < categories.length; i++) {
+            chtml += '<input type="text" value="' + esc(categories[i]) + '" onchange="G.catChange(' + i + ',this.value)">';
+        }
+        $editorCats.innerHTML = chtml;
+
+        // Mini grid
+        var ghtml = '<div class="editor-mini-grid">';
+        for (var c = 0; c < categories.length; c++) {
+            var label = categories[c].length > 10 ? categories[c].substring(0,10) + '...' : categories[c];
+            ghtml += '<div class="cat-label">' + esc(label) + '</div>';
+        }
+        ghtml += '</div>';
+        for (var r = 0; r < 5; r++) {
+            ghtml += '<div class="editor-mini-grid">';
+            for (var c = 0; c < categories.length; c++) {
+                ghtml += '<button class="val-btn" onclick="G.editQ(' + c + ',' + r + ')">$' + questions[c][r].value + '</button>';
+            }
+            ghtml += '</div>';
+        }
+        $editorGrid.innerHTML = ghtml;
+
+        // Edit form
+        if (editingQ) {
+            var q = editingQ;
+            $editorFormArea.innerHTML =
+                '<div class="editor-form">' +
+                '<h4>Editing: ' + esc(categories[q.categoryIndex]) + ' - $' + q.value + '</h4>' +
+                '<label>Question:</label><textarea id="eq-question">' + esc(q.question) + '</textarea>' +
+                '<label>Answer (in Jeopardy format):</label><input type="text" id="eq-answer" value="' + esc(q.answer) + '" placeholder="What is...">' +
+                '<label>Point Value:</label><input type="number" id="eq-value" value="' + q.value + '" min="1" style="width:120px;">' +
+                '<div class="form-btns"><button class="btn btn-green btn-sm" onclick="G.saveQ()">Save Changes</button>' +
+                '<button class="btn btn-red btn-sm" onclick="G.cancelEditQ()">Cancel</button></div></div>';
+        } else {
+            $editorFormArea.innerHTML = '';
+        }
+    }
+
+    function catChange(i, val) { categories[i] = val; }
+
+    function editQ(ci, ri) {
+        editingQ = { categoryIndex: ci, questionIndex: ri, question: questions[ci][ri].question, answer: questions[ci][ri].answer, value: questions[ci][ri].value };
+        renderEditor();
+    }
+
+    function saveQ() {
+        if (!editingQ) return;
+        var ci = editingQ.categoryIndex, ri = editingQ.questionIndex;
+        questions[ci][ri].question = document.getElementById('eq-question').value;
+        questions[ci][ri].answer = document.getElementById('eq-answer').value;
+        questions[ci][ri].value = parseInt(document.getElementById('eq-value').value) || questions[ci][ri].value;
+        editingQ = null;
+        renderEditor();
+    }
+
+    function cancelEditQ() { editingQ = null; renderEditor(); }
+
+    // ── CSV Import ──
+    function parseCsvLine(line) {
+        var result = [], current = '', inQ = false;
+        for (var i = 0; i < line.length; i++) {
+            var ch = line[i];
+            if (ch === '"') {
+                if (inQ && i+1 < line.length && line[i+1] === '"') { current += '"'; i++; }
+                else inQ = !inQ;
+            } else if (ch === ',' && !inQ) { result.push(current); current = ''; }
+            else current += ch;
+        }
+        result.push(current);
+        return result;
+    }
+
+    function importCSV(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                var lines = e.target.result.split('\n');
+                var header = lines[0].trim().toLowerCase();
+                if (!header.includes('category') || !header.includes('value') || !header.includes('question') || !header.includes('answer')) {
+                    showImportError("Invalid CSV format. Header must contain: Category, Value, Question, Answer"); return;
+                }
+                var hCols = parseCsvLine(header);
+                var ci = hCols.indexOf('category'), vi = hCols.indexOf('value'), qi = hCols.indexOf('question'), ai = hCols.indexOf('answer');
+                if (ci===-1||vi===-1||qi===-1||ai===-1) { showImportError("CSV header must contain: Category, Value, Question, Answer"); return; }
+                var uniqueCats = [], qByCat = {};
+                for (var i = 1; i < lines.length; i++) {
+                    var line = lines[i].trim(); if (!line) continue;
+                    var cols = parseCsvLine(line);
+                    if (cols.length <= Math.max(ci,vi,qi,ai)) continue;
+                    var cat = cols[ci], val = parseInt(cols[vi].replace(/^\$/,'').trim()), q = cols[qi], a = cols[ai];
+                    if (!cat || isNaN(val) || !q || !a) continue;
+                    if (uniqueCats.indexOf(cat) === -1) uniqueCats.push(cat);
+                    if (!qByCat[cat]) qByCat[cat] = [];
+                    qByCat[cat].push({question:q,answer:a,value:val,used:false});
+                }
+                if (uniqueCats.length > 5) uniqueCats.length = 5;
+                if (uniqueCats.length === 0) { showImportError("No valid categories found in CSV"); return; }
+                var newQ = [];
+                for (var c = 0; c < uniqueCats.length; c++) {
+                    var cqs = (qByCat[uniqueCats[c]]||[]).sort(function(a,b){return a.value-b.value;});
+                    var std = [100,200,300,400,500], row = [];
+                    for (var j = 0; j < 5; j++) {
+                        var m = null;
+                        for (var k = 0; k < cqs.length; k++) { if (cqs[k].value===std[j]) { m=cqs[k]; break; } }
+                        row.push(m || {question:uniqueCats[c]+' question worth '+std[j]+' points',answer:'What is the answer?',value:std[j],used:false});
+                    }
+                    newQ.push(row);
+                }
+                while (uniqueCats.length < 5) {
+                    var idx = uniqueCats.length + 1;
+                    uniqueCats.push('Category '+idx);
+                    newQ.push([100,200,300,400,500].map(function(v){return{question:'Question worth '+v+' points',answer:'What is the answer?',value:v,used:false};}));
+                }
+                hideImportError();
+                categories = uniqueCats;
+                questions = newQ;
+                if ($editorSection.style.display !== 'none') renderEditor();
+            } catch(err) { showImportError("Could not parse the CSV file. Make sure it's properly formatted."); }
+        };
+        reader.readAsText(file);
+    }
+
+    function showImportError(msg) { $importError.textContent = msg; $importError.style.display = ''; }
+    function hideImportError() { $importError.style.display = 'none'; }
+
+    function copyTemplate() {
+        var csv = "Category,Value,Question,Answer\n";
+        var cats = ["Category 1","Category 2","Category 3","Category 4","Category 5"];
+        var vals = [100,200,300,400,500];
+        for (var c = 0; c < cats.length; c++) {
+            for (var v = 0; v < vals.length; v++) {
+                csv += '"'+cats[c]+'",'+vals[v]+',"Question worth '+vals[v]+' points","What is the answer?"\n';
+            }
+        }
+        try {
+            navigator.clipboard.writeText(csv).then(function(){
+                $btnCopyTemplate.textContent = 'Copied!';
+                setTimeout(function(){ $btnCopyTemplate.textContent = 'Copy Template'; },2000);
+            }, function(){ clipFallback(csv); });
+        } catch(e) { clipFallback(csv); }
+    }
+    function clipFallback(text) {
+        var ta = document.createElement('textarea'); ta.value = text;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        $btnCopyTemplate.textContent = 'Copied!';
+        setTimeout(function(){ $btnCopyTemplate.textContent = 'Copy Template'; },2000);
+    }
+
+    // ── Game board ──
+    function startGame() {
+        gameStarted = true;
+        $setup.style.display = 'none';
+        $game.style.display = '';
+        renderBoard();
+        renderScores();
+    }
+
+    function endGame() {
+        gameStarted = false;
+        $game.style.display = 'none';
+        $setup.style.display = '';
+    }
+
+    function renderBoard() {
+        // Category headers
+        var chtml = '';
+        for (var c = 0; c < categories.length; c++) {
+            chtml += '<div class="cat-cell">' + esc(categories[c]) + '</div>';
+        }
+        $boardCats.innerHTML = chtml;
+
+        // Question cells
+        var qhtml = '';
+        for (var r = 0; r < 5; r++) {
+            qhtml += '<div class="board-grid">';
+            for (var c = 0; c < categories.length; c++) {
+                var q = questions[c][r];
+                qhtml += '<button class="q-cell' + (q.used ? ' used' : '') + '" ' +
+                    (q.used ? 'disabled' : 'onclick="G.openQ('+c+','+r+')"') +
+                    '>$' + q.value + '</button>';
+            }
+            qhtml += '</div>';
+        }
+        $boardQuestions.innerHTML = qhtml;
+    }
+
+    function renderScores() {
+        var html = '';
+        for (var i = 0; i < numTeams; i++) {
+            html += '<div class="team-card' + (activeTeam===i?' active':'') + '">' +
+                '<div class="team-info"><span>' + esc(teamNames[i]) + '</span><span class="score">$' + scores[i] + '</span></div>' +
+                '<div class="team-btns">' +
+                '<button class="minus" onclick="G.scoreChange('+i+',-100)">-100</button>' +
+                '<button class="plus" onclick="G.scoreChange('+i+',100)">+100</button>' +
+                '<button class="select" onclick="G.selectTeam('+i+')">Select</button>' +
+                '</div></div>';
+        }
+        $scoresGrid.innerHTML = html;
+    }
+
+    function scoreChange(ti, pts) { scores[ti] += pts; renderScores(); }
+    function selectTeam(ti) { activeTeam = ti; renderScores(); }
+
+    // ── Question modal ──
+    function openQ(ci, ri) {
+        if (questions[ci][ri].used) return;
+        modalQ = { categoryIndex: ci, questionIndex: ri, question: questions[ci][ri].question, answer: questions[ci][ri].answer, value: questions[ci][ri].value };
+        questions[ci][ri].used = true;
+        showAnswer = false;
+        renderModal();
+        $modal.classList.add('open');
+        renderBoard();
+    }
+
+    function renderModal() {
+        if (!modalQ) return;
+        $modalCat.textContent = categories[modalQ.categoryIndex] + ' - $' + modalQ.value;
+        $modalQ.textContent = modalQ.question;
+
+        if (showAnswer) {
+            $modalAnswerArea.innerHTML = '<div class="modal-answer">' + esc(modalQ.answer) + '</div>';
+            // Correct buttons
+            var chtml = '';
+            for (var i = 0; i < numTeams; i++) {
+                chtml += '<button class="correct" onclick="G.answerCorrect('+i+')">' + esc(teamNames[i]) + ' Correct</button>';
+            }
+            $modalCorrect.innerHTML = chtml;
+            $modalCorrect.style.display = '';
+            // Incorrect buttons
+            var ihtml = '';
+            for (var i = 0; i < numTeams; i++) {
+                ihtml += '<button class="incorrect" onclick="G.answerIncorrect('+i+')">' + esc(teamNames[i]) + ' Incorrect</button>';
+            }
+            $modalIncorrect.innerHTML = ihtml;
+            $modalIncorrect.style.display = '';
+        } else {
+            $modalAnswerArea.innerHTML = '<div style="display:flex;justify-content:center;margin-bottom:16px;">' +
+                '<button class="btn btn-start" onclick="G.revealAnswer()">Show Answer</button></div>';
+            $modalCorrect.style.display = 'none';
+            $modalIncorrect.style.display = 'none';
+        }
+    }
+
+    function revealAnswer() { showAnswer = true; renderModal(); }
+
+    function answerCorrect(ti) {
+        scores[ti] += modalQ.value;
+        activeTeam = (ti + 1) % numTeams;
+        closeModal();
+    }
+
+    function answerIncorrect(ti) {
+        scores[ti] -= modalQ.value;
+        activeTeam = (ti + 1) % numTeams;
+        closeModal();
+    }
+
+    function closeModal() {
+        modalQ = null;
+        showAnswer = false;
+        $modal.classList.remove('open');
+        renderScores();
+    }
+
+    // ── Reset ──
+    function resetGame() {
+        questions = JSON.parse(JSON.stringify(questionsData));
+        categories = categoriesData.slice();
+        scores = [0,0,0,0,0,0];
+        editingQ = null;
+        if ($editorSection.style.display !== 'none') renderEditor();
+        if (gameStarted) { renderBoard(); renderScores(); }
+    }
+
+    // ── Utility ──
+    function esc(s) {
+        var d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+    }
+
+    // ── Wire up events ──
+    $numTeams.addEventListener('input', function() {
+        numTeams = parseInt(this.value);
+        $numTeamsDisplay.textContent = numTeams;
+        renderTeamNames();
+    });
+    $btnRules.addEventListener('click', function() { togglePanel($rulesSection); });
+    $btnEditor.addEventListener('click', function() { togglePanel($editorSection); });
+    $btnImport.addEventListener('click', function() { togglePanel($importSection); });
+    $btnStart.addEventListener('click', startGame);
+    $btnEndGame.addEventListener('click', endGame);
+    $btnCloseModal.addEventListener('click', closeModal);
+    $btnReset.addEventListener('click', resetGame);
+    $btnSelectCsv.addEventListener('click', function() { $fileInput.click(); });
+    $fileInput.addEventListener('change', function() { if (this.files[0]) importCSV(this.files[0]); this.value = ''; });
+    $btnCopyTemplate.addEventListener('click', copyTemplate);
+
+    // Enter key saves team name
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && editingName >= 0) saveTeamName();
+    });
+
+    // ── Expose needed functions globally ──
+    window.G = {
+        editTeamName: editTeamName,
+        saveTeamName: saveTeamName,
+        catChange: catChange,
+        editQ: editQ,
+        saveQ: saveQ,
+        cancelEditQ: cancelEditQ,
+        openQ: openQ,
+        revealAnswer: revealAnswer,
+        answerCorrect: answerCorrect,
+        answerIncorrect: answerIncorrect,
+        scoreChange: scoreChange,
+        selectTeam: selectTeam
+    };
+
+    // ── Init ──
+    renderTeamNames();
+})();
+</script>
+
+<!-- Brave iOS gradient text fix -->
+<script>
+(function () {
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+    document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+})();
+</script>
+
+</body>
+</html>
