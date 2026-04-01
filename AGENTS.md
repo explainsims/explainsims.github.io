@@ -1,8 +1,8 @@
-# AGENTS.md - AI Agent Guide for PanPhy Labs
+# AGENTS.md - AI Agent Guide for ExplAIn Sims
 
 ## Project Overview
 
-**PanPhy Labs** is a Progressive Web App (PWA) providing interactive physics tools, simulations, and educational games. The site is a static site with no build system, deployed via GitHub Pages.
+**ExplAIn Sims** is a Progressive Web App (PWA) providing interactive physics tools, simulations, and educational games. The site is a static site with no build system, deployed via GitHub Pages.
 
 - **Tech Stack**: Vanilla JavaScript, HTML5, CSS3 (no frameworks, no bundler)
 - **Deployment**: GitHub Pages (direct file serving)
@@ -28,15 +28,13 @@ When adding a new published page, also add its path to the `ASSETS_TO_CACHE` arr
 
 If a cached page depends on local media assets (audio/video/images/fonts) for core UX, add those file paths to `ASSETS_TO_CACHE` as well.
 
-Any file under `/beta` is intentionally excluded from service-worker caching. Do not add `/beta/*` paths to `ASSETS_TO_CACHE`.
-
 ### No Build System
 
 Edit files directly. There is no npm, webpack, or any compilation step. Do not introduce one.
 
 ### Self-Contained Pages
 
-Each HTML file in the repo is a complete, standalone application. Complex tools (PanPhyPlot, Markdown Editor) split their JS/CSS into modules under a subfolder, but the entry point is always a single HTML file.
+Each HTML file in the repo is a complete, standalone application. Complex tools (e.g. PanPhyPlot) split their JS/CSS into modules under a subfolder, but the entry point is always a single HTML file.
 
 PanPhyPlot curve fitting now uses a shared numeric helper module at `tools/panphyplot/js/fit-core.js`, consumed by both `curve-fitting.js` (main-thread fallback) and `fit-worker.js` (worker path).
 
@@ -50,25 +48,14 @@ Not every HTML file in the repo is currently part of the published navigation.
 
 - **Published pages** are linked from `index.html` and listed in `sitemap.xml`
 - Only published pages should include `<script src="/assets/sw-register.js" defer></script>` and be tracked in `ASSETS_TO_CACHE`
-- New pages should be created in `/beta` by default unless explicitly requested to publish and list on `index.html`
-- `/beta/*` is intentionally excluded from service-worker caching (pre-cache and runtime cache)
-- **Current unlisted/legacy pages** include:
-  - `misc/digitizer.html`
-  - `misc/gcse_phy/phy_flashcard.html`
-  - `misc/gcse_phy/phy_flashcard_cs.html`
-  - `misc/gcse_phy/phy_flashcard_ss.html`
-  - `misc/ising_model.html`
-  - `misc/phyclub_showcase.html`
-  - `simulations/lorentz_backup.html`
 - Unlisted/internal pages should stay outside service-worker registration and pre-cache lists unless explicitly promoted
 
 If you promote an unlisted page to production, treat it as a full launch task:
-1. If the page lives in `/beta`, move it to the correct public directory first
-2. Add `<script src="/assets/sw-register.js" defer></script>` if missing
-3. Add route + required assets to `ASSETS_TO_CACHE`
-4. Bump `BUILD_ID` in `sw.js`
-5. Link it from `index.html`
-6. Add it to `sitemap.xml`
+1. Add `<script src="/assets/sw-register.js" defer></script>` if missing
+2. Add route + required assets to `ASSETS_TO_CACHE`
+3. Bump `BUILD_ID` in `sw.js`
+4. Link it from `index.html`
+5. Add it to `sitemap.xml`
 
 ## Coding Conventions
 
@@ -115,14 +102,12 @@ python3 -m http.server 8000
 
 ## Adding a New Page
 
-1. Unless explicitly requested to publish and list on `index.html`, create the page in `/beta`
-2. For `/beta` pages, do not include service worker registration and do not add any `/beta/*` path to `ASSETS_TO_CACHE`
-3. If the page will be published, place it in the appropriate public directory and include service worker registration via shared loader: `<script src="/assets/sw-register.js" defer></script>`
-4. Use the standard CSS theme variables
-5. If published, add the path to `ASSETS_TO_CACHE` in `sw.js`
-6. Bump the `BUILD_ID` in `sw.js` after published/cached asset changes
-7. Add a link from `index.html`
-8. Add a `<loc>` entry to `sitemap.xml` if the page is public
+1. If the page will be published, place it in the appropriate public directory and include service worker registration via shared loader: `<script src="/assets/sw-register.js" defer></script>`
+2. Use the standard CSS theme variables
+3. If published, add the path to `ASSETS_TO_CACHE` in `sw.js`
+4. Bump the `BUILD_ID` in `sw.js` after published/cached asset changes
+5. Add a link from `index.html`
+6. Add a `<loc>` entry to `sitemap.xml` if the page is public
 
 ## Git Workflow
 
