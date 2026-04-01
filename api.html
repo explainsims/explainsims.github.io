@@ -151,7 +151,7 @@
             display: block;
         }
 
-        header, .section, footer {
+        header, .section {
             position: relative;
             z-index: 1;
         }
@@ -561,39 +561,7 @@
             transform: translateX(4px);
         }
 
-        /* ========================================
-           Footer
-           ======================================== */
-        footer {
-            text-align: center;
-            padding: 3rem 1.5rem;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            border-top: 1px solid var(--divider-color);
-            margin-top: 2rem;
-            transition: border-color 0.4s ease;
-        }
 
-        footer p {
-            margin: 0.3rem 0;
-        }
-
-        footer a {
-            color: var(--brand-primary);
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        footer .footer-sep {
-            display: inline-block;
-            margin: 0 0.4rem;
-            color: var(--divider-color);
-        }
 
         /* ========================================
            Keyframes
@@ -774,7 +742,8 @@
         </div>
     </div>
 
-    <footer><p>Free to use, share, and remix. &nbsp;·&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p></footer>
+    <div id="site-footer"></div>
+    <script src="/assets/footer.js"></script>
 
     <script>
         // Cat Chase Animation

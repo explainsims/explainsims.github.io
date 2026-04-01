@@ -110,10 +110,11 @@ python3 -m http.server 8000
 
 1. If the page will be published, place it in the appropriate public directory and include service worker registration via shared loader: `<script src="/assets/sw-register.js" defer></script>`
 2. Use the standard CSS theme variables
-3. If published, add the path to `ASSETS_TO_CACHE` in `sw.js`
-4. Bump the `BUILD_ID` in `sw.js` after published/cached asset changes
-5. Add a link from `index.html`
-6. Add a `<loc>` entry to `sitemap.xml` if the page is public
+3. Add the shared footer just before `</body>`: `<div id="site-footer"></div>` followed by `<script src="/assets/footer.js"></script>`. Do **not** write an inline `<footer>` element or a page-specific `footer { }` CSS block.
+4. If published, add the path to `ASSETS_TO_CACHE` in `sw.js`
+5. Bump the `BUILD_ID` in `sw.js` after published/cached asset changes
+6. Add a link from the relevant gallery page
+7. Add a `<loc>` entry to `sitemap.xml` if the page is public
 
 ## Git Workflow
 

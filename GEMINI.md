@@ -44,11 +44,12 @@ ExplAIn Sims is a collection of browser-based physics tools, simulations, and ed
 ### Adding a New App
 1. For a published page: create the HTML/JS/CSS in the appropriate directory (`appcm/`, `panphy/`, `teachers/`, etc.).
 2. Add `<script src="/assets/sw-register.js" defer></script>` in `<head>`.
-3. Add the new entry point to the grid in `index.html`.
-4. Add the new app and its dependencies to the `ASSETS_TO_CACHE` array in `sw.js`.
-5. Update `OFFLINE_CARD_REQUIREMENTS` in `index.html` to enable the "Offline Ready" pill.
-6. Add the page URL to `sitemap.xml`.
-7. Bump `BUILD_ID` in `sw.js`.
+3. Add the shared footer just before `</body>`: `<div id="site-footer"></div>` + `<script src="/assets/footer.js"></script>`. Never write an inline `<footer>` element or page-specific `footer { }` CSS.
+4. Add the new entry point to the grid in the relevant gallery page.
+5. Add the new app and its dependencies to the `ASSETS_TO_CACHE` array in `sw.js`.
+6. Update `OFFLINE_CARD_REQUIREMENTS` in the relevant gallery page to enable the "Offline Ready" pill.
+7. Add the page URL to `sitemap.xml`.
+8. Bump `BUILD_ID` in `sw.js`.
 
 ### Running the Project
 Since there is no build step, you can serve the project using any local HTTP server:

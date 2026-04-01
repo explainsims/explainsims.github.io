@@ -201,12 +201,13 @@ Then open `http://localhost:8000` in a browser.
 ## Common Tasks
 
 ### Adding a New Tool/Page
-1. If it will be published, create/move it in the appropriate public directory (`appcm/` for AP PCM sims, `tools/`, `teachers/`, `tools/`, or a future tab directory)
+1. If it will be published, create/move it in the appropriate public directory (`appcm/` for AP PCM sims, `tools/`, `teachers/`, or a future tab directory)
 2. If it will be published from `index.html`, include `<script src="/assets/sw-register.js" defer></script>` in `<head>`
 3. Use the standard theming CSS variables
-4. If published, add to `sw.js` `ASSETS_TO_CACHE` array and bump `BUILD_ID`
-5. Add link to `index.html` in the appropriate section
-6. Add URL to `sitemap.xml` if page is public
+4. Add the shared footer (see Shared Footer below) just before `</body>`
+5. If published, add to `sw.js` `ASSETS_TO_CACHE` array and bump `BUILD_ID`
+6. Add link to the relevant gallery page in the appropriate section
+7. Add URL to `sitemap.xml` if page is public
 
 ### Updating the Theme System
 Theme colors are defined in CSS `:root` and `[data-theme="dark"]` selectors. Key variables:
@@ -242,6 +243,17 @@ When using Three.js with a `ResizeObserver`, always follow this pattern to preve
 | `panphy/panphyplot/` | Complex plotting tool, good reference for modular patterns |
 
 ## Key Patterns
+
+### Shared Footer
+
+Every app page must include the shared footer. Place these two lines immediately before `</body>`:
+
+```html
+<div id="site-footer"></div>
+<script src="/assets/footer.js"></script>
+```
+
+`assets/footer.js` injects a `<footer class="site-footer">` with the standard content and CSS (using CSS custom properties, so it picks up the current theme automatically). Do **not** write an inline `<footer>` element or a page-specific `footer { }` CSS block — that is the old pattern.
 
 ### State Persistence
 ```javascript
