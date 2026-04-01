@@ -1,15 +1,15 @@
-# CLAUDE.md - AI Assistant Guide for PanPhy Labs
+# CLAUDE.md - AI Assistant Guide for ExplAIn Sims
 
 ## Project Overview
 
-**PanPhy Labs** is a Progressive Web App (PWA) providing interactive physics tools, simulations, and educational games for teachers and students. The site is designed to work offline after the first visit.
+**ExplAIn Sims** is a Progressive Web App (PWA) providing interactive physics tools, simulations, and educational games for teachers and students. The site is designed to work offline after the first visit.
 
-- **Repository**: `panphy.github.io` (GitHub Pages)
+- **Repository**: `explainsims.github.io` (GitHub Pages)
 - **Type**: Static site / PWA with no build system
 - **Tech Stack**: Vanilla JavaScript, HTML5, CSS3
 - **Deployment**: GitHub Pages (direct file serving)
 
-## Directory Structure
+## Directory Structure (incomplete)
 
 ```
 /
@@ -22,33 +22,9 @@
 │
 ├── assets/
 │   ├── favicon.png             # Site favicon (48x48)
-│   ├── panphy.png              # App icon (512x512)
+│   ├── ExplAIn Sims.png        # App icon (512x512)
 │   ├── apple-touch-icon.png    # iOS icon (180x180)
 │   └── sw-register.js          # Service Worker registration script
-│
-├── beta/                   # Unpublished WIP pages/assets (never SW-cached)
-│
-├── tools/                  # Educational data analysis tools
-│   ├── panphyplot.html     # Advanced plotting tool (entry point)
-│   ├── panphyplot/         # Modular JS/CSS for PanPhyPlot
-│   │   ├── css/panphyplot.css
-│   │   ├── js/             # state.js, main.js, plotting.js, fit-core.js, curve-fitting.js,
-│   │   │                   # data-processing.js, fit-worker.js, latex-rendering.js, ui.js
-│   │   ├── panphyplot_manual.html  # User manual
-│   │   └── math_ref.html          # Math reference
-│   ├── markdown_editor.html # Markdown & LaTeX editor (entry point)
-│   ├── markdown_editor/    # Modular JS/CSS for Markdown Editor
-│   │   ├── css/markdown_editor.css
-│   │   ├── js/             # state.js, main.js, rendering.js, copy.js, ui.js
-│   │   ├── sample_doc.md   # Sample/tutorial document
-│   │   └── templates/      # Math template documents
-│   │       ├── math-basic.md
-│   │       ├── math-calculus.md
-│   │       ├── math-matrices.md
-│   │       └── math-table.md
-│   ├── motion_tracker.html
-│   ├── sound_analyzer.html
-│   └── tone_generator.html
 │
 ├── appcm/                  # AP Physics C: Mechanics simulations (AP PCM tab)
 │   ├── superposition.html
@@ -57,29 +33,11 @@
 │   └── lorentz_learn.html  # Lorentz sim learning companion
 │
 │   # Each tab has its own directory. Future non-AP PCM simulations
-│   # go in the directory named after their tab (name TBD).
+│   # go in the directory named after their tab.
 │
-├── fun/                    # Interactive games
-│   ├── dodge.html          # Asteroid Storm (requires network for leaderboard)
-│   ├── dodge_assets/       # Game sprites and audio
-│   ├── react.html
-│   └── ascii_cam.html
-│
-├── for_teachers/           # Teacher utilities
-│   ├── timer.html
-│   ├── timer_beep.mp3       # Timer audio alert
-│   └── visualizer.html
-│
-└── misc/                   # Miscellaneous physics tools
-    ├── digitizer.html
-    ├── gcse_phy/           # GCSE exam preparation flashcards
-    │   ├── phy_flashcard.html
-    │   ├── phy_flashcard_cs.html
-    │   ├── phy_flashcard_ss.html
-    │   ├── phy_cs.csv       # Combined Science flashcard data
-    │   └── phy_ss.csv       # Separate Science flashcard data
-    ├── ising_model.html
-    └── phyclub_showcase.html
+├── teachers/           # Teacher utilities
+
+
 ```
 
 ## Published vs Unlisted Routes
@@ -88,25 +46,14 @@ Not every HTML file in the repo is currently treated as a published page.
 
 - **Published pages** are linked from `index.html` and listed in `sitemap.xml`
 - Only published pages should include `<script src="/assets/sw-register.js" defer></script>` and be included in `sw.js` `ASSETS_TO_CACHE`
-- New pages should be created in `/beta` by default unless explicitly requested to publish and list on `index.html`
-- `/beta/*` is intentionally excluded from service-worker caching (pre-cache and runtime cache)
-- **Current unlisted/legacy pages**:
-  - `misc/digitizer.html`
-  - `misc/gcse_phy/phy_flashcard.html`
-  - `misc/gcse_phy/phy_flashcard_cs.html`
-  - `misc/gcse_phy/phy_flashcard_ss.html`
-  - `misc/ising_model.html`
-  - `misc/phyclub_showcase.html`
-  - `appcm/lorentz_backup.html`
 - Unlisted/internal pages should remain outside SW registration and pre-cache unless intentionally promoted
 
 If you promote an unlisted page to production, do all of the following:
-1. If the page lives in `/beta`, move it to the correct public directory first
-2. Add `<script src="/assets/sw-register.js" defer></script>` if missing
-3. Add page path + required assets to `ASSETS_TO_CACHE` in `sw.js`
-4. Bump `BUILD_ID` in `sw.js`
-5. Add a card/link in `index.html`
-6. Add the page URL to `sitemap.xml`
+1. Add `<script src="/assets/sw-register.js" defer></script>` if missing
+2. Add page path + required assets to `ASSETS_TO_CACHE` in `sw.js`
+3. Bump `BUILD_ID` in `sw.js`
+4. Add a card/link in `index.html`
+5. Add the page URL to `sitemap.xml`
 
 ## Tech Stack & Dependencies
 
@@ -196,22 +143,6 @@ panphyplot.html (imports scripts)
 └── css/panphyplot.css     # Styling
 ```
 
-**Markdown Editor:**
-```
-markdown_editor.html (imports scripts via ES modules)
-├── js/state.js          # State management & localStorage
-├── js/main.js           # App initialization & event handlers
-├── js/rendering.js      # Markdown preprocessing & rendering
-├── js/copy.js           # Copy-to-clipboard (equations, tables, code)
-├── js/ui.js             # Theme, scroll sync, modals
-├── css/markdown_editor.css  # Styling
-├── sample_doc.md        # Tutorial document
-└── templates/           # Math template documents
-    ├── math-basic.md
-    ├── math-calculus.md
-    ├── math-matrices.md
-    └── math-table.md
-```
 
 ## Service Worker & Caching
 
@@ -273,14 +204,12 @@ Then open `http://localhost:8000` in a browser.
 ## Common Tasks
 
 ### Adding a New Tool/Page
-1. Unless explicitly requested to publish/list on `index.html`, create new HTML in `/beta`
-2. For `/beta` pages, do not include `<script src="/assets/sw-register.js" defer></script>` and do not add `/beta/*` paths to `sw.js` `ASSETS_TO_CACHE`
-3. If it will be published, create/move it in the appropriate public directory (`appcm/` for AP PCM sims, `tools/`, `for_teachers/`, `fun/`, or a future tab directory)
-4. If it will be published from `index.html`, include `<script src="/assets/sw-register.js" defer></script>` in `<head>`
-5. Use the standard theming CSS variables
-6. If published, add to `sw.js` `ASSETS_TO_CACHE` array and bump `BUILD_ID`
-7. Add link to `index.html` in the appropriate section
-8. Add URL to `sitemap.xml` if page is public
+1. If it will be published, create/move it in the appropriate public directory (`appcm/` for AP PCM sims, `tools/`, `teachers/`, `tools/`, or a future tab directory)
+2. If it will be published from `index.html`, include `<script src="/assets/sw-register.js" defer></script>` in `<head>`
+3. Use the standard theming CSS variables
+4. If published, add to `sw.js` `ASSETS_TO_CACHE` array and bump `BUILD_ID`
+5. Add link to `index.html` in the appropriate section
+6. Add URL to `sitemap.xml` if page is public
 
 ### Updating the Theme System
 Theme colors are defined in CSS `:root` and `[data-theme="dark"]` selectors. Key variables:
@@ -313,8 +242,7 @@ When using Three.js with a `ResizeObserver`, always follow this pattern to preve
 | `index.html` | Main landing page with links to all tools |
 | `sw.js` | Service Worker - update cache list when adding pages |
 | `manifest.json` | PWA metadata (name, icons, display mode) |
-| `tools/panphyplot/` | Complex plotting tool, good reference for modular patterns |
-| `tools/markdown_editor/` | Markdown/LaTeX editor with ES module architecture |
+| `panphy/panphyplot/` | Complex plotting tool, good reference for modular patterns |
 
 ## Key Patterns
 
@@ -344,7 +272,7 @@ function toggleTheme() {
 ```html
 <script src="/assets/sw-register.js" defer></script>
 ```
-Use this only on published pages (not on `/beta/*` pages).
+Use this only on published pages.
 
 ### Standard App Banner (REQUIRED for every app)
 
@@ -527,13 +455,11 @@ Used for leaderboards in the dodge game. API calls go to `*.supabase.co` and are
 
 1. **No build step**: Edit files directly, no npm/webpack/etc.
 2. **Self-contained pages**: Each HTML file is a complete application
-3. **New pages default to `/beta`**: Unless explicitly asked to publish/list in `index.html`, create under `/beta`
-4. **Always bump `BUILD_ID` in `sw.js` after code changes**: Any time you modify a file that is listed in `ASSETS_TO_CACHE`, bump the `BUILD_ID` timestamp as your **final step** before finishing. This is easy to forget — do not skip it
-5. **Never cache `/beta/*`**: Keep `/beta` files out of SW registration and `ASSETS_TO_CACHE`
-6. **CDN URL exactness**: Keep CDN script/style URLs in HTML exactly aligned with `ASSETS_TO_CACHE`
-7. **Theme awareness**: Always use CSS variables, not hardcoded colors
-8. **Mobile-first**: Consider touch interactions and responsive design
-9. **Offline-first**: Ensure new features work without network
-10. **CDN dependencies**: External libraries are loaded from CDNs, not bundled
-11. **Keep it simple**: Avoid adding frameworks or build complexity
-12. **No absolute paths in output**: For security, never show the full absolute file path when summarizing code changes. Use repo-relative paths instead (e.g. `tools/markdown_editor/js/main.js`, not `/Users/.../main.js`)
+3. **Always bump `BUILD_ID` in `sw.js` after code changes**: Any time you modify a file that is listed in `ASSETS_TO_CACHE`, bump the `BUILD_ID` timestamp as your **final step** before finishing. This is easy to forget — do not skip it
+4. **CDN URL exactness**: Keep CDN script/style URLs in HTML exactly aligned with `ASSETS_TO_CACHE`
+5. **Theme awareness**: Always use CSS variables, not hardcoded colors
+6. **Mobile-first**: Consider touch interactions and responsive design
+7. **Offline-first**: Ensure new features work without network
+8. **CDN dependencies**: External libraries are loaded from CDNs, not bundled
+9. **Keep it simple**: Avoid adding frameworks or build complexity
+10. **No absolute paths in output**: For security, never show the full absolute file path when summarizing code changes. Use repo-relative paths instead.
