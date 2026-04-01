@@ -1,21 +1,21 @@
-# PanPhy Labs
+# ExplAIn Sims
 
-PanPhy Labs is a collection of browser-based physics tools, simulations, and mini games designed for learning by doing.
+ExplAIn Sims is a collection of browser-based physics tools, simulations, and mini games designed for learning by doing.
 
 This project started from a practical classroom problem: on school-managed devices, students and teachers often don't have the admin rights to install software. PanPhy Labs takes a different approach — keep everything simple, interactive, and available in the browser so anyone can get started immediately. The site also caches each app for offline use after your first visit, so learning can continue even without an internet connection.
 
-## Why PanPhy Labs exists
+## Why ExplAIn Sims exists
 
 - **Accessible by default**: works in a browser without installing desktop software.
 - **Interactive over passive**: tools are made for exploration, not just reading.
 - **Education-focused**: apps are intentionally practical for classwork, revision, and demonstrations.
 - **Offline-friendly**: most experiences continue to work without a constant connection.
 
-> Note: A few features rely on external services and need internet access (for example, the Asteroid Storm leaderboard and the EAL Companion app).
+> Note: A few features rely on external services and need internet access
 
 ## What you can find here
 
-- **Physics tools** for analysis and productivity (e.g., plotting, digitizing, trackers, editors)
+- **Physics tools** for analysis and productivity 
 - **Simulations** for key concepts
 - **Teacher utilities**
 - **Small games / interactive demos** for engagement and quick practice
@@ -25,7 +25,7 @@ The landing page is the best place to browse everything currently published:
 
 ## Tech stack (simple on purpose)
 
-PanPhy Labs is intentionally lightweight:
+ExplAIn Sims is intentionally lightweight:
 
 - **HTML5, CSS3, Vanilla JavaScript**
 - **No framework, no bundler, no build step**
@@ -50,11 +50,9 @@ When contributing, try to preserve the project philosophy:
 
 - This is a static site. Edit files directly in-repo.
 - If you modify files that are pre-cached by the service worker, you must bump `BUILD_ID` in `sw.js` so users receive updates.
-- New work-in-progress pages should normally go under `/beta` unless they are explicitly being published.
 
 ---
 
 ## Contact
 
-- Email: `panphylabs@icloud.com`
-- Support: https://buymeacoffee.com/panphy
+- Email: `lennoxmeldrum@gmail.com`
