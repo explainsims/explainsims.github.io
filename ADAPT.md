@@ -1,6 +1,6 @@
-# ADAPT.md — Porting Google Cloud Run / AI Studio Simulations to PanPhy Labs
+# ADAPT.md — Porting Google Cloud Run / AI Studio Simulations to ExplAIn Sims
 
-This guide documents the complete process of adapting a simulation originally built with a modern framework (React, Vite, Tailwind, etc.) for Google Cloud Run or Google AI Studio into a self-contained, offline-capable page for the PanPhy Labs GitHub Pages site. It was written during the adaptation of **Physical Pendulum Explorer** and is designed to be reused for every future simulation you port.
+This guide documents the complete process of adapting a simulation originally built with a modern framework (React, Vite, Tailwind, etc.) for Google Cloud Run or Google AI Studio into a self-contained, offline-capable page for the ExplAIn Sims GitHub Pages site. It was written during the adaptation of **Physical Pendulum Explorer** and is designed to be reused for every future simulation you port.
 
 ---
 
@@ -23,9 +23,9 @@ This guide documents the complete process of adapting a simulation originally bu
 
 ## 1. Overview
 
-### What PanPhy Labs expects
+### What ExplAIn Sims expects
 
-PanPhy Labs is a **static PWA** deployed on GitHub Pages with:
+ExplAIn Sims is a **static PWA** deployed on GitHub Pages with:
 
 - **No build system** — no Vite, Webpack, npm, TypeScript compiler
 - **No frameworks** — no React, Vue, Svelte, Angular
@@ -48,7 +48,7 @@ A typical AI Studio / Cloud Run simulation contains:
 
 ### The adaptation goal
 
-Strip away everything except the core simulation logic (physics, canvas drawing, UI interactions) and repackage it as a vanilla HTML file that matches PanPhy Labs conventions.
+Strip away everything except the core simulation logic (physics, canvas drawing, UI interactions) and repackage it as a vanilla HTML file that matches ExplAIn Sims conventions.
 
 ---
 
@@ -179,7 +179,7 @@ Tailwind utility classes must be converted to equivalent CSS. Some common transl
 | `flex items-center justify-between` | `display: flex; align-items: center; justify-content: space-between` |
 | `space-y-6` | Child margins: `> * + * { margin-top: 1.5rem }` or use `gap` with flex/grid |
 
-**Important**: Don't use Tailwind's exact colours. Map them to PanPhy Labs CSS variables instead. See [Appendix A](#appendix-a-css-variable-reference).
+**Important**: Don't use Tailwind's exact colours. Map them to ExplAIn Sims CSS variables instead. See [Appendix A](#appendix-a-css-variable-reference).
 
 ### 4e. Lucide/icon libraries
 
@@ -373,7 +373,7 @@ window.addEventListener('resize', resizeCanvas);
 
 ---
 
-## 6. Step 4: Apply the PanPhy Labs Design System
+## 6. Step 4: Apply the ExplAIn Sims Design System
 
 ### 6a. CSS variables (mandatory)
 
@@ -536,9 +536,9 @@ Each tab has its own directory. Put the HTML file in the directory that matches 
 |-----|-----------|
 | AP PCM (AP Physics C: Mechanics) | `appcm/` |
 | Tools | `tools/` |
-| For Teachers | `for_teachers/` |
-| Fun | `fun/` |
-| PanPhy | *(top-level or as named)* |
+| Teachers | `teachers/` |
+| API | `API/` |
+| PanPhy | `PanPhy/` |
 | Other future tabs | named after the tab once finalized |
 
 Use snake_case for filenames. Example for an AP PCM sim:
@@ -549,7 +549,7 @@ appcm/your_simulation.html
 
 ### 7b. Add a tile card to the gallery page
 
-> **Site structure note (updated March 2026):** The site is now multi-page. Each category has its own gallery page — `/appcm.html` (now called **AP PCM**), `/tools.html`, `/teachers.html`, `/fun.html`, `/panphy.html`. Cards are added to the relevant gallery page, **not** `index.html` directly. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool.
+> **Site structure note (updated March 2026):** The site is now multi-page. Each category has its own gallery page — `/appcm.html` (now called **AP PCM**), `/tools.html`, `/teachers.html`, `/API.html`, `/panphy.html`. Cards are added to the relevant gallery page, **not** `index.html` directly. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool.
 >
 > **AP PCM structure:** `/appcm.html` is organised into 7 AP Physics C: Mechanics units. When adding a simulation, the user will specify which unit it belongs to. Each unit is a `.unit-block` div with `id="unitN"` and a `.grid` inside it.
 
