@@ -259,6 +259,10 @@ Use this skeleton as your starting point:
             document.querySelectorAll('.banner-title').forEach(function(el) { el.classList.add('gradient-text'); });
         })();
     </script>
+
+    <!-- Shared footer -->
+    <div id="site-footer"></div>
+    <script src="/assets/footer.js"></script>
 </body>
 
 </html>
@@ -681,6 +685,7 @@ Use this checklist for every simulation you adapt:
 ### Design System
 - [ ] CSS variables for all colours (light + dark)
 - [ ] Banner header with ExplAIn Sims logo and theme toggle
+- [ ] Shared footer (`<div id="site-footer"></div>` + `<script src="/assets/footer.js"></script>`)
 - [ ] Responsive layout (mobile + desktop)
 - [ ] Touch-friendly controls (44px+ targets)
 - [ ] `prefers-reduced-motion` respected

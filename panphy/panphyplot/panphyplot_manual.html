@@ -422,23 +422,6 @@
       font-weight: bold;
     }
 
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 24px;
-      background: var(--card-bg);
-      border-top: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-
-    footer a {
-      color: var(--brand-primary);
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -911,6 +894,8 @@
       document.querySelectorAll('.banner-title, h1').forEach(function(el) { el.classList.add('gradient-text'); });
     })();
   </script>
+  <div id="site-footer"></div>
+  <script src="/assets/footer.js"></script>
 </body>
 
 </html>

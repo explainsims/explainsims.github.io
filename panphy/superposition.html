@@ -480,24 +480,6 @@
             font-size: 0.72rem;
         }
 
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        footer a {
-            color: var(--brand-primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
         /* Responsive */
         @media (max-width: 900px) {
             .controls-panel {
@@ -1041,6 +1023,8 @@
             document.querySelectorAll('.banner-title').forEach(function(el) { el.classList.add('gradient-text'); });
         })();
     </script>
+    <div id="site-footer"></div>
+    <script src="/assets/footer.js"></script>
 </body>
 
 </html>

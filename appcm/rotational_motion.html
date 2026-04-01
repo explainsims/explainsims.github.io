@@ -514,24 +514,6 @@
 
         .warn-badge.visible { display: inline-block; }
 
-        /* ── Footer ── */
-        footer {
-            text-align: center;
-            padding: 2.5rem 1.5rem;
-            color: var(--text-secondary);
-            font-size: 0.82rem;
-            border-top: 1px solid var(--card-border);
-            margin-top: 2rem;
-            transition: border-color 0.4s ease;
-        }
-
-        footer a {
-            color: var(--brand-primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        footer a:hover { text-decoration: underline; }
 
         @media (max-width: 600px) {
             .main-content { padding: 1rem 0.8rem 2rem; }
@@ -714,10 +696,8 @@
         </div>
     </div>
 
-    <footer>
-        <p>Free to use, share, and remix. &nbsp;|&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank"
-                rel="noopener noreferrer">PanPhy</a></p>
-    </footer>
+    <div id="site-footer"></div>
+    <script src="/assets/footer.js"></script>
 
     <script>
     // ── Physics state ──────────────────────────────────────────────

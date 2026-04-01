@@ -208,12 +208,6 @@
         .calc-card-body p { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 6px; }
         .calc-card-body strong { color: var(--text-main); }
 
-        footer {
-            text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-secondary);
-            border-top: 1px solid var(--card-border);
-        }
-        footer a { color: var(--brand-primary); text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
 
         @media (pointer: coarse) {
             input[type="range"] { height: 10px; }
@@ -320,9 +314,8 @@
         </div>
     </div>
 
-    <footer>
-        <p>Free to use, share, and remix. &nbsp;|&nbsp; h/t to <a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a></p>
-    </footer>
+    <div id="site-footer"></div>
+    <script src="/assets/footer.js"></script>
 
     <script>
         // ─── Constants ───────────────────────────────────────────────────────────
