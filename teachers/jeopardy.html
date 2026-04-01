@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#F4F4F8">
+    <meta name="theme-color" content="#1e3a8a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <script>
@@ -12,7 +12,7 @@
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (tc) tc.setAttribute('content', '#111118');
+        if (tc) tc.setAttribute('content', '#020614');
         if (sb) sb.setAttribute('content', 'black-translucent');
       }
     })();
@@ -28,20 +28,21 @@
             --font-display: 'Space Grotesk', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
 
-            --bg-color: #F4F4F8;
-            --bg-pattern: #EAEAEF;
-            --text-main: #1A1A2E;
-            --text-secondary: #6B7280;
+            --bg-top: #1e3a8a;
+            --bg-bottom: #1d4ed8;
+            --bg-color: #1e3a8a;
+            --text-main: #ffffff;
+            --text-secondary: rgba(255,255,255,0.72);
 
-            --brand-primary: #0891B2;
-            --brand-secondary: #0E7490;
-            --brand-accent: #F59E0B;
+            --brand-primary: #ffd600;
+            --brand-secondary: #ffab00;
+            --brand-accent: #ffd600;
 
-            --card-bg: #FFFFFF;
-            --card-border: #E5E7EB;
+            --card-bg: #1e40af;
+            --card-border: rgba(255,255,255,0.15);
 
-            --nav-bg: rgba(255, 255, 255, 0.92);
-            --nav-border: rgba(0, 0, 0, 0.10);
+            --nav-bg: rgba(30, 58, 138, 0.92);
+            --nav-border: rgba(255,255,255,0.15);
 
             /* Jeopardy-specific colors */
             --jep-blue-dark: #1a237e;
@@ -56,37 +57,38 @@
         }
 
         [data-theme="dark"] {
-            --bg-color: #111118;
-            --bg-pattern: #1E1E28;
-            --text-main: #F0F0F5;
-            --text-secondary: #9CA3AF;
+            --bg-top: #020614;
+            --bg-bottom: #0a1028;
+            --bg-color: #020614;
+            --text-main: #f0f0f5;
+            --text-secondary: rgba(200,210,255,0.72);
 
-            --brand-primary: #22D3EE;
-            --brand-secondary: #06B6D4;
-            --brand-accent: #FBBF24;
+            --brand-primary: #ffd600;
+            --brand-secondary: #ffab00;
+            --brand-accent: #ffd600;
 
-            --card-bg: #1E1E28;
-            --card-border: #2A2A36;
+            --card-bg: #0f1540;
+            --card-border: rgba(255,255,255,0.10);
 
-            --nav-bg: rgba(17, 17, 24, 0.92);
-            --nav-border: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(2, 6, 20, 0.95);
+            --nav-border: rgba(255,255,255,0.08);
 
-            --jep-blue-dark: #0d1247;
-            --jep-blue-mid: #151c6b;
-            --jep-blue-light: #1e2a7a;
-            --jep-blue-lighter: #3949ab;
+            --jep-blue-dark: #040920;
+            --jep-blue-mid: #07112e;
+            --jep-blue-light: #0d1a42;
+            --jep-blue-lighter: #162254;
             --jep-gold: #ffd600;
             --jep-gold-dark: #ffab00;
             --jep-text: #f0f0f5;
-            --jep-used: #0a0a1e;
-            --jep-used-text: #444466;
+            --jep-used: #030710;
+            --jep-used-text: #333355;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: var(--font-sans);
-            background: var(--bg-color);
+            background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom)) fixed;
             color: var(--text-main);
             min-height: 100dvh;
             display: flex;
@@ -811,7 +813,7 @@ function updateAppChromeTheme(theme) {
     var tc = document.querySelector('meta[name="theme-color"]');
     var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
     var dark = theme === 'dark';
-    if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+    if (tc) tc.setAttribute('content', dark ? '#020614' : '#1e3a8a');
     if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
 }
 function updateButtonEmoji(theme) {
@@ -1110,6 +1112,20 @@ themeButton.addEventListener('click', function () {
     }
 
     function endGame() {
+        // Reset scores and active team
+        scores = [0,0,0,0,0,0];
+        activeTeam = 0;
+        // Reset used flags on current questions (preserve any imported/edited content)
+        for (var c = 0; c < questions.length; c++) {
+            for (var q = 0; q < questions[c].length; q++) {
+                questions[c][q].used = false;
+            }
+        }
+        // Close any open modal
+        modalQ = null;
+        showAnswer = false;
+        $modal.classList.remove('open');
+        // Return to setup
         gameStarted = false;
         $game.style.display = 'none';
         $setup.style.display = '';
