@@ -11,7 +11,7 @@ This guide documents the complete process of adapting a simulation originally bu
 3. [Step 1: Audit the Source Simulation](#3-step-1-audit-the-source-simulation)
 4. [Step 2: Extract the Core Simulation Logic](#4-step-2-extract-the-core-simulation-logic)
 5. [Step 3: Rewrite as a Single-File Vanilla HTML Page](#5-step-3-rewrite-as-a-single-file-vanilla-html-page)
-6. [Step 4: Apply the PanPhy Labs Design System](#6-step-4-apply-the-panphy-labs-design-system)
+6. [Step 4: Apply the ExplAIn Sims Design System](#6-step-4-apply-the-explainsims-design-system)
 7. [Step 5: Integrate with the Site Infrastructure](#7-step-5-integrate-with-the-site-infrastructure)
 8. [Step 6: Verify Everything Works](#8-step-6-verify-everything-works)
 9. [Quick Reference Checklist](#9-quick-reference-checklist)
@@ -32,7 +32,7 @@ ExplAIn Sims is a **static PWA** deployed on GitHub Pages with:
 - **Vanilla JavaScript only** — plain JS, HTML5, CSS3
 - **Single-file simulations** — each simulation is one `.html` file (except complex ones like Collision Lab which use a modular structure)
 - **Offline-first** — every published page works offline via a Service Worker
-- **Consistent design** — shared CSS variable theming, banner header, footer, responsive layout
+- **Consistent design** — shared CSS variable theming, banner header, responsive layout
 
 ### What your Cloud Run simulation typically has
 
@@ -244,12 +244,6 @@ Use this skeleton as your starting point:
     <div class="main-content">
         <!-- Canvas, controls, educational content... -->
     </div>
-
-    <!-- Footer -->
-    <footer>
-        &copy; <a href="/">PanPhy Labs</a> |
-        <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
-    </footer>
 
     <!-- JavaScript -->
     <script>
@@ -513,15 +507,6 @@ header.banner {
 - **Title size** — always `clamp(1.1rem, 3vw, 1.4rem)`, never a fixed `px`/`rem` value
 - **Back button** — subtle opacity-based chevron, placed inside `.banner-logo` after the home icon (see HTML skeleton in §5)
 
-### 6f. Footer (copy exactly)
-
-```html
-<footer>
-    &copy; <a href="/">PanPhy Labs</a> |
-    <a href="https://buymeacoffee.com/panphy" target="_blank" rel="noopener noreferrer">Support My Projects</a>
-</footer>
-```
-
 ---
 
 ## 7. Step 5: Integrate with the Site Infrastructure
@@ -537,8 +522,8 @@ Each tab has its own directory. Put the HTML file in the directory that matches 
 | AP PCM (AP Physics C: Mechanics) | `appcm/` |
 | Tools | `tools/` |
 | Teachers | `teachers/` |
-| API | `API/` |
-| PanPhy | `PanPhy/` |
+| API | `api/` |
+| PanPhy | `panphy/` |
 | Other future tabs | named after the tab once finalized |
 
 Use snake_case for filenames. Example for an AP PCM sim:
@@ -633,7 +618,7 @@ The `BUILD_ID` format is ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. Always update this wh
 
 ```xml
 <url>
-    <loc>https://panphy.github.io/appcm/your_simulation.html</loc>
+    <loc>https://explainsims.github.io/appcm/your_simulation.html</loc>
 </url>
 ```
 
@@ -644,7 +629,7 @@ The `BUILD_ID` format is ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. Always update this wh
 ### Local testing
 
 ```bash
-cd /path/to/apps4you
+cd /path/to/explainsims.github.io
 python3 -m http.server 8000
 ```
 
@@ -695,8 +680,7 @@ Use this checklist for every simulation you adapt:
 
 ### Design System
 - [ ] CSS variables for all colours (light + dark)
-- [ ] Banner header with PanPhy logo and theme toggle
-- [ ] Footer with copyright and support link
+- [ ] Banner header with ExplAIn Sims logo and theme toggle
 - [ ] Responsive layout (mobile + desktop)
 - [ ] Touch-friendly controls (44px+ targets)
 - [ ] `prefers-reduced-motion` respected
@@ -832,8 +816,8 @@ import * as THREE from 'three';
 
 ### Pattern: Hardcoded Stone/Indigo colours → CSS variables
 
-| Tailwind colour | PanPhy Labs variable |
-|----------------|---------------------|
+| Tailwind colour | ExplAIn Sims variable |
+|----------------|----------------------|
 | `stone-50` / `stone-100` | `--readout-bg` or `--bg-color` |
 | `stone-200` | `--card-border` or `--rod-fill` |
 | `stone-400` | `--text-secondary` |
@@ -930,7 +914,7 @@ Define these for your simulation's unique visual elements. Example from Physical
 | Item | Lines | Notes |
 |------|-------|-------|
 | CSS with variables (light + dark) | ~350 | Replaces Tailwind |
-| Theme toggle boilerplate | 40 | Standard PanPhy pattern |
+| Theme toggle boilerplate | 40 | Standard ExplAIn Sims pattern |
 | Offline font fallback | 6 | Standard pattern |
 | Banner header HTML | 12 | Standard pattern |
 | Footer HTML | 4 | Standard pattern |

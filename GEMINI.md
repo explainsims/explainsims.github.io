@@ -37,12 +37,12 @@ ExplAIn Sims is a collection of browser-based physics tools, simulations, and ed
 - **Vanilla JS:** Prefer clean, readable Vanilla JavaScript over adding new external dependencies.
 - **Error Handling:** Ensure robust error handling, especially for hardware-dependent features like camera or microphone access.
 - **Performance:** Optimize for low-end school devices. Avoid heavy computations on the main thread where possible (use Web Workers for tasks like curve fitting).
-- **PanPhyPlot Fitting Modules:** Keep shared fit math logic in `tools/panphyplot/js/fit-core.js`; `curve-fitting.js` and `fit-worker.js` should consume that shared module rather than duplicating numerical helpers.
+- **PanPhyPlot Fitting Modules:** Keep shared fit math logic in `panphy/panphyplot/js/fit-core.js`; `curve-fitting.js` and `fit-worker.js` should consume that shared module rather than duplicating numerical helpers.
 
 ## Common Tasks
 
 ### Adding a New App
-1. For a published page: create the HTML/JS/CSS in the appropriate directory (`tools/`, `simulations/`, etc.).
+1. For a published page: create the HTML/JS/CSS in the appropriate directory (`appcm/`, `panphy/`, `teachers/`, etc.).
 2. Add `<script src="/assets/sw-register.js" defer></script>` in `<head>`.
 3. Add the new entry point to the grid in `index.html`.
 4. Add the new app and its dependencies to the `ASSETS_TO_CACHE` array in `sw.js`.
@@ -61,5 +61,5 @@ When assisting with this project:
 - Always consider the offline-first requirement.
 - Prioritize Vanilla JS solutions.
 - Always bump `BUILD_ID` in `sw.js` as your final step after modifying any cached asset.
-- New pages go in `/beta` by default unless explicitly asked to publish.
+- New pages not yet ready to publish should be kept off the navigation (no link from a gallery page, no `sw-register.js`, not in `ASSETS_TO_CACHE`) until explicitly promoted to production.
 - For security, never show the full absolute file path when summarizing code changes. Use repo-relative paths instead.

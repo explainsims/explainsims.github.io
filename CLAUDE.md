@@ -147,13 +147,13 @@ panphyplot.html (imports scripts)
 ## Service Worker & Caching
 
 **File**: `sw.js`
-**Cache Version**: `panphy-labs-<BUILD_ID>` where `BUILD_ID` is a timestamp string
+**Cache Version**: `site-precache-<BUILD_ID>` where `BUILD_ID` is a timestamp string
 
 ### Caching Strategy
 - **Install**: Pre-caches core assets listed in `ASSETS_TO_CACHE`
 - **Navigations**: Network-first, fallback to cache
 - **Assets**: Cache-first, then fetch and update
-- **Exclusions**: `/beta/*`, Dodge game routes, and Supabase API calls (always fetch fresh)
+- **Exclusions**: Dodge game routes, and Supabase API calls (always fetch fresh)
 
 ### When Modifying Any Cached Asset
 Any time you change a file listed in `ASSETS_TO_CACHE`, **bump the `BUILD_ID` timestamp** at the top of `sw.js`. Without this, returning users will keep getting the old cached version.
@@ -166,13 +166,10 @@ const BUILD_ID = 'YYYY-MM-DDTHH:MM:SSZ';  // Update this on every change
 1. External CDN URLs must match exactly between HTML and `ASSETS_TO_CACHE` (version/path/query included)
 2. If a cached page depends on local media assets (`.mp3`, `.webm`, images, fonts) for core UX, add those assets to `ASSETS_TO_CACHE`
 3. If `assets/sw-register.js` is updated (it is cached), bump `BUILD_ID` in `sw.js`
-4. Never add `/beta/*` paths to `ASSETS_TO_CACHE`
-
 ### When Adding New Pages
-1. Unless explicitly requested to publish and list on `index.html`, create the new page under `/beta`
-2. Keep `/beta` pages out of SW registration and `ASSETS_TO_CACHE`
-3. For published pages, add the new page path to `ASSETS_TO_CACHE` array in `sw.js`
-4. Bump the `BUILD_ID` timestamp for published/cached additions
+1. Unless explicitly requested to publish, create the new page in the appropriate directory but do not add `sw-register.js`, link it from a gallery page, or add it to `ASSETS_TO_CACHE`
+2. For published pages, add the new page path to `ASSETS_TO_CACHE` array in `sw.js`
+3. Bump the `BUILD_ID` timestamp for published/cached additions
 
 ```javascript
 const ASSETS_TO_CACHE = [
@@ -443,8 +440,8 @@ Usage: `<span class="card-type-pill">Game</span>` (or "Sim", "Tool", etc.)
 ## Offline Behavior
 
 - **Guaranteed offline after install**: Pages/assets explicitly listed in `sw.js` `ASSETS_TO_CACHE`
-- **May work offline after first online visit**: Other same-origin GET resources (runtime cache), except `/beta/*`
-- **Requires network**: `/beta/*`, `fun/dodge.html`, `fun/dodge_assets/*`, and any `*.supabase.co` API calls
+- **May work offline after first online visit**: Other same-origin GET resources (runtime cache)
+- **Requires network**: Any `*.supabase.co` API calls
 
 ## External Services
 
