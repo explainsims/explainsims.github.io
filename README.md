@@ -2,7 +2,7 @@
 
 ExplAIn Sims is a collection of browser-based physics tools, simulations, and mini games designed for learning by doing.
 
-This project started from a practical classroom problem: on school-managed devices, students and teachers often don't have the admin rights to install software. PanPhy Labs takes a different approach — keep everything simple, interactive, and available in the browser so anyone can get started immediately. The site also caches each app for offline use after your first visit, so learning can continue even without an internet connection.
+This project started from a practical classroom problem: on school-managed devices, students and teachers often don't have the admin rights to install software. ExplAIn Sims takes a different approach — keep everything simple, interactive, and available in the browser so anyone can get started immediately. The site also caches each app for offline use after your first visit, so learning can continue even without an internet connection.
 
 ## Why ExplAIn Sims exists
 

@@ -36,7 +36,7 @@ Edit files directly. There is no npm, webpack, or any compilation step. Do not i
 
 Each HTML file in the repo is a complete, standalone application. Complex tools (e.g. PanPhyPlot) split their JS/CSS into modules under a subfolder, but the entry point is always a single HTML file.
 
-PanPhyPlot curve fitting now uses a shared numeric helper module at `tools/panphyplot/js/fit-core.js`, consumed by both `curve-fitting.js` (main-thread fallback) and `fit-worker.js` (worker path).
+PanPhyPlot curve fitting uses a shared numeric helper module at `panphy/panphyplot/js/fit-core.js`, consumed by both `curve-fitting.js` (main-thread fallback) and `fit-worker.js` (worker path).
 
 ### Filename Hashes
 
@@ -77,18 +77,24 @@ If you promote an unlisted page to production, treat it as a full launch task:
 ├── index.html              # Landing page
 ├── sw.js                   # Service Worker (update BUILD_ID on changes!)
 ├── manifest.json           # PWA config
+├── appcm.html              # AP Physics C: Mechanics gallery page
+├── tools.html              # Tools gallery page
+├── teachers.html           # Teachers gallery page
+├── panphy.html             # PanPhy tools gallery page
+├── api.html                # API gallery page
 ├── assets/                 # Icons, logos, sw-register.js
-├── beta/                   # Unpublished WIP pages/assets (never SW-cached)
-├── tools/                  # Educational tools
+├── appcm/                  # AP Physics C: Mechanics simulations
+│   └── *.html              # physical_pendulum, elevator_physics, lorentz_learn, etc.
+├── panphy/                 # PanPhy tools
 │   ├── panphyplot.html     # Entry point → panphyplot/ (modular JS/CSS)
-│   ├── markdown_editor.html # Entry point → markdown_editor/ (ES modules)
-│   └── *.html              # motion_tracker, sound_analyzer, tone_generator
-├── simulations/            # Physics simulations
-│   ├── *.html              # superposition, standing_wave, interference, states, lorentz, lorentz_learn
-│   └── collision.html      # Entry point → collision/ (modular JS/CSS/assets)
-├── fun/                    # Games (dodge.html excluded from SW cache)
-├── for_teachers/           # Teacher utilities
-└── misc/                   # Unlisted/legacy (digitizer, gcse_phy flashcards, etc.)
+│   ├── panphyplot/         # Modular subfiles (js/, css/)
+│   ├── motion_tracker.html
+│   ├── superposition.html
+│   ├── lorentz.html
+│   ├── timer.html
+│   └── visualizer.html
+└── teachers/               # Teacher utilities
+    └── *.html              # cmdterm_wordle, jeopardy
 ```
 
 ## Testing Locally
