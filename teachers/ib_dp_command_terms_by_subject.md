@@ -8,13 +8,10 @@ Analyse, Comment, Compare, Compare and contrast, Contrast, Describe, Discuss, Ev
 ### Language A: language and literature
 Analyse, Comment, Compare, Compare and contrast, Contrast, Describe, Discuss, Evaluate, Examine, Explain, Explore, Interpret, Investigate, Justify, List, Outline, Present, To what extent
 
-### Literature and performance
-Analyse, Comment, Compare, Compare and contrast, Contrast, Describe, Discuss, Evaluate, Examine, Explain, Explore, Interpret, Investigate, Justify, List, Outline, Present, To what extent
+### Language and culture
+Analyse, Apply, Compare, Compare and contrast, Contrast, Describe, Discuss, Evaluate, Examine, Explain, Explore, Identify, Interpret, Justify
 
 ## Language acquisition
-
-### Language ab initio
-Analyse, Demonstrate, Describe, Discuss, Evaluate, Examine, Explain, Identify, Outline, Present, State
 
 ### Language B
 Analyse, Demonstrate, Describe, Discuss, Evaluate, Examine, Explain, Identify, Outline, Present, State
