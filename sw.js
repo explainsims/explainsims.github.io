@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-04-02T10:00:00Z';
+const BUILD_ID = '2026-04-02T11:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
