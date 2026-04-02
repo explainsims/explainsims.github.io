@@ -1020,42 +1020,6 @@
         debounceTimer = setTimeout(renderPreview, 200);
     });
 
-    // ─── Table width settings persistence ────────────────────────
-    var TW_KEY = 'chatbot-docs-tablewidth';
-    function saveTwSettings() {
-        localStorage.setItem(TW_KEY, JSON.stringify({
-            paper:  document.getElementById('paper-size').value,
-            left:   marginLeftEl.value,
-            right:  marginRightEl.value,
-            unit:   document.getElementById('margin-unit').value,
-            locked: lockEl.checked
-        }));
-    }
-    (function loadTwSettings() {
-        var raw = localStorage.getItem(TW_KEY);
-        if (!raw) return;
-        try {
-            var s = JSON.parse(raw);
-            if (s.paper) document.getElementById('paper-size').value = s.paper;
-            if (s.unit)  document.getElementById('margin-unit').value = s.unit;
-            if (s.left  != null) marginLeftEl.value  = s.left;
-            if (s.right != null) marginRightEl.value = s.right;
-            if (s.locked != null) {
-                lockEl.checked = s.locked;
-                marginRightEl.disabled = s.locked;
-            }
-            // Sync max for cm unit
-            if (s.unit === 'cm') { marginLeftEl.max = marginRightEl.max = '25'; }
-        } catch(e) {}
-    })();
-    // Save whenever any table-width control changes
-    ['paper-size', 'margin-unit'].forEach(function(id) {
-        document.getElementById(id).addEventListener('change', saveTwSettings);
-    });
-    marginLeftEl.addEventListener('input', saveTwSettings);
-    marginRightEl.addEventListener('input', saveTwSettings);
-    lockEl.addEventListener('change', saveTwSettings);
-
     // ─── Lock margins ─────────────────────────────────────────────
     var lockEl = document.getElementById('lock-margins');
     var marginLeftEl = document.getElementById('margin-left');
@@ -1079,6 +1043,40 @@
         marginLeftEl.max  = marginRightEl.max  = toCm ? '25' : '10';
         marginLeftEl.step = marginRightEl.step = '0.1';
     });
+
+    // ─── Table width settings persistence ────────────────────────
+    var TW_KEY = 'chatbot-docs-tablewidth';
+    function saveTwSettings() {
+        localStorage.setItem(TW_KEY, JSON.stringify({
+            paper:  document.getElementById('paper-size').value,
+            left:   marginLeftEl.value,
+            right:  marginRightEl.value,
+            unit:   document.getElementById('margin-unit').value,
+            locked: lockEl.checked
+        }));
+    }
+    (function() {
+        var raw = localStorage.getItem(TW_KEY);
+        if (!raw) return;
+        try {
+            var s = JSON.parse(raw);
+            if (s.paper) document.getElementById('paper-size').value = s.paper;
+            if (s.unit)  document.getElementById('margin-unit').value = s.unit;
+            if (s.left  != null) marginLeftEl.value  = s.left;
+            if (s.right != null) marginRightEl.value = s.right;
+            if (s.locked != null) {
+                lockEl.checked = s.locked;
+                marginRightEl.disabled = s.locked;
+            }
+            if (s.unit === 'cm') { marginLeftEl.max = marginRightEl.max = '25'; }
+        } catch(e) {}
+    })();
+    ['paper-size', 'margin-unit'].forEach(function(id) {
+        document.getElementById(id).addEventListener('change', saveTwSettings);
+    });
+    marginLeftEl.addEventListener('input', saveTwSettings);
+    marginRightEl.addEventListener('input', saveTwSettings);
+    lockEl.addEventListener('change', saveTwSettings);
 
     // ─── Help panel ───────────────────────────────────────────────
     (function() {
