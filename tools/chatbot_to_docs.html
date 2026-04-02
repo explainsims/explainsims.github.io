@@ -317,6 +317,90 @@
         input[type="number"].margin-input { width: 52px; }
         input[type="number"]:disabled { opacity: 0.45; }
 
+        /* Margin pair layout */
+        .margin-pair {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .margin-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .margin-col-label {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        .lock-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding-bottom: 1px;
+        }
+        .lock-col .margin-col-label { opacity: 0.7; }
+
+        /* Help panel */
+        .help-backdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.25);
+            z-index: 199;
+        }
+        .help-backdrop.open { display: block; }
+        .help-panel {
+            position: fixed;
+            top: 0; right: 0;
+            width: 320px; height: 100dvh;
+            background: var(--card-bg);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -6px 0 24px rgba(0,0,0,0.18);
+            z-index: 200;
+            display: flex; flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+        }
+        .help-panel.open { transform: translateX(0); }
+        .help-panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 700; font-size: 0.88rem;
+            flex-shrink: 0;
+        }
+        .help-close {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; line-height: 1; padding: 4px 6px;
+            border-radius: 6px; color: var(--text-secondary);
+            transition: background 0.15s;
+        }
+        .help-close:hover { background: var(--section-bg); color: var(--text-main); }
+        .help-panel-body {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 0.82rem;
+            line-height: 1.65;
+        }
+        .help-section { margin-bottom: 20px; }
+        .help-section h3 {
+            font-size: 0.73rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--brand-primary);
+            margin-bottom: 6px;
+        }
+        .help-section p { color: var(--text-main); margin-bottom: 5px; }
+        .help-section p:last-child { margin-bottom: 0; }
+        .help-divider {
+            height: 1px; background: var(--card-border);
+            margin-bottom: 20px;
+        }
+        @media (max-width: 480px) { .help-panel { width: 90vw; } }
+
         .btn {
             display: inline-flex;
             align-items: center;
@@ -462,14 +546,30 @@
                         <option value="11">US Tabloid</option>
                         <option value="11.69">A3</option>
                     </select>
-                    <label style="font-size:0.82rem; white-space:nowrap;">Margins (in):</label>
-                    <input type="number" id="margin-left" class="margin-input" value="1.0" min="0" max="4" step="0.1" title="Left margin">
-                    <label class="opt-check" title="Lock left and right margins to the same value">
-                        <input type="checkbox" id="lock-margins" checked>
-                        <span style="font-size:0.82rem;">Lock</span>
-                    </label>
-                    <input type="number" id="margin-right" class="margin-input" value="1.0" min="0" max="4" step="0.1" title="Right margin" disabled>
+                    <div class="margin-pair">
+                        <div class="margin-col">
+                            <span class="margin-col-label">Left</span>
+                            <input type="number" id="margin-left" class="margin-input" value="1.0" min="0" max="4" step="0.1" title="Left margin (inches)">
+                        </div>
+                        <div class="lock-col">
+                            <span class="margin-col-label">Lock</span>
+                            <label class="opt-check" title="Lock left and right margins to the same value" style="margin:0;">
+                                <input type="checkbox" id="lock-margins" checked>
+                            </label>
+                        </div>
+                        <div class="margin-col">
+                            <span class="margin-col-label">Right</span>
+                            <input type="number" id="margin-right" class="margin-input" value="1.0" min="0" max="4" step="0.1" title="Right margin (inches)" disabled>
+                        </div>
+                        <span class="margin-col-label" style="padding-bottom:4px;">in</span>
+                    </div>
                 </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="opt-group" style="justify-content:center;">
+                <button class="btn btn-secondary btn-sm" id="help-btn" aria-label="Help" title="Show help">? Help</button>
             </div>
         </div>
 
@@ -499,6 +599,40 @@
             </div>
         </div>
     </div>
+
+    <!-- Help panel -->
+    <div class="help-backdrop" id="help-backdrop"></div>
+    <aside class="help-panel" id="help-panel" aria-label="Help">
+        <div class="help-panel-header">
+            <span>Options Guide</span>
+            <button class="help-close" id="help-close" aria-label="Close help">✕</button>
+        </div>
+        <div class="help-panel-body">
+            <div class="help-section">
+                <h3>Citations</h3>
+                <p><strong>Remove citations</strong> strips inline reference markers that chatbots add when they search the web — e.g. <em>[1]</em>, <em>【1†source】</em>, <em>[cite:…]</em> — and removes trailing reference lists (Sources, References, etc.).</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>LaTeX</h3>
+                <p><strong>Convert to images</strong> turns any LaTeX maths (inline <em>$…$</em> or display <em>$$…$$</em>) into rendered equation images via CodeCogs, so they paste correctly into Google Docs.</p>
+                <p><strong>Size</strong> controls the image resolution. <em>Match font size</em> scales automatically with your chosen font size; the fixed options (Small / Medium / Large) give consistent sizing regardless of font.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Font</h3>
+                <p>Choose the <strong>font family</strong> and <strong>size</strong> (in points) that match your Google Doc. These are inlined into the copied HTML so Docs picks them up.</p>
+                <p><strong>Scale headers</strong> adjusts heading sizes proportionally to your chosen font size (e.g. H1 scales from 24 pt at 12 pt body). When unchecked, headings use fixed default sizes.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Table Width</h3>
+                <p>Sets the width of every table to exactly fill the text area of your document. Choose your <strong>paper size</strong> and set <strong>Left</strong> / <strong>Right</strong> margins in inches.</p>
+                <p>The default is A4 paper with 1-inch margins on each side — matching Google Docs' defaults. All columns within a table are made equal width.</p>
+                <p><strong>Lock</strong> keeps both margins identical. Uncheck it to set them independently.</p>
+            </div>
+        </div>
+    </aside>
 
     <div id="site-footer"></div>
     <script src="/assets/footer.js"></script>
@@ -803,6 +937,11 @@
             c.style.textAlign = 'left';
         });
 
+        // Fix LaTeX image colors for Google Docs — always black regardless of preview theme
+        clone.querySelectorAll('img.latex-img').forEach(function(img) {
+            img.src = img.src.replace(/%5Ccolor%7Bwhite%7D/gi, '%5Ccolor%7Bblack%7D');
+        });
+
         return '<div style="font-family: ' + fontFamily + '; font-size: ' + fontSize + 'pt;">' + clone.innerHTML + '</div>';
     }
 
@@ -862,6 +1001,26 @@
     marginLeftEl.addEventListener('input', function() {
         if (lockEl.checked) marginRightEl.value = this.value;
     });
+
+    // ─── Help panel ───────────────────────────────────────────────
+    (function() {
+        var panel = document.getElementById('help-panel');
+        var backdrop = document.getElementById('help-backdrop');
+        function openHelp() {
+            panel.classList.add('open');
+            backdrop.classList.add('open');
+        }
+        function closeHelp() {
+            panel.classList.remove('open');
+            backdrop.classList.remove('open');
+        }
+        document.getElementById('help-btn').addEventListener('click', openHelp);
+        document.getElementById('help-close').addEventListener('click', closeHelp);
+        backdrop.addEventListener('click', closeHelp);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeHelp();
+        });
+    })();
 
     // ─── Theme toggle ─────────────────────────────────────────────
     var themeButton = document.getElementById('theme-button');
