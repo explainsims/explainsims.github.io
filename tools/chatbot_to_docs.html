@@ -593,6 +593,11 @@
         // 5. Stray newlines inside display math — collapse to single space
         tex = tex.replace(/\n+/g, ' ');
 
+        // 6. Wrap bare ^ and _ exponents/subscripts in braces for CodeCogs
+        //    ^2 → ^{2}, _i → _{i}  (but skip if already braced like ^{2})
+        tex = tex.replace(/\^([^{\s])/g, '^{$1}');
+        tex = tex.replace(/_([^{\s\\])/g, '_{$1}');
+
         return tex;
     }
 
