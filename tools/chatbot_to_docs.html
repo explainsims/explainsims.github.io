@@ -472,6 +472,9 @@
                 <div id="preview-area">
                     <p style="color: var(--text-secondary); font-style: italic;">Paste chatbot output on the left to see the formatted preview here.</p>
                 </div>
+                <div style="padding: 6px 14px; font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4;">
+                    Tip: Tables in Google Docs may need resizing after paste. Right-click the table, select <em>Table properties</em>, and set column width to fill the page.
+                </div>
             </div>
         </div>
     </div>
@@ -728,39 +731,13 @@
             }
         });
 
-        // Ensure tables span full width in Google Docs
-        // Strategy: wrap table content in a Google Sheets-style structure that Docs respects,
-        // and pad cells with invisible content to force them wider
+        // Style tables for Google Docs — clean borders and padding
+        // Note: Google Docs auto-fits table width to content; users can right-click
+        // the table → Table properties to set full page width after pasting
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
             t.setAttribute('cellpadding', '8');
             t.style.borderCollapse = 'collapse';
-            t.style.width = '100%';
-            t.setAttribute('width', '100%');
-
-            // Add colgroup — Google Docs sometimes respects col widths in points
-            var firstRow = t.querySelector('tr');
-            if (!firstRow) return;
-            var numCols = firstRow.querySelectorAll('th, td').length;
-            if (numCols === 0) return;
-
-            // Pad each cell with a non-breaking space ruler to force minimum width
-            // A line of &nbsp; characters forces Google Docs to expand the cell
-            var padLen = Math.max(20, Math.floor(80 / numCols));
-            var pad = '';
-            for (var p = 0; p < padLen; p++) pad += '\u00A0';
-
-            t.querySelectorAll('th, td').forEach(function(c) {
-                // Add invisible padding div that forces width
-                var spacer = document.createElement('div');
-                spacer.style.fontSize = '1px';
-                spacer.style.lineHeight = '0';
-                spacer.style.height = '0';
-                spacer.style.overflow = 'hidden';
-                spacer.style.color = 'transparent';
-                spacer.textContent = pad;
-                c.insertBefore(spacer, c.firstChild);
-            });
         });
         clone.querySelectorAll('th').forEach(function(c) {
             c.style.border = '1px solid #bbb';
