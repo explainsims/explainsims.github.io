@@ -684,9 +684,11 @@
         });
 
         // Ensure tables have visible borders and full width for Google Docs
+        // Google Docs ignores CSS width — must use HTML width attribute
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
             t.setAttribute('cellpadding', '8');
+            t.setAttribute('width', '100%');
             t.style.borderCollapse = 'collapse';
             t.style.width = '100%';
             t.style.tableLayout = 'auto';
