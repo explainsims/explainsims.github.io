@@ -728,26 +728,31 @@
             }
         });
 
-        // Ensure tables have visible borders and full width for Google Docs
-        // Google Docs ignores CSS width and width="100%" — need explicit pixel widths on cells
-        var GDOC_PAGE_WIDTH_PX = 624; // 6.5 inches * 96 DPI (standard Google Docs margins)
+        // Ensure tables span full width in Google Docs
+        // Google Docs ignores CSS width on <table> but respects percentage widths on cells
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
             t.setAttribute('cellpadding', '8');
             t.style.borderCollapse = 'collapse';
 
-            // Count columns from header or first row
+            // Add colgroup with percentage-width cols
             var firstRow = t.querySelector('tr');
             if (!firstRow) return;
-            var cols = firstRow.querySelectorAll('th, td');
-            var numCols = cols.length;
+            var numCols = firstRow.querySelectorAll('th, td').length;
             if (numCols === 0) return;
-            var colWidth = Math.floor(GDOC_PAGE_WIDTH_PX / numCols);
+            var pct = Math.floor(100 / numCols) + '%';
 
-            // Set explicit pixel width on every cell
+            var colgroup = document.createElement('colgroup');
+            for (var i = 0; i < numCols; i++) {
+                var col = document.createElement('col');
+                col.setAttribute('width', pct);
+                colgroup.appendChild(col);
+            }
+            t.insertBefore(colgroup, t.firstChild);
+
+            // Also set percentage on each cell as fallback
             t.querySelectorAll('th, td').forEach(function(c) {
-                c.setAttribute('width', colWidth);
-                c.style.width = colWidth + 'px';
+                c.setAttribute('width', pct);
             });
         });
         clone.querySelectorAll('th').forEach(function(c) {
