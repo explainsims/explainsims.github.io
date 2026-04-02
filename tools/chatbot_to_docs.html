@@ -546,8 +546,38 @@
     function buildCodeCogsUrl(latex, dpi) {
         var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         var colorCmd = isDark ? '\\color{white}' : '\\color{black}';
-        var encoded = encodeURIComponent(colorCmd + ' ' + latex.trim());
+        // Sanitize common ChatGPT copy artifacts before encoding
+        var clean = sanitizeLatex(latex.trim());
+        var encoded = encodeURIComponent(colorCmd + ' ' + clean);
         return 'https://latex.codecogs.com/png.image?\\dpi{' + dpi + '}' + encoded;
+    }
+
+    // Fix common LaTeX copy artifacts from ChatGPT/Gemini
+    function sanitizeLatex(tex) {
+        // 1. ChatGPT copies * instead of _ for subscripts: \vec{v}*{1i} → \vec{v}_{1i}
+        //    Pattern: }*{ or letter/digit *{ where * should be _
+        tex = tex.replace(/(\}|[a-zA-Z0-9])\*\{/g, '$1_{');
+
+        // 2. Long ===== lines (ChatGPT's copy artifact for = in multiline display math)
+        //    Replace runs of 3+ = signs with a single =
+        tex = tex.replace(/={3,}/g, '=');
+
+        // 3. Unicode middle dot · → \cdot
+        tex = tex.replace(/\u00B7/g, '\\cdot ');
+        tex = tex.replace(/\u22C5/g, '\\cdot ');
+
+        // 4. Bare comma used as thin space where \, was intended
+        //    ChatGPT drops the backslash from \, leaving just a comma
+        //    Patterns: 4,\text{kg}  or  \text{kg},\text{m}  or  },\text{  or  },\mathrm{
+        tex = tex.replace(/(\d),\\text/g, '$1\\,\\text');
+        tex = tex.replace(/(\d),\\mathrm/g, '$1\\,\\mathrm');
+        tex = tex.replace(/(\}),\\text/g, '$1\\,\\text');
+        tex = tex.replace(/(\}),\\mathrm/g, '$1\\,\\mathrm');
+
+        // 5. Stray newlines inside display math — collapse to single space
+        tex = tex.replace(/\n+/g, ' ');
+
+        return tex;
     }
 
     function isInsideTableRow(text, matchIndex) {
@@ -684,9 +714,11 @@
         });
 
         // Ensure tables have visible borders and full width for Google Docs
+        // Google Docs ignores CSS width — must use HTML width attribute
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
             t.setAttribute('cellpadding', '8');
+            t.setAttribute('width', '100%');
             t.style.borderCollapse = 'collapse';
             t.style.width = '100%';
             t.style.tableLayout = 'auto';
