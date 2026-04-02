@@ -729,30 +729,37 @@
         });
 
         // Ensure tables span full width in Google Docs
-        // Google Docs ignores CSS width on <table> but respects percentage widths on cells
+        // Strategy: wrap table content in a Google Sheets-style structure that Docs respects,
+        // and pad cells with invisible content to force them wider
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
             t.setAttribute('cellpadding', '8');
             t.style.borderCollapse = 'collapse';
+            t.style.width = '100%';
+            t.setAttribute('width', '100%');
 
-            // Add colgroup with percentage-width cols
+            // Add colgroup — Google Docs sometimes respects col widths in points
             var firstRow = t.querySelector('tr');
             if (!firstRow) return;
             var numCols = firstRow.querySelectorAll('th, td').length;
             if (numCols === 0) return;
-            var pct = Math.floor(100 / numCols) + '%';
 
-            var colgroup = document.createElement('colgroup');
-            for (var i = 0; i < numCols; i++) {
-                var col = document.createElement('col');
-                col.setAttribute('width', pct);
-                colgroup.appendChild(col);
-            }
-            t.insertBefore(colgroup, t.firstChild);
+            // Pad each cell with a non-breaking space ruler to force minimum width
+            // A line of &nbsp; characters forces Google Docs to expand the cell
+            var padLen = Math.max(20, Math.floor(80 / numCols));
+            var pad = '';
+            for (var p = 0; p < padLen; p++) pad += '\u00A0';
 
-            // Also set percentage on each cell as fallback
             t.querySelectorAll('th, td').forEach(function(c) {
-                c.setAttribute('width', pct);
+                // Add invisible padding div that forces width
+                var spacer = document.createElement('div');
+                spacer.style.fontSize = '1px';
+                spacer.style.lineHeight = '0';
+                spacer.style.height = '0';
+                spacer.style.overflow = 'hidden';
+                spacer.style.color = 'transparent';
+                spacer.textContent = pad;
+                c.insertBefore(spacer, c.firstChild);
             });
         });
         clone.querySelectorAll('th').forEach(function(c) {
