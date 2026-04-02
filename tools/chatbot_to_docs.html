@@ -314,6 +314,8 @@
         }
 
         input[type="number"] { width: 60px; }
+        input[type="number"].margin-input { width: 52px; }
+        input[type="number"]:disabled { opacity: 0.45; }
 
         .btn {
             display: inline-flex;
@@ -445,6 +447,28 @@
                     <label style="font-size:0.82rem;">Size</label>
                     <input type="number" id="font-size" value="12" min="8" max="28" step="0.5">
                     <label class="opt-check"><input type="checkbox" id="scale-headers"> Scale headers</label>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="opt-group">
+                <span class="opt-group-label">Table Width</span>
+                <div class="opt-group-row">
+                    <select id="paper-size" title="Paper size">
+                        <option value="8.27">A4</option>
+                        <option value="8.5">US Letter</option>
+                        <option value="8.5" data-label="legal">US Legal</option>
+                        <option value="11">US Tabloid</option>
+                        <option value="11.69">A3</option>
+                    </select>
+                    <label style="font-size:0.82rem; white-space:nowrap;">Margins (in):</label>
+                    <input type="number" id="margin-left" class="margin-input" value="1.0" min="0" max="4" step="0.1" title="Left margin">
+                    <label class="opt-check" title="Lock left and right margins to the same value">
+                        <input type="checkbox" id="lock-margins" checked>
+                        <span style="font-size:0.82rem;">Lock</span>
+                    </label>
+                    <input type="number" id="margin-right" class="margin-input" value="1.0" min="0" max="4" step="0.1" title="Right margin" disabled>
                 </div>
             </div>
         </div>
@@ -702,6 +726,15 @@
         });
     }
 
+    // ─── Table width ──────────────────────────────────────────────
+    function getTableWidthPx() {
+        var paperWidthIn = parseFloat(document.getElementById('paper-size').value) || 8.27;
+        var marginLeft = parseFloat(document.getElementById('margin-left').value) || 0;
+        var marginRight = parseFloat(document.getElementById('margin-right').value) || 0;
+        var availableIn = Math.max(paperWidthIn - marginLeft - marginRight, 0.5);
+        return Math.round(availableIn * 96); // 96 CSS px per inch
+    }
+
     // ─── Copy ─────────────────────────────────────────────────────
     function showCopyFeedback(msg) {
         var el = document.getElementById('copy-feedback');
@@ -728,13 +761,34 @@
             }
         });
 
-        // Style tables for Google Docs — clean borders and padding
-        // Note: Google Docs auto-fits table width to content; users can right-click
-        // the table → Table properties to set full page width after pasting
+        // Style tables for Google Docs — set explicit width based on paper size and margins
+        var tableWidthPx = getTableWidthPx();
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
             t.setAttribute('cellpadding', '8');
+            t.setAttribute('width', tableWidthPx);
             t.style.borderCollapse = 'collapse';
+            t.style.width = tableWidthPx + 'px';
+
+            // Equal column widths via <colgroup> + per-cell width
+            var firstRow = t.querySelector('tr');
+            if (firstRow) {
+                var numCols = firstRow.querySelectorAll('th, td').length;
+                if (numCols > 0) {
+                    var colWidthPx = Math.round(tableWidthPx / numCols);
+                    var colgroup = document.createElement('colgroup');
+                    for (var ci = 0; ci < numCols; ci++) {
+                        var col = document.createElement('col');
+                        col.setAttribute('width', colWidthPx);
+                        col.style.width = colWidthPx + 'px';
+                        colgroup.appendChild(col);
+                    }
+                    t.insertBefore(colgroup, t.firstChild);
+                    t.querySelectorAll('th, td').forEach(function(cell) {
+                        cell.style.width = colWidthPx + 'px';
+                    });
+                }
+            }
         });
         clone.querySelectorAll('th').forEach(function(c) {
             c.style.border = '1px solid #bbb';
@@ -794,6 +848,19 @@
     document.getElementById('font-size').addEventListener('input', function() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(renderPreview, 200);
+    });
+
+    // ─── Lock margins ─────────────────────────────────────────────
+    var lockEl = document.getElementById('lock-margins');
+    var marginLeftEl = document.getElementById('margin-left');
+    var marginRightEl = document.getElementById('margin-right');
+
+    lockEl.addEventListener('change', function() {
+        marginRightEl.disabled = this.checked;
+        if (this.checked) marginRightEl.value = marginLeftEl.value;
+    });
+    marginLeftEl.addEventListener('input', function() {
+        if (lockEl.checked) marginRightEl.value = this.value;
     });
 
     // ─── Theme toggle ─────────────────────────────────────────────
