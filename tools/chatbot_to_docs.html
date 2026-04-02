@@ -728,15 +728,32 @@
             }
         });
 
-        // Ensure tables have visible borders and full width for Google Docs
-        // Google Docs ignores CSS width — must use HTML width attribute
+        // Ensure tables span full width in Google Docs
+        // Google Docs ignores CSS width on <table> but respects percentage widths on cells
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
             t.setAttribute('cellpadding', '8');
-            t.setAttribute('width', '100%');
             t.style.borderCollapse = 'collapse';
-            t.style.width = '100%';
-            t.style.tableLayout = 'auto';
+
+            // Add colgroup with percentage-width cols
+            var firstRow = t.querySelector('tr');
+            if (!firstRow) return;
+            var numCols = firstRow.querySelectorAll('th, td').length;
+            if (numCols === 0) return;
+            var pct = Math.floor(100 / numCols) + '%';
+
+            var colgroup = document.createElement('colgroup');
+            for (var i = 0; i < numCols; i++) {
+                var col = document.createElement('col');
+                col.setAttribute('width', pct);
+                colgroup.appendChild(col);
+            }
+            t.insertBefore(colgroup, t.firstChild);
+
+            // Also set percentage on each cell as fallback
+            t.querySelectorAll('th, td').forEach(function(c) {
+                c.setAttribute('width', pct);
+            });
         });
         clone.querySelectorAll('th').forEach(function(c) {
             c.style.border = '1px solid #bbb';
