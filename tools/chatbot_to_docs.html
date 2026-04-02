@@ -502,8 +502,9 @@
         text = text.replace(/\[\d+(?:,\s*\d+)*\]/g, '');
         // (Source: ...) — Gemini
         text = text.replace(/\(Source:[^)]*\)/gi, '');
-        // Footnote markers: ^1, ^2
-        text = text.replace(/\^\d+/g, '');
+        // Footnote markers: ^1, ^2 — but NOT inside LaTeX (after } or letters like x^2)
+        // Only strip when ^ follows whitespace, punctuation, or start of line
+        text = text.replace(/(^|[\s.,;:!?)>\]])\^(\d+)/gm, '$1');
         // [citation needed]
         text = text.replace(/\[citation needed\]/gi, '');
         // Trailing reference sections
