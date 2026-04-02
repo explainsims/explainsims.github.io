@@ -563,15 +563,19 @@
         tex = tex.replace(/={3,}/g, '=');
 
         // 3. Unicode middle dot · → \cdot (but handle \text{} blocks specially)
-        //    Inside \text{kg·m}^2, split into \text{kg}\cdot\text{m}^2
-        //    Must preserve anything after the closing } (like ^2)
-        tex = tex.replace(/\\text\{([^}]*[\u00B7\u22C5][^}]*)\}/g, function(m, inner) {
+        //    Inside \text{kg·m}^2, split into \text{kg}\cdot\text{m}^{2}
+        //    Must capture optional ^N or ^{N} after closing } to preserve exponents
+        tex = tex.replace(/\\text\{([^}]*[\u00B7\u22C5][^}]*)\}(\^(?:\{[^}]*\}|\d))?/g, function(m, inner, exp) {
             var parts = inner.split(/[\u00B7\u22C5]/);
-            return parts.map(function(p) { return p ? '\\text{' + p + '}' : ''; }).join('\\cdot ');
+            var result = parts.map(function(p) { return p ? '\\text{' + p + '}' : ''; }).join('\\cdot ');
+            if (exp) result = '{' + result + '}' + exp;
+            return result;
         });
-        tex = tex.replace(/\\mathrm\{([^}]*[\u00B7\u22C5][^}]*)\}/g, function(m, inner) {
+        tex = tex.replace(/\\mathrm\{([^}]*[\u00B7\u22C5][^}]*)\}(\^(?:\{[^}]*\}|\d))?/g, function(m, inner, exp) {
             var parts = inner.split(/[\u00B7\u22C5]/);
-            return parts.map(function(p) { return p ? '\\mathrm{' + p + '}' : ''; }).join('\\cdot ');
+            var result = parts.map(function(p) { return p ? '\\mathrm{' + p + '}' : ''; }).join('\\cdot ');
+            if (exp) result = '{' + result + '}' + exp;
+            return result;
         });
         // Remaining middle dots outside \text{} — straight replacement
         tex = tex.replace(/\u00B7/g, '\\cdot ');
