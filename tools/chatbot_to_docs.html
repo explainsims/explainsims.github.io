@@ -562,7 +562,19 @@
         //    Replace runs of 3+ = signs with a single =
         tex = tex.replace(/={3,}/g, '=');
 
-        // 3. Unicode middle dot · → \cdot
+        // 3. Unicode middle dot · → \cdot (but handle \text{} blocks specially)
+        //    Inside \text{kg·m}, split into \text{kg}\!\cdot\!\text{m}
+        tex = tex.replace(/\\text\{([^}]*)\}/g, function(m, inner) {
+            if (inner.indexOf('\u00B7') === -1 && inner.indexOf('\u22C5') === -1) return m;
+            var parts = inner.split(/[\u00B7\u22C5]/);
+            return parts.map(function(p) { return p ? '\\text{' + p + '}' : ''; }).join('\\!\\cdot\\!');
+        });
+        tex = tex.replace(/\\mathrm\{([^}]*)\}/g, function(m, inner) {
+            if (inner.indexOf('\u00B7') === -1 && inner.indexOf('\u22C5') === -1) return m;
+            var parts = inner.split(/[\u00B7\u22C5]/);
+            return parts.map(function(p) { return p ? '\\mathrm{' + p + '}' : ''; }).join('\\!\\cdot\\!');
+        });
+        // Remaining middle dots outside \text{} — straight replacement
         tex = tex.replace(/\u00B7/g, '\\cdot ');
         tex = tex.replace(/\u22C5/g, '\\cdot ');
 
