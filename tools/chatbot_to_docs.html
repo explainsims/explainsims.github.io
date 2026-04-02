@@ -562,24 +562,25 @@
         //    Replace runs of 3+ = signs with a single =
         tex = tex.replace(/={3,}/g, '=');
 
-        // 3. Unicode middle dot · → \cdot (but handle \text{} blocks specially)
-        //    Inside \text{kg·m}^2, split into \text{kg}\cdot\text{m}^{2}
-        //    Must capture optional ^N or ^{N} after closing } to preserve exponents
-        tex = tex.replace(/\\text\{([^}]*[\u00B7\u22C5][^}]*)\}(\^(?:\{[^}]*\}|\d))?/g, function(m, inner, exp) {
-            var parts = inner.split(/[\u00B7\u22C5]/);
-            var result = parts.map(function(p) { return p ? '\\text{' + p + '}' : ''; }).join('\\cdot ');
-            if (exp) result = '{' + result + '}' + exp;
-            return result;
-        });
-        tex = tex.replace(/\\mathrm\{([^}]*[\u00B7\u22C5][^}]*)\}(\^(?:\{[^}]*\}|\d))?/g, function(m, inner, exp) {
-            var parts = inner.split(/[\u00B7\u22C5]/);
-            var result = parts.map(function(p) { return p ? '\\mathrm{' + p + '}' : ''; }).join('\\cdot ');
+        // 3. Unicode middle dot · → handle in \text{} and standalone
+        //    Replace ALL middle dots first with a placeholder, then process
+        //    This avoids regex matching issues with different Unicode dot chars
+        var dotChars = /[\u00B7\u22C5\u2022\u2219]/g;
+
+        // Inside \text{...} or \mathrm{...}: split around dots
+        tex = tex.replace(/(\\text|\\mathrm)\{([^}]*)\}(\^(?:\{[^}]*\}|\w))?/g, function(m, cmd, inner, exp) {
+            if (!dotChars.test(inner)) {
+                dotChars.lastIndex = 0;
+                return m;
+            }
+            dotChars.lastIndex = 0;
+            var parts = inner.split(dotChars);
+            var result = parts.filter(Boolean).map(function(p) { return cmd + '{' + p + '}'; }).join('\\cdot ');
             if (exp) result = '{' + result + '}' + exp;
             return result;
         });
         // Remaining middle dots outside \text{} — straight replacement
-        tex = tex.replace(/\u00B7/g, '\\cdot ');
-        tex = tex.replace(/\u22C5/g, '\\cdot ');
+        tex = tex.replace(dotChars, '\\cdot ');
 
         // 4. Bare comma used as thin space where \, was intended
         //    ChatGPT drops the backslash from \, leaving just a comma
