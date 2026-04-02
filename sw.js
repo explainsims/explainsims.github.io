@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-04-01T12:00:00Z';
+const BUILD_ID = '2026-04-02T10:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -63,6 +63,9 @@ const ASSETS_TO_CACHE = [
   // Teachers
   '/teachers/cmdterm_wordle.html',
   '/teachers/jeopardy.html',
+
+  // Tools
+  '/tools/chatbot_to_docs.html',
 ];
 
 // Install: pre-cache your core pages
