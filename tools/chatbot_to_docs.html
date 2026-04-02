@@ -555,19 +555,29 @@
     // Fix common LaTeX copy artifacts from ChatGPT/Gemini
     function sanitizeLatex(tex) {
         // 1. ChatGPT copies * instead of _ for subscripts: \vec{v}*{1i} → \vec{v}_{1i}
-        //    Pattern: }*{ or letter/digit *{ where * should be _
         tex = tex.replace(/(\}|[a-zA-Z0-9])\*\{/g, '$1_{');
 
         // 2. Long ===== lines (ChatGPT's copy artifact for = in multiline display math)
-        //    Replace runs of 3+ = signs with a single =
         tex = tex.replace(/={3,}/g, '=');
 
-        // 3. Unicode middle dot · → handle in \text{} and standalone
-        //    Replace ALL middle dots first with a placeholder, then process
-        //    This avoids regex matching issues with different Unicode dot chars
-        var dotChars = /[\u00B7\u22C5\u2022\u2219]/g;
+        // 3. Stray newlines inside display math — collapse to single space
+        tex = tex.replace(/\n+/g, ' ');
 
-        // Inside \text{...} or \mathrm{...}: split around dots
+        // 4. Wrap bare ^ and _ exponents/subscripts in braces for CodeCogs
+        //    Must run BEFORE middle dot handler which restructures \text{} blocks
+        tex = tex.replace(/\^([A-Za-z0-9])/g, '^{$1}');
+        tex = tex.replace(/_([A-Za-z0-9])/g, '_{$1}');
+
+        // 5. Bare comma used as thin space where \, was intended
+        //    Must run BEFORE middle dot handler which wraps \text{} in braces
+        tex = tex.replace(/(\d),\\text/g, '$1\\,\\text');
+        tex = tex.replace(/(\d),\\mathrm/g, '$1\\,\\mathrm');
+        tex = tex.replace(/(\}),\\text/g, '$1\\,\\text');
+        tex = tex.replace(/(\}),\\mathrm/g, '$1\\,\\mathrm');
+
+        // 6. Unicode middle dot · → handle in \text{} and standalone
+        //    Runs LAST because it restructures \text{} blocks (adds braces, splits)
+        var dotChars = /[\u00B7\u22C5\u2022\u2219]/g;
         tex = tex.replace(/(\\text|\\mathrm)\{([^}]*)\}(\^(?:\{[^}]*\}|\w))?/g, function(m, cmd, inner, exp) {
             if (!dotChars.test(inner)) {
                 dotChars.lastIndex = 0;
@@ -579,24 +589,7 @@
             if (exp) result = '{' + result + '}' + exp;
             return result;
         });
-        // Remaining middle dots outside \text{} — straight replacement
         tex = tex.replace(dotChars, '\\cdot ');
-
-        // 4. Bare comma used as thin space where \, was intended
-        //    ChatGPT drops the backslash from \, leaving just a comma
-        //    Patterns: 4,\text{kg}  or  \text{kg},\text{m}  or  },\text{  or  },\mathrm{
-        tex = tex.replace(/(\d),\\text/g, '$1\\,\\text');
-        tex = tex.replace(/(\d),\\mathrm/g, '$1\\,\\mathrm');
-        tex = tex.replace(/(\}),\\text/g, '$1\\,\\text');
-        tex = tex.replace(/(\}),\\mathrm/g, '$1\\,\\mathrm');
-
-        // 5. Stray newlines inside display math — collapse to single space
-        tex = tex.replace(/\n+/g, ' ');
-
-        // 6. Wrap bare ^ and _ exponents/subscripts in braces for CodeCogs
-        //    ^2 → ^{2}, _i → _{i}  (but skip if already braced like ^{2})
-        tex = tex.replace(/\^([A-Za-z0-9])/g, '^{$1}');
-        tex = tex.replace(/_([A-Za-z0-9])/g, '_{$1}');
 
         return tex;
     }
