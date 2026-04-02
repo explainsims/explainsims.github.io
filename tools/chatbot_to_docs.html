@@ -257,7 +257,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            align-items: flex-start;
+            align-items: stretch;
             padding: 14px;
             background: var(--section-bg);
             border: 1px solid var(--card-border);
@@ -268,6 +268,7 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
+            justify-content: flex-start;
         }
 
         .opt-group-label {
@@ -283,6 +284,7 @@
             flex-wrap: wrap;
             align-items: center;
             gap: 8px;
+            flex: 1;
         }
 
         .opt-check {
@@ -548,21 +550,35 @@
         return 'https://latex.codecogs.com/png.image?\\dpi{' + dpi + '}' + encoded;
     }
 
+    function isInsideTableRow(text, matchIndex) {
+        // Check if this match is inside a markdown table row (line starts with |)
+        var lineStart = text.lastIndexOf('\n', matchIndex - 1) + 1;
+        var lineText = text.substring(lineStart, matchIndex);
+        return lineText.trimStart().charAt(0) === '|';
+    }
+
     function convertLatexToImages(text) {
         var dpi = getLatexDpi();
 
         // Display math: $$...$$ (must come before inline $)
-        text = text.replace(/\$\$([\s\S]*?)\$\$/g, function(m, eq) {
-            return '\n\n![equation](' + buildCodeCogsUrl(eq, dpi) + '){{DMATH}}\n\n';
+        // Require at least one letter or backslash inside to avoid matching prose like "$ and $$"
+        text = text.replace(/\$\$([\s\S]*?)\$\$/g, function(m, eq, offset) {
+            if (!/[a-zA-Z\\]/.test(eq)) return m;
+            var img = '![equation](' + buildCodeCogsUrl(eq, dpi) + '){{DMATH}}';
+            // Don't add newlines inside table rows — it breaks table parsing
+            if (isInsideTableRow(text, offset)) return img;
+            return '\n\n' + img + '\n\n';
         });
         // Display math: \[...\]
-        text = text.replace(/\\\[([\s\S]*?)\\\]/g, function(m, eq) {
-            return '\n\n![equation](' + buildCodeCogsUrl(eq, dpi) + '){{DMATH}}\n\n';
+        text = text.replace(/\\\[([\s\S]*?)\\\]/g, function(m, eq, offset) {
+            var img = '![equation](' + buildCodeCogsUrl(eq, dpi) + '){{DMATH}}';
+            if (isInsideTableRow(text, offset)) return img;
+            return '\n\n' + img + '\n\n';
         });
-        // Inline math: $...$ — use a safe regex that won't backtrack
+        // Inline math: $...$
         text = text.replace(/\$([^$\n]+)\$/g, function(m, eq) {
-            // Skip if it looks like a price (e.g., $5.00)
-            if (/^\d+(\.\d+)?$/.test(eq.trim())) return m;
+            // Skip if no LaTeX content (just numbers, punctuation, or empty)
+            if (!/[a-zA-Z\\]/.test(eq)) return m;
             return '![equation](' + buildCodeCogsUrl(eq, dpi) + ')';
         });
         // Inline math: \(...\)
@@ -649,42 +665,33 @@
         setTimeout(function() { el.classList.remove('show'); }, 1800);
     }
 
-    // Build HTML for tables using markdown-style plain text (Google Docs handles this better)
     function buildCopyHtml() {
         var preview = document.getElementById('preview-area');
         var fontFamily = document.getElementById('font-family').value;
         var fontSize = parseFloat(document.getElementById('font-size').value) || 12;
 
-        // Clone preview to manipulate
         var clone = preview.cloneNode(true);
 
-        // Convert tables to markdown-style plain text for better Google Docs pasting
-        clone.querySelectorAll('table').forEach(function(table) {
-            var rows = table.querySelectorAll('tr');
-            var mdLines = [];
-            rows.forEach(function(row, idx) {
-                var cells = row.querySelectorAll('th, td');
-                var cellTexts = [];
-                cells.forEach(function(c) { cellTexts.push(c.innerHTML.trim()); });
-                mdLines.push('| ' + cellTexts.join(' | ') + ' |');
-                if (idx === 0) {
-                    mdLines.push('| ' + cellTexts.map(function() { return '---'; }).join(' | ') + ' |');
-                }
-            });
-            var pre = document.createElement('div');
-            pre.innerHTML = mdLines.join('<br>');
-            pre.style.fontFamily = 'monospace';
-            pre.style.fontSize = (fontSize * 0.85) + 'pt';
-            pre.style.whiteSpace = 'pre';
-            pre.style.margin = '0.6em 0';
-            table.replaceWith(pre);
-        });
-
-        // Inline font styles on all elements for Google Docs
+        // Inline font styles for Google Docs (it ignores external CSS)
         clone.querySelectorAll('*').forEach(function(el) {
-            if (!el.style.fontFamily && el.tagName !== 'CODE' && el.tagName !== 'PRE') {
+            var tag = el.tagName;
+            if (!el.style.fontFamily && tag !== 'CODE' && tag !== 'PRE' && tag !== 'IMG') {
                 el.style.fontFamily = fontFamily;
             }
+            if (!el.style.fontSize && tag !== 'CODE' && tag !== 'PRE' && tag !== 'IMG') {
+                el.style.fontSize = fontSize + 'pt';
+            }
+        });
+
+        // Ensure tables have visible borders for Google Docs
+        clone.querySelectorAll('table').forEach(function(t) {
+            t.setAttribute('border', '1');
+            t.setAttribute('cellpadding', '6');
+            t.style.borderCollapse = 'collapse';
+        });
+        clone.querySelectorAll('th, td').forEach(function(c) {
+            c.style.border = '1px solid #999';
+            c.style.padding = '6px 10px';
         });
 
         return '<div style="font-family: ' + fontFamily + '; font-size: ' + fontSize + 'pt;">' + clone.innerHTML + '</div>';
