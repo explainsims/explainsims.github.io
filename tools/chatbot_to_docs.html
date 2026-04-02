@@ -407,13 +407,7 @@
             <div class="opt-group">
                 <span class="opt-group-label">Citations</span>
                 <div class="opt-group-row">
-                    <label class="opt-check"><input type="checkbox" id="cite-chatgpt" checked> ChatGPT</label>
-                    <label class="opt-check"><input type="checkbox" id="cite-bracket" checked> [1] refs</label>
-                    <label class="opt-check"><input type="checkbox" id="cite-source" checked> (Source:...)</label>
-                    <label class="opt-check"><input type="checkbox" id="cite-claude" checked> [cite:...]</label>
-                    <label class="opt-check"><input type="checkbox" id="cite-footnotes" checked> Footnotes</label>
-                    <label class="opt-check"><input type="checkbox" id="cite-sections"> Ref sections</label>
-                    <input type="text" id="custom-regex" placeholder="Custom regex...">
+                    <label class="opt-check"><input type="checkbox" id="strip-citations" checked> Remove citations</label>
                 </div>
             </div>
 
@@ -423,10 +417,11 @@
                 <span class="opt-group-label">LaTeX</span>
                 <div class="opt-group-row">
                     <label class="opt-check"><input type="checkbox" id="latex-toggle" checked> Convert to images</label>
-                    <select id="latex-dpi">
-                        <option value="150">Small</option>
-                        <option value="200" selected>Medium</option>
-                        <option value="300">Large</option>
+                    <select id="latex-size">
+                        <option value="110" selected>Small</option>
+                        <option value="150">Medium</option>
+                        <option value="200">Large</option>
+                        <option value="auto">Match font size</option>
                     </select>
                 </div>
             </div>
@@ -437,7 +432,7 @@
                 <span class="opt-group-label">Font</span>
                 <div class="opt-group-row">
                     <select id="font-family">
-                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="Arial, sans-serif" selected>Arial</option>
                         <option value="'Times New Roman', serif">Times New Roman</option>
                         <option value="Georgia, serif">Georgia</option>
                         <option value="Calibri, sans-serif">Calibri</option>
@@ -446,20 +441,8 @@
                         <option value="'Courier New', monospace">Courier New</option>
                     </select>
                     <label style="font-size:0.82rem;">Size</label>
-                    <input type="number" id="font-size" value="11" min="8" max="28" step="0.5">
+                    <input type="number" id="font-size" value="12" min="8" max="28" step="0.5">
                     <label class="opt-check"><input type="checkbox" id="scale-headers"> Scale headers</label>
-                </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="opt-group">
-                <span class="opt-group-label">Output</span>
-                <div class="opt-group-row">
-                    <select id="output-mode">
-                        <option value="rich">Rich Text (normal paste)</option>
-                        <option value="markdown">Markdown (paste as MD)</option>
-                    </select>
                 </div>
             </div>
         </div>
@@ -480,8 +463,7 @@
                 <div class="panel-header">
                     <span>Preview</span>
                     <div class="actions">
-                        <button class="btn btn-sm" id="copy-rich-btn" onclick="copyRich()">Copy Rich Text</button>
-                        <button class="btn btn-sm btn-secondary" id="copy-md-btn" onclick="copyMarkdown()">Copy Markdown</button>
+                        <button class="btn btn-sm" id="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
                         <span class="copy-feedback" id="copy-feedback">Copied!</span>
                     </div>
                 </div>
@@ -505,73 +487,61 @@
     <script>
     // ─── Citation removal ─────────────────────────────────────────
     function stripCitations(text) {
-        // ChatGPT web search citations: 【1†source】 etc.
-        if (document.getElementById('cite-chatgpt').checked) {
-            text = text.replace(/\u3010[^\u3011]*\u3011/g, '');
-        }
+        if (!document.getElementById('strip-citations').checked) return text;
+
+        // ChatGPT web search: 【1†source】 etc.
+        text = text.replace(/\u3010[^\u3011]*\u3011/g, '');
+        // [cite_start]...[cite: N] and [cite_start] alone (Gemini-style)
+        text = text.replace(/\[cite_start\]/g, '');
+        text = text.replace(/\[cite:\s*\d+(?:,\s*\d+)*\]/g, '');
+        // Claude [cite:...] with text content
+        text = text.replace(/\[cite:[^\]]*\]/g, '');
         // Bracket references: [1], [2], [1, 2, 3]
-        if (document.getElementById('cite-bracket').checked) {
-            text = text.replace(/\[\d+(?:,\s*\d+)*\]/g, '');
-        }
-        // (Source: ...) - Gemini style
-        if (document.getElementById('cite-source').checked) {
-            text = text.replace(/\(Source:[^)]*\)/gi, '');
-        }
-        // Claude [cite:...] style
-        if (document.getElementById('cite-claude').checked) {
-            text = text.replace(/\[cite:[^\]]*\]/g, '');
-        }
+        text = text.replace(/\[\d+(?:,\s*\d+)*\]/g, '');
+        // (Source: ...) — Gemini
+        text = text.replace(/\(Source:[^)]*\)/gi, '');
         // Footnote markers: ^1, ^2
-        if (document.getElementById('cite-footnotes').checked) {
-            text = text.replace(/\^\d+/g, '');
-        }
+        text = text.replace(/\^\d+/g, '');
         // [citation needed]
         text = text.replace(/\[citation needed\]/gi, '');
-
         // Trailing reference sections
-        if (document.getElementById('cite-sections').checked) {
-            text = text.replace(/\n(Sources|References|Citations|Bibliography)\s*:?\s*\n[\s\S]*$/im, '');
-        }
-
-        // Custom regex
-        var customRegex = document.getElementById('custom-regex').value.trim();
-        if (customRegex) {
-            try {
-                var re = new RegExp(customRegex, 'g');
-                text = text.replace(re, '');
-            } catch(e) {
-                // Invalid regex, skip
-            }
-        }
+        text = text.replace(/\n(Sources|References|Citations|Bibliography)\s*:?\s*\n[\s\S]*$/im, '');
 
         return text;
     }
 
     // ─── LaTeX handling ───────────────────────────────────────────
-    // Protect code blocks from LaTeX processing
     function protectCodeBlocks(text) {
         var blocks = [];
-        // Fenced code blocks
         text = text.replace(/(```[\s\S]*?```)/g, function(m) {
             blocks.push(m);
-            return '\x00CODEBLOCK' + (blocks.length - 1) + '\x00';
+            return '\x00CB' + (blocks.length - 1) + '\x00';
         });
-        // Inline code
-        text = text.replace(/(`[^`]+`)/g, function(m) {
+        text = text.replace(/(`[^`\n]+`)/g, function(m) {
             blocks.push(m);
-            return '\x00CODEBLOCK' + (blocks.length - 1) + '\x00';
+            return '\x00CB' + (blocks.length - 1) + '\x00';
         });
         return { text: text, blocks: blocks };
     }
 
     function restoreCodeBlocks(text, blocks) {
         for (var i = 0; i < blocks.length; i++) {
-            text = text.replace('\x00CODEBLOCK' + i + '\x00', blocks[i]);
+            text = text.split('\x00CB' + i + '\x00').join(blocks[i]);
         }
         return text;
     }
 
-    function buildCodeCogsUrl(latex, dpi, display) {
+    function getLatexDpi() {
+        var sel = document.getElementById('latex-size').value;
+        if (sel === 'auto') {
+            // Map font pt size to DPI: 12pt -> ~110dpi is baseline
+            var fontSize = parseFloat(document.getElementById('font-size').value) || 12;
+            return Math.round(fontSize * 9.2);
+        }
+        return parseInt(sel, 10);
+    }
+
+    function buildCodeCogsUrl(latex, dpi) {
         var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         var colorCmd = isDark ? '\\color{white}' : '\\color{black}';
         var encoded = encodeURIComponent(colorCmd + ' ' + latex.trim());
@@ -579,45 +549,38 @@
     }
 
     function convertLatexToImages(text) {
-        var dpi = document.getElementById('latex-dpi').value;
+        var dpi = getLatexDpi();
 
-        // Display math: $$...$$ (must come before inline)
+        // Display math: $$...$$ (must come before inline $)
         text = text.replace(/\$\$([\s\S]*?)\$\$/g, function(m, eq) {
-            var url = buildCodeCogsUrl(eq, dpi, true);
-            return '![equation](' + url + '){{DISPLAY_MATH}}';
+            return '\n\n![equation](' + buildCodeCogsUrl(eq, dpi) + '){{DMATH}}\n\n';
         });
-
         // Display math: \[...\]
         text = text.replace(/\\\[([\s\S]*?)\\\]/g, function(m, eq) {
-            var url = buildCodeCogsUrl(eq, dpi, true);
-            return '![equation](' + url + '){{DISPLAY_MATH}}';
+            return '\n\n![equation](' + buildCodeCogsUrl(eq, dpi) + '){{DMATH}}\n\n';
         });
-
-        // Inline math: $...$  (not preceded or followed by $)
-        text = text.replace(/(?<!\$)\$(?!\$)((?:\\.|[^$])+?)\$(?!\$)/g, function(m, eq) {
-            var url = buildCodeCogsUrl(eq, dpi, false);
-            return '![equation](' + url + ')';
+        // Inline math: $...$ — use a safe regex that won't backtrack
+        text = text.replace(/\$([^$\n]+)\$/g, function(m, eq) {
+            // Skip if it looks like a price (e.g., $5.00)
+            if (/^\d+(\.\d+)?$/.test(eq.trim())) return m;
+            return '![equation](' + buildCodeCogsUrl(eq, dpi) + ')';
         });
-
         // Inline math: \(...\)
-        text = text.replace(/\\\((.*?)\\\)/g, function(m, eq) {
-            var url = buildCodeCogsUrl(eq, dpi, false);
-            return '![equation](' + url + ')';
+        text = text.replace(/\\\(([^)]*?)\\\)/g, function(m, eq) {
+            return '![equation](' + buildCodeCogsUrl(eq, dpi) + ')';
         });
 
         return text;
     }
 
-    function convertLatexToImagesHTML(html) {
-        // Post-process HTML: add classes to latex images
-        html = html.replace(/<img([^>]*alt="equation"[^>]*)>\{\{DISPLAY_MATH\}\}/g,
+    function postProcessLatexHTML(html) {
+        html = html.replace(/<img([^>]*alt="equation"[^>]*)>\{\{DMATH\}\}/g,
             '<img$1 class="latex-img display-math">');
         html = html.replace(/<img([^>]*alt="equation"[^>]*)>/g, function(m, attrs) {
             if (attrs.indexOf('class=') !== -1) return m;
             return '<img' + attrs + ' class="latex-img">';
         });
-        // Clean any remaining markers
-        html = html.replace(/\{\{DISPLAY_MATH\}\}/g, '');
+        html = html.replace(/\{\{DMATH\}\}/g, '');
         return html;
     }
 
@@ -635,23 +598,13 @@
 
     // ─── Main render pipeline ─────────────────────────────────────
     function processText(rawText) {
-        var text = rawText;
-
-        // 1. Strip citations
-        text = stripCitations(text);
-
-        // 2. Protect code blocks before LaTeX processing
-        var protected_ = protectCodeBlocks(text);
-        text = protected_.text;
-
-        // 3. Convert LaTeX to image markdown (if enabled)
+        var text = stripCitations(rawText);
+        var p = protectCodeBlocks(text);
+        text = p.text;
         if (document.getElementById('latex-toggle').checked) {
             text = convertLatexToImages(text);
         }
-
-        // 4. Restore code blocks
-        text = restoreCodeBlocks(text, protected_.blocks);
-
+        text = restoreCodeBlocks(text, p.blocks);
         return text;
     }
 
@@ -664,46 +617,31 @@
         }
 
         var processed = processText(raw);
-
-        // Render markdown to HTML
         var html = marked.parse(processed);
-
-        // Sanitize
         html = DOMPurify.sanitize(html, {
             ADD_TAGS: ['img'],
             ADD_ATTR: ['src', 'alt', 'class', 'style'],
             ALLOW_DATA_ATTR: false
         });
+        html = postProcessLatexHTML(html);
 
-        // Post-process LaTeX image classes
-        html = convertLatexToImagesHTML(html);
-
-        // Apply font settings
         var fontFamily = document.getElementById('font-family').value;
-        var fontSize = parseFloat(document.getElementById('font-size').value) || 11;
+        var fontSize = parseFloat(document.getElementById('font-size').value) || 12;
         var scaleHeaders = document.getElementById('scale-headers').checked;
 
         var preview = document.getElementById('preview-area');
         preview.style.fontFamily = fontFamily;
         preview.style.fontSize = fontSize + 'pt';
-
         preview.innerHTML = html;
 
-        // Apply header sizing
         var defaultSizes = { H1: 24, H2: 20, H3: 16, H4: 14, H5: 12, H6: 11 };
-        var ratio = fontSize / 11; // ratio relative to default 11pt
-        var headers = preview.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        headers.forEach(function(h) {
-            var tag = h.tagName;
-            if (scaleHeaders) {
-                h.style.fontSize = (defaultSizes[tag] * ratio) + 'pt';
-            } else {
-                h.style.fontSize = defaultSizes[tag] + 'pt';
-            }
+        var ratio = fontSize / 12;
+        preview.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(function(h) {
+            h.style.fontSize = (scaleHeaders ? defaultSizes[h.tagName] * ratio : defaultSizes[h.tagName]) + 'pt';
         });
     }
 
-    // ─── Copy functions ───────────────────────────────────────────
+    // ─── Copy ─────────────────────────────────────────────────────
     function showCopyFeedback(msg) {
         var el = document.getElementById('copy-feedback');
         el.textContent = msg || 'Copied!';
@@ -711,34 +649,65 @@
         setTimeout(function() { el.classList.remove('show'); }, 1800);
     }
 
-    function copyRich() {
+    // Build HTML for tables using markdown-style plain text (Google Docs handles this better)
+    function buildCopyHtml() {
         var preview = document.getElementById('preview-area');
-        var html = preview.innerHTML;
-        if (!html.trim() || preview.querySelector('p[style*="italic"]')) {
+        var fontFamily = document.getElementById('font-family').value;
+        var fontSize = parseFloat(document.getElementById('font-size').value) || 12;
+
+        // Clone preview to manipulate
+        var clone = preview.cloneNode(true);
+
+        // Convert tables to markdown-style plain text for better Google Docs pasting
+        clone.querySelectorAll('table').forEach(function(table) {
+            var rows = table.querySelectorAll('tr');
+            var mdLines = [];
+            rows.forEach(function(row, idx) {
+                var cells = row.querySelectorAll('th, td');
+                var cellTexts = [];
+                cells.forEach(function(c) { cellTexts.push(c.innerHTML.trim()); });
+                mdLines.push('| ' + cellTexts.join(' | ') + ' |');
+                if (idx === 0) {
+                    mdLines.push('| ' + cellTexts.map(function() { return '---'; }).join(' | ') + ' |');
+                }
+            });
+            var pre = document.createElement('div');
+            pre.innerHTML = mdLines.join('<br>');
+            pre.style.fontFamily = 'monospace';
+            pre.style.fontSize = (fontSize * 0.85) + 'pt';
+            pre.style.whiteSpace = 'pre';
+            pre.style.margin = '0.6em 0';
+            table.replaceWith(pre);
+        });
+
+        // Inline font styles on all elements for Google Docs
+        clone.querySelectorAll('*').forEach(function(el) {
+            if (!el.style.fontFamily && el.tagName !== 'CODE' && el.tagName !== 'PRE') {
+                el.style.fontFamily = fontFamily;
+            }
+        });
+
+        return '<div style="font-family: ' + fontFamily + '; font-size: ' + fontSize + 'pt;">' + clone.innerHTML + '</div>';
+    }
+
+    function copyToClipboard() {
+        var preview = document.getElementById('preview-area');
+        if (!preview.innerText.trim() || preview.querySelector('p[style*="italic"]')) {
             showCopyFeedback('Nothing to copy');
             return;
         }
 
-        // Wrap with inline font styles for Google Docs
-        var fontFamily = document.getElementById('font-family').value;
-        var fontSize = parseFloat(document.getElementById('font-size').value) || 11;
-        var wrappedHtml = '<div style="font-family: ' + fontFamily + '; font-size: ' + fontSize + 'pt;">' + html + '</div>';
-
-        // Also provide plain text fallback
+        var html = buildCopyHtml();
         var plainText = preview.innerText;
 
-        var htmlBlob = new Blob([wrappedHtml], { type: 'text/html' });
+        var htmlBlob = new Blob([html], { type: 'text/html' });
         var textBlob = new Blob([plainText], { type: 'text/plain' });
 
         navigator.clipboard.write([
-            new ClipboardItem({
-                'text/html': htmlBlob,
-                'text/plain': textBlob
-            })
+            new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })
         ]).then(function() {
-            showCopyFeedback('Copied rich text!');
-        }).catch(function(err) {
-            // Fallback: select and copy
+            showCopyFeedback('Copied!');
+        }).catch(function() {
             var range = document.createRange();
             range.selectNodeContents(preview);
             var sel = window.getSelection();
@@ -750,28 +719,6 @@
         });
     }
 
-    function copyMarkdown() {
-        var raw = document.getElementById('input-area').value;
-        if (!raw.trim()) {
-            showCopyFeedback('Nothing to copy');
-            return;
-        }
-        var processed = processText(raw);
-
-        navigator.clipboard.writeText(processed).then(function() {
-            showCopyFeedback('Copied markdown!');
-        }).catch(function() {
-            // Fallback
-            var ta = document.createElement('textarea');
-            ta.value = processed;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            showCopyFeedback('Copied!');
-        });
-    }
-
     // ─── Event listeners ──────────────────────────────────────────
     var debounceTimer;
     document.getElementById('input-area').addEventListener('input', function() {
@@ -779,7 +726,6 @@
         debounceTimer = setTimeout(renderPreview, 300);
     });
 
-    // Re-render when any option changes
     document.querySelectorAll('.options-bar input, .options-bar select').forEach(function(el) {
         el.addEventListener('change', renderPreview);
     });
