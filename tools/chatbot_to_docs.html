@@ -566,11 +566,13 @@
         tex = tex.replace(/\u00B7/g, '\\cdot ');
         tex = tex.replace(/\u22C5/g, '\\cdot ');
 
-        // 4. Bare comma used as thin space: ,\text → \,\text  (only when comma is clearly a spacer)
-        //    ChatGPT sometimes outputs comma where it means \, (thin space)
-        //    Detect: digit followed by , followed by \text or \mathrm (common pattern like 4,\text{kg})
+        // 4. Bare comma used as thin space where \, was intended
+        //    ChatGPT drops the backslash from \, leaving just a comma
+        //    Patterns: 4,\text{kg}  or  \text{kg},\text{m}  or  },\text{  or  },\mathrm{
         tex = tex.replace(/(\d),\\text/g, '$1\\,\\text');
         tex = tex.replace(/(\d),\\mathrm/g, '$1\\,\\mathrm');
+        tex = tex.replace(/(\}),\\text/g, '$1\\,\\text');
+        tex = tex.replace(/(\}),\\mathrm/g, '$1\\,\\mathrm');
 
         // 5. Stray newlines inside display math — collapse to single space
         tex = tex.replace(/\n+/g, ' ');
