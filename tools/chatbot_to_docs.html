@@ -729,14 +729,26 @@
         });
 
         // Ensure tables have visible borders and full width for Google Docs
-        // Google Docs ignores CSS width — must use HTML width attribute
+        // Google Docs ignores CSS width and width="100%" — need explicit pixel widths on cells
+        var GDOC_PAGE_WIDTH_PX = 624; // 6.5 inches * 96 DPI (standard Google Docs margins)
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
             t.setAttribute('cellpadding', '8');
-            t.setAttribute('width', '100%');
             t.style.borderCollapse = 'collapse';
-            t.style.width = '100%';
-            t.style.tableLayout = 'auto';
+
+            // Count columns from header or first row
+            var firstRow = t.querySelector('tr');
+            if (!firstRow) return;
+            var cols = firstRow.querySelectorAll('th, td');
+            var numCols = cols.length;
+            if (numCols === 0) return;
+            var colWidth = Math.floor(GDOC_PAGE_WIDTH_PX / numCols);
+
+            // Set explicit pixel width on every cell
+            t.querySelectorAll('th, td').forEach(function(c) {
+                c.setAttribute('width', colWidth);
+                c.style.width = colWidth + 'px';
+            });
         });
         clone.querySelectorAll('th').forEach(function(c) {
             c.style.border = '1px solid #bbb';
