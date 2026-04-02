@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('chatbot-docs-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Chatbot to Docs — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --bg-color: #F4F4F8;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+            --brand-primary: #6c5ce7;
+            --brand-accent: #00cec9;
+            --nav-bg: rgba(244, 244, 248, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.06);
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
+            --input-bg: #FFFFFF;
+            --input-border: #D1D5DB;
+            --btn-bg: #6c5ce7;
+            --btn-text: #FFFFFF;
+            --btn-hover: #5a4bd6;
+            --code-bg: #f1f3f5;
+            --preview-bg: #FFFFFF;
+            --toggle-bg: #E5E7EB;
+            --toggle-active: #6c5ce7;
+            --section-bg: #f0f0f4;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+            --brand-primary: #a29bfe;
+            --brand-accent: #81ecec;
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.06);
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
+            --input-bg: #1E1E28;
+            --input-border: #3A3A4A;
+            --btn-bg: #a29bfe;
+            --btn-text: #111118;
+            --btn-hover: #8b82fd;
+            --code-bg: #2A2A36;
+            --preview-bg: #1E1E28;
+            --toggle-bg: #2A2A36;
+            --toggle-active: #a29bfe;
+            --section-bg: #1a1a24;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Banner */
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; padding: 6px; border-radius: 8px;
+            transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* Main layout */
+        .app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px;
+            gap: 16px;
+        }
+
+        .panels {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--section-bg);
+            border-radius: 10px 10px 0 0;
+            border: 1px solid var(--card-border);
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .panel-header .actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        #input-area {
+            flex: 1;
+            width: 100%;
+            min-height: 300px;
+            padding: 14px;
+            border: 1px solid var(--card-border);
+            border-radius: 0 0 10px 10px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #input-area:focus { border-color: var(--brand-primary); }
+        #input-area::placeholder { color: var(--text-secondary); opacity: 0.6; }
+
+        #preview-area {
+            flex: 1;
+            min-height: 300px;
+            padding: 20px;
+            border: 1px solid var(--card-border);
+            border-radius: 0 0 10px 10px;
+            background: var(--preview-bg);
+            overflow-y: auto;
+            line-height: 1.7;
+        }
+
+        /* Preview content styles */
+        #preview-area h1 { font-size: 1.8em; margin: 0.6em 0 0.4em; font-weight: 700; }
+        #preview-area h2 { font-size: 1.4em; margin: 0.5em 0 0.3em; font-weight: 600; }
+        #preview-area h3 { font-size: 1.15em; margin: 0.4em 0 0.25em; font-weight: 600; }
+        #preview-area h4 { font-size: 1.05em; margin: 0.35em 0 0.2em; font-weight: 600; }
+        #preview-area p { margin: 0.4em 0; }
+        #preview-area ul, #preview-area ol { margin: 0.4em 0; padding-left: 1.5em; }
+        #preview-area li { margin: 0.15em 0; }
+        #preview-area blockquote {
+            border-left: 3px solid var(--brand-primary);
+            padding: 0.5em 1em;
+            margin: 0.6em 0;
+            background: var(--section-bg);
+            border-radius: 0 6px 6px 0;
+        }
+        #preview-area pre {
+            background: var(--code-bg);
+            padding: 12px 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.6em 0;
+            font-size: 0.88em;
+        }
+        #preview-area code {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+        }
+        #preview-area :not(pre) > code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        #preview-area table {
+            border-collapse: collapse;
+            margin: 0.6em 0;
+            width: 100%;
+        }
+        #preview-area th, #preview-area td {
+            border: 1px solid var(--card-border);
+            padding: 8px 12px;
+            text-align: left;
+        }
+        #preview-area th {
+            background: var(--section-bg);
+            font-weight: 600;
+        }
+        #preview-area hr {
+            border: none;
+            border-top: 1px solid var(--card-border);
+            margin: 1em 0;
+        }
+        #preview-area img.latex-img {
+            display: inline-block;
+            vertical-align: middle;
+            max-height: 2.5em;
+        }
+        #preview-area img.latex-img.display-math {
+            display: block;
+            margin: 0.6em auto;
+            max-height: none;
+            max-width: 90%;
+        }
+
+        /* Options bar */
+        .options-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 14px;
+            background: var(--section-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+        }
+
+        .opt-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .opt-group-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+        }
+
+        .opt-group-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .opt-check {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .opt-check input[type="checkbox"] {
+            accent-color: var(--brand-primary);
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        select, input[type="number"] {
+            padding: 5px 8px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+        }
+
+        input[type="number"] { width: 60px; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 14px;
+            border: none;
+            border-radius: 8px;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .btn:hover { background: var(--btn-hover); }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-secondary {
+            background: var(--toggle-bg);
+            color: var(--text-main);
+        }
+        .btn-secondary:hover { background: var(--card-border); }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+        }
+
+        .copy-feedback {
+            font-size: 0.75rem;
+            color: var(--brand-primary);
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .copy-feedback.show { opacity: 1; }
+
+        .divider {
+            width: 1px;
+            height: 28px;
+            background: var(--card-border);
+            flex-shrink: 0;
+        }
+
+        /* Custom regex input */
+        #custom-regex {
+            padding: 5px 8px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            width: 180px;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .panels { flex-direction: column; }
+            .app-container { padding: 10px; }
+            .options-bar { gap: 8px; }
+            #custom-regex { width: 140px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Chatbot to Docs</div>
+        <div class="banner-actions">
+            <div class="theme-toggle">
+                <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes"></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- Options Bar -->
+        <div class="options-bar">
+            <div class="opt-group">
+                <span class="opt-group-label">Citations</span>
+                <div class="opt-group-row">
+                    <label class="opt-check"><input type="checkbox" id="cite-chatgpt" checked> ChatGPT</label>
+                    <label class="opt-check"><input type="checkbox" id="cite-bracket" checked> [1] refs</label>
+                    <label class="opt-check"><input type="checkbox" id="cite-source" checked> (Source:...)</label>
+                    <label class="opt-check"><input type="checkbox" id="cite-claude" checked> [cite:...]</label>
+                    <label class="opt-check"><input type="checkbox" id="cite-footnotes" checked> Footnotes</label>
+                    <label class="opt-check"><input type="checkbox" id="cite-sections"> Ref sections</label>
+                    <input type="text" id="custom-regex" placeholder="Custom regex...">
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="opt-group">
+                <span class="opt-group-label">LaTeX</span>
+                <div class="opt-group-row">
+                    <label class="opt-check"><input type="checkbox" id="latex-toggle" checked> Convert to images</label>
+                    <select id="latex-dpi">
+                        <option value="150">Small</option>
+                        <option value="200" selected>Medium</option>
+                        <option value="300">Large</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="opt-group">
+                <span class="opt-group-label">Font</span>
+                <div class="opt-group-row">
+                    <select id="font-family">
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                        <option value="Georgia, serif">Georgia</option>
+                        <option value="Calibri, sans-serif">Calibri</option>
+                        <option value="Cambria, serif">Cambria</option>
+                        <option value="Verdana, sans-serif">Verdana</option>
+                        <option value="'Courier New', monospace">Courier New</option>
+                    </select>
+                    <label style="font-size:0.82rem;">Size</label>
+                    <input type="number" id="font-size" value="11" min="8" max="28" step="0.5">
+                    <label class="opt-check"><input type="checkbox" id="scale-headers"> Scale headers</label>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="opt-group">
+                <span class="opt-group-label">Output</span>
+                <div class="opt-group-row">
+                    <select id="output-mode">
+                        <option value="rich">Rich Text (normal paste)</option>
+                        <option value="markdown">Markdown (paste as MD)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panels -->
+        <div class="panels">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Input</span>
+                    <div class="actions">
+                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('input-area').value=''; renderPreview();">Clear</button>
+                    </div>
+                </div>
+                <textarea id="input-area" placeholder="Paste chatbot response here..."></textarea>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Preview</span>
+                    <div class="actions">
+                        <button class="btn btn-sm" id="copy-rich-btn" onclick="copyRich()">Copy Rich Text</button>
+                        <button class="btn btn-sm btn-secondary" id="copy-md-btn" onclick="copyMarkdown()">Copy Markdown</button>
+                        <span class="copy-feedback" id="copy-feedback">Copied!</span>
+                    </div>
+                </div>
+                <div id="preview-area">
+                    <p style="color: var(--text-secondary); font-style: italic;">Paste chatbot output on the left to see the formatted preview here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="site-footer"></div>
+    <script src="/assets/footer.js"></script>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.4/dist/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+
+    <script>
+    // ─── Citation removal ─────────────────────────────────────────
+    function stripCitations(text) {
+        // ChatGPT web search citations: 【1†source】 etc.
+        if (document.getElementById('cite-chatgpt').checked) {
+            text = text.replace(/\u3010[^\u3011]*\u3011/g, '');
+        }
+        // Bracket references: [1], [2], [1, 2, 3]
+        if (document.getElementById('cite-bracket').checked) {
+            text = text.replace(/\[\d+(?:,\s*\d+)*\]/g, '');
+        }
+        // (Source: ...) - Gemini style
+        if (document.getElementById('cite-source').checked) {
+            text = text.replace(/\(Source:[^)]*\)/gi, '');
+        }
+        // Claude [cite:...] style
+        if (document.getElementById('cite-claude').checked) {
+            text = text.replace(/\[cite:[^\]]*\]/g, '');
+        }
+        // Footnote markers: ^1, ^2
+        if (document.getElementById('cite-footnotes').checked) {
+            text = text.replace(/\^\d+/g, '');
+        }
+        // [citation needed]
+        text = text.replace(/\[citation needed\]/gi, '');
+
+        // Trailing reference sections
+        if (document.getElementById('cite-sections').checked) {
+            text = text.replace(/\n(Sources|References|Citations|Bibliography)\s*:?\s*\n[\s\S]*$/im, '');
+        }
+
+        // Custom regex
+        var customRegex = document.getElementById('custom-regex').value.trim();
+        if (customRegex) {
+            try {
+                var re = new RegExp(customRegex, 'g');
+                text = text.replace(re, '');
+            } catch(e) {
+                // Invalid regex, skip
+            }
+        }
+
+        return text;
+    }
+
+    // ─── LaTeX handling ───────────────────────────────────────────
+    // Protect code blocks from LaTeX processing
+    function protectCodeBlocks(text) {
+        var blocks = [];
+        // Fenced code blocks
+        text = text.replace(/(```[\s\S]*?```)/g, function(m) {
+            blocks.push(m);
+            return '\x00CODEBLOCK' + (blocks.length - 1) + '\x00';
+        });
+        // Inline code
+        text = text.replace(/(`[^`]+`)/g, function(m) {
+            blocks.push(m);
+            return '\x00CODEBLOCK' + (blocks.length - 1) + '\x00';
+        });
+        return { text: text, blocks: blocks };
+    }
+
+    function restoreCodeBlocks(text, blocks) {
+        for (var i = 0; i < blocks.length; i++) {
+            text = text.replace('\x00CODEBLOCK' + i + '\x00', blocks[i]);
+        }
+        return text;
+    }
+
+    function buildCodeCogsUrl(latex, dpi, display) {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var colorCmd = isDark ? '\\color{white}' : '\\color{black}';
+        var encoded = encodeURIComponent(colorCmd + ' ' + latex.trim());
+        return 'https://latex.codecogs.com/png.image?\\dpi{' + dpi + '}' + encoded;
+    }
+
+    function convertLatexToImages(text) {
+        var dpi = document.getElementById('latex-dpi').value;
+
+        // Display math: $$...$$ (must come before inline)
+        text = text.replace(/\$\$([\s\S]*?)\$\$/g, function(m, eq) {
+            var url = buildCodeCogsUrl(eq, dpi, true);
+            return '![equation](' + url + '){{DISPLAY_MATH}}';
+        });
+
+        // Display math: \[...\]
+        text = text.replace(/\\\[([\s\S]*?)\\\]/g, function(m, eq) {
+            var url = buildCodeCogsUrl(eq, dpi, true);
+            return '![equation](' + url + '){{DISPLAY_MATH}}';
+        });
+
+        // Inline math: $...$  (not preceded or followed by $)
+        text = text.replace(/(?<!\$)\$(?!\$)((?:\\.|[^$])+?)\$(?!\$)/g, function(m, eq) {
+            var url = buildCodeCogsUrl(eq, dpi, false);
+            return '![equation](' + url + ')';
+        });
+
+        // Inline math: \(...\)
+        text = text.replace(/\\\((.*?)\\\)/g, function(m, eq) {
+            var url = buildCodeCogsUrl(eq, dpi, false);
+            return '![equation](' + url + ')';
+        });
+
+        return text;
+    }
+
+    function convertLatexToImagesHTML(html) {
+        // Post-process HTML: add classes to latex images
+        html = html.replace(/<img([^>]*alt="equation"[^>]*)>\{\{DISPLAY_MATH\}\}/g,
+            '<img$1 class="latex-img display-math">');
+        html = html.replace(/<img([^>]*alt="equation"[^>]*)>/g, function(m, attrs) {
+            if (attrs.indexOf('class=') !== -1) return m;
+            return '<img' + attrs + ' class="latex-img">';
+        });
+        // Clean any remaining markers
+        html = html.replace(/\{\{DISPLAY_MATH\}\}/g, '');
+        return html;
+    }
+
+    // ─── Markdown rendering ───────────────────────────────────────
+    marked.setOptions({
+        breaks: true,
+        gfm: true,
+        highlight: function(code, lang) {
+            if (lang && hljs.getLanguage(lang)) {
+                return hljs.highlight(code, { language: lang }).value;
+            }
+            return hljs.highlightAuto(code).value;
+        }
+    });
+
+    // ─── Main render pipeline ─────────────────────────────────────
+    function processText(rawText) {
+        var text = rawText;
+
+        // 1. Strip citations
+        text = stripCitations(text);
+
+        // 2. Protect code blocks before LaTeX processing
+        var protected_ = protectCodeBlocks(text);
+        text = protected_.text;
+
+        // 3. Convert LaTeX to image markdown (if enabled)
+        if (document.getElementById('latex-toggle').checked) {
+            text = convertLatexToImages(text);
+        }
+
+        // 4. Restore code blocks
+        text = restoreCodeBlocks(text, protected_.blocks);
+
+        return text;
+    }
+
+    function renderPreview() {
+        var raw = document.getElementById('input-area').value;
+        if (!raw.trim()) {
+            document.getElementById('preview-area').innerHTML =
+                '<p style="color: var(--text-secondary); font-style: italic;">Paste chatbot output on the left to see the formatted preview here.</p>';
+            return;
+        }
+
+        var processed = processText(raw);
+
+        // Render markdown to HTML
+        var html = marked.parse(processed);
+
+        // Sanitize
+        html = DOMPurify.sanitize(html, {
+            ADD_TAGS: ['img'],
+            ADD_ATTR: ['src', 'alt', 'class', 'style'],
+            ALLOW_DATA_ATTR: false
+        });
+
+        // Post-process LaTeX image classes
+        html = convertLatexToImagesHTML(html);
+
+        // Apply font settings
+        var fontFamily = document.getElementById('font-family').value;
+        var fontSize = parseFloat(document.getElementById('font-size').value) || 11;
+        var scaleHeaders = document.getElementById('scale-headers').checked;
+
+        var preview = document.getElementById('preview-area');
+        preview.style.fontFamily = fontFamily;
+        preview.style.fontSize = fontSize + 'pt';
+
+        preview.innerHTML = html;
+
+        // Apply header sizing
+        var defaultSizes = { H1: 24, H2: 20, H3: 16, H4: 14, H5: 12, H6: 11 };
+        var ratio = fontSize / 11; // ratio relative to default 11pt
+        var headers = preview.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headers.forEach(function(h) {
+            var tag = h.tagName;
+            if (scaleHeaders) {
+                h.style.fontSize = (defaultSizes[tag] * ratio) + 'pt';
+            } else {
+                h.style.fontSize = defaultSizes[tag] + 'pt';
+            }
+        });
+    }
+
+    // ─── Copy functions ───────────────────────────────────────────
+    function showCopyFeedback(msg) {
+        var el = document.getElementById('copy-feedback');
+        el.textContent = msg || 'Copied!';
+        el.classList.add('show');
+        setTimeout(function() { el.classList.remove('show'); }, 1800);
+    }
+
+    function copyRich() {
+        var preview = document.getElementById('preview-area');
+        var html = preview.innerHTML;
+        if (!html.trim() || preview.querySelector('p[style*="italic"]')) {
+            showCopyFeedback('Nothing to copy');
+            return;
+        }
+
+        // Wrap with inline font styles for Google Docs
+        var fontFamily = document.getElementById('font-family').value;
+        var fontSize = parseFloat(document.getElementById('font-size').value) || 11;
+        var wrappedHtml = '<div style="font-family: ' + fontFamily + '; font-size: ' + fontSize + 'pt;">' + html + '</div>';
+
+        // Also provide plain text fallback
+        var plainText = preview.innerText;
+
+        var htmlBlob = new Blob([wrappedHtml], { type: 'text/html' });
+        var textBlob = new Blob([plainText], { type: 'text/plain' });
+
+        navigator.clipboard.write([
+            new ClipboardItem({
+                'text/html': htmlBlob,
+                'text/plain': textBlob
+            })
+        ]).then(function() {
+            showCopyFeedback('Copied rich text!');
+        }).catch(function(err) {
+            // Fallback: select and copy
+            var range = document.createRange();
+            range.selectNodeContents(preview);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            document.execCommand('copy');
+            sel.removeAllRanges();
+            showCopyFeedback('Copied!');
+        });
+    }
+
+    function copyMarkdown() {
+        var raw = document.getElementById('input-area').value;
+        if (!raw.trim()) {
+            showCopyFeedback('Nothing to copy');
+            return;
+        }
+        var processed = processText(raw);
+
+        navigator.clipboard.writeText(processed).then(function() {
+            showCopyFeedback('Copied markdown!');
+        }).catch(function() {
+            // Fallback
+            var ta = document.createElement('textarea');
+            ta.value = processed;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showCopyFeedback('Copied!');
+        });
+    }
+
+    // ─── Event listeners ──────────────────────────────────────────
+    var debounceTimer;
+    document.getElementById('input-area').addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(renderPreview, 300);
+    });
+
+    // Re-render when any option changes
+    document.querySelectorAll('.options-bar input, .options-bar select').forEach(function(el) {
+        el.addEventListener('change', renderPreview);
+    });
+    document.getElementById('font-size').addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(renderPreview, 200);
+    });
+
+    // ─── Theme toggle ─────────────────────────────────────────────
+    var themeButton = document.getElementById('theme-button');
+    var DARK_KEY = 'chatbot-docs-dark';
+    var LIGHT_KEY = 'chatbot-docs-light';
+
+    function updateAppChromeTheme(theme) {
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        var dark = theme === 'dark';
+        if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+        if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+    }
+    function updateButtonEmoji(theme) {
+        themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+    }
+    var initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', initTheme);
+    updateAppChromeTheme(initTheme);
+    updateButtonEmoji(initTheme);
+    window.addEventListener('pageshow', function () {
+        updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+    });
+    themeButton.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        if (next === 'dark') {
+            localStorage.setItem(DARK_KEY, 'true');
+            localStorage.removeItem(LIGHT_KEY);
+        } else {
+            localStorage.setItem(LIGHT_KEY, 'true');
+            localStorage.removeItem(DARK_KEY);
+        }
+        updateAppChromeTheme(next);
+        updateButtonEmoji(next);
+        // Re-render to update LaTeX image colors
+        renderPreview();
+    });
+    </script>
+
+    <!-- Brave iOS gradient text fix -->
+    <script>
+    (function () {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+</html>
