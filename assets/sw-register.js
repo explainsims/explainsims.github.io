@@ -23,6 +23,7 @@
       updateFallbackTimer = 0;
     }
     removeUpdateBanner();
+    sessionStorage.setItem('sw-just-updated', '1');
     window.location.reload();
   };
 
@@ -153,8 +154,15 @@
       });
 
       // Periodically check for updates
+      // Skip the immediate check if we just reloaded from an update
+      // to avoid showing the banner a second time
       const update = () => registration.update().catch(() => { });
-      update();
+      const justUpdated = sessionStorage.getItem('sw-just-updated');
+      if (justUpdated) {
+        sessionStorage.removeItem('sw-just-updated');
+      } else {
+        update();
+      }
       setInterval(update, 60 * 60 * 1000);
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
