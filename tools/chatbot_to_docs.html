@@ -431,6 +431,21 @@
             font-size: 0.75rem;
         }
 
+        .btn-help {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            color: #fff;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+            gap: 6px;
+        }
+        .btn-help:hover {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            filter: brightness(1.1);
+        }
+        [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
+
         .copy-feedback {
             font-size: 0.75rem;
             color: var(--brand-primary);
@@ -441,10 +456,12 @@
         .copy-feedback.show { opacity: 1; }
 
         .divider {
-            width: 1px;
-            height: 28px;
+            width: 2px;
+            align-self: stretch;
             background: var(--card-border);
             flex-shrink: 0;
+            border-radius: 1px;
+            opacity: 0.8;
         }
 
         /* Custom regex input */
@@ -538,18 +555,18 @@
 
             <div class="opt-group">
                 <span class="opt-group-label">Table Width</span>
-                <div class="opt-group-row">
+                <div class="opt-group-row" style="align-items:flex-end;">
                     <select id="paper-size" title="Paper size">
                         <option value="8.27">A4</option>
+                        <option value="11.69">A3</option>
                         <option value="8.5">US Letter</option>
                         <option value="8.5" data-label="legal">US Legal</option>
                         <option value="11">US Tabloid</option>
-                        <option value="11.69">A3</option>
                     </select>
                     <div class="margin-pair">
                         <div class="margin-col">
                             <span class="margin-col-label">Left</span>
-                            <input type="number" id="margin-left" class="margin-input" value="1.0" min="0" max="4" step="0.1" title="Left margin (inches)">
+                            <input type="number" id="margin-left" class="margin-input" value="1.0" min="0" max="10" step="0.1" title="Left margin">
                         </div>
                         <div class="lock-col">
                             <span class="margin-col-label">Lock</span>
@@ -559,9 +576,12 @@
                         </div>
                         <div class="margin-col">
                             <span class="margin-col-label">Right</span>
-                            <input type="number" id="margin-right" class="margin-input" value="1.0" min="0" max="4" step="0.1" title="Right margin (inches)" disabled>
+                            <input type="number" id="margin-right" class="margin-input" value="1.0" min="0" max="10" step="0.1" title="Right margin" disabled>
                         </div>
-                        <span class="margin-col-label" style="padding-bottom:4px;">in</span>
+                        <select id="margin-unit" title="Margin unit" style="width:auto; min-width:50px; align-self:flex-end;">
+                            <option value="in">in</option>
+                            <option value="cm">cm</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -569,7 +589,10 @@
             <div class="divider"></div>
 
             <div class="opt-group" style="justify-content:center;">
-                <button class="btn btn-secondary btn-sm" id="help-btn" aria-label="Help" title="Show help">? Help</button>
+                <button class="btn btn-help" id="help-btn" aria-label="Help" title="Show help">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Help
+                </button>
             </div>
         </div>
 
@@ -615,21 +638,22 @@
             <div class="help-divider"></div>
             <div class="help-section">
                 <h3>LaTeX</h3>
-                <p><strong>Convert to images</strong> turns any LaTeX maths (inline <em>$…$</em> or display <em>$$…$$</em>) into rendered equation images via CodeCogs, so they paste correctly into Google Docs.</p>
+                <p><strong>Convert to images</strong> turns any LaTeX maths output from a chatbot into rendered equation images via CodeCogs, so they paste correctly into Google Docs.</p>
                 <p><strong>Size</strong> controls the image resolution. <em>Match font size</em> scales automatically with your chosen font size; the fixed options (Small / Medium / Large) give consistent sizing regardless of font.</p>
             </div>
             <div class="help-divider"></div>
             <div class="help-section">
                 <h3>Font</h3>
-                <p>Choose the <strong>font family</strong> and <strong>size</strong> (in points) that match your Google Doc. These are inlined into the copied HTML so Docs picks them up.</p>
+                <p>Choose the <strong>font family</strong> and <strong>size</strong> you want the text to be when pasted into Google Docs.</p>
                 <p><strong>Scale headers</strong> adjusts heading sizes proportionally to your chosen font size (e.g. H1 scales from 24 pt at 12 pt body). When unchecked, headings use fixed default sizes.</p>
             </div>
             <div class="help-divider"></div>
             <div class="help-section">
                 <h3>Table Width</h3>
-                <p>Sets the width of every table to exactly fill the text area of your document. Choose your <strong>paper size</strong> and set <strong>Left</strong> / <strong>Right</strong> margins in inches.</p>
-                <p>The default is A4 paper with 1-inch margins on each side — matching Google Docs' defaults. All columns within a table are made equal width.</p>
-                <p><strong>Lock</strong> keeps both margins identical. Uncheck it to set them independently.</p>
+                <p>Sets the width of every table to exactly fill the text area of your document. Choose your <strong>paper size</strong> and set <strong>Left</strong> / <strong>Right</strong> margins.</p>
+                <p>Paper sizes are portrait orientation — widths are: A4 = 210 mm (8.27 in), A3 = 297 mm (11.69 in), US Letter / Legal = 8.5 in, US Tabloid = 11 in.</p>
+                <p>The default is A4 with 1-inch margins on each side, matching Google Docs' defaults. All columns within a table are made equal width.</p>
+                <p>Switch between <strong>in</strong> and <strong>cm</strong> — values convert automatically. <strong>Lock</strong> keeps both margins identical; uncheck to set them independently.</p>
             </div>
         </div>
     </aside>
@@ -861,11 +885,18 @@
     }
 
     // ─── Table width ──────────────────────────────────────────────
+    function getMarginsInInches() {
+        var unit = document.getElementById('margin-unit').value;
+        var left  = parseFloat(document.getElementById('margin-left').value)  || 0;
+        var right = parseFloat(document.getElementById('margin-right').value) || 0;
+        if (unit === 'cm') { left /= 2.54; right /= 2.54; }
+        return { left: left, right: right };
+    }
+
     function getTableWidthPx() {
         var paperWidthIn = parseFloat(document.getElementById('paper-size').value) || 8.27;
-        var marginLeft = parseFloat(document.getElementById('margin-left').value) || 0;
-        var marginRight = parseFloat(document.getElementById('margin-right').value) || 0;
-        var availableIn = Math.max(paperWidthIn - marginLeft - marginRight, 0.5);
+        var margins = getMarginsInInches();
+        var availableIn = Math.max(paperWidthIn - margins.left - margins.right, 0.5);
         return Math.round(availableIn * 96); // 96 CSS px per inch
     }
 
@@ -1000,6 +1031,17 @@
     });
     marginLeftEl.addEventListener('input', function() {
         if (lockEl.checked) marginRightEl.value = this.value;
+    });
+
+    // ─── Unit conversion (in ↔ cm) ────────────────────────────────
+    document.getElementById('margin-unit').addEventListener('change', function() {
+        var toCm = this.value === 'cm';
+        var factor = toCm ? 2.54 : 1 / 2.54;
+        var round2 = function(v) { return Math.round(v * 100) / 100; };
+        marginLeftEl.value  = round2(parseFloat(marginLeftEl.value)  * factor);
+        marginRightEl.value = round2(parseFloat(marginRightEl.value) * factor);
+        marginLeftEl.max  = marginRightEl.max  = toCm ? '25' : '10';
+        marginLeftEl.step = marginRightEl.step = '0.1';
     });
 
     // ─── Help panel ───────────────────────────────────────────────
