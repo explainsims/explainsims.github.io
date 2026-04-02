@@ -563,16 +563,15 @@
         tex = tex.replace(/={3,}/g, '=');
 
         // 3. Unicode middle dot · → \cdot (but handle \text{} blocks specially)
-        //    Inside \text{kg·m}, split into \text{kg}\!\cdot\!\text{m}
-        tex = tex.replace(/\\text\{([^}]*)\}/g, function(m, inner) {
-            if (inner.indexOf('\u00B7') === -1 && inner.indexOf('\u22C5') === -1) return m;
+        //    Inside \text{kg·m}^2, split into \text{kg}\cdot\text{m}^2
+        //    Must preserve anything after the closing } (like ^2)
+        tex = tex.replace(/\\text\{([^}]*[\u00B7\u22C5][^}]*)\}/g, function(m, inner) {
             var parts = inner.split(/[\u00B7\u22C5]/);
-            return parts.map(function(p) { return p ? '\\text{' + p + '}' : ''; }).join('\\!\\cdot\\!');
+            return parts.map(function(p) { return p ? '\\text{' + p + '}' : ''; }).join('\\cdot ');
         });
-        tex = tex.replace(/\\mathrm\{([^}]*)\}/g, function(m, inner) {
-            if (inner.indexOf('\u00B7') === -1 && inner.indexOf('\u22C5') === -1) return m;
+        tex = tex.replace(/\\mathrm\{([^}]*[\u00B7\u22C5][^}]*)\}/g, function(m, inner) {
             var parts = inner.split(/[\u00B7\u22C5]/);
-            return parts.map(function(p) { return p ? '\\mathrm{' + p + '}' : ''; }).join('\\!\\cdot\\!');
+            return parts.map(function(p) { return p ? '\\mathrm{' + p + '}' : ''; }).join('\\cdot ');
         });
         // Remaining middle dots outside \text{} — straight replacement
         tex = tex.replace(/\u00B7/g, '\\cdot ');
