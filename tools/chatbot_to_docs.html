@@ -420,10 +420,10 @@
                 <div class="opt-group-row">
                     <label class="opt-check"><input type="checkbox" id="latex-toggle" checked> Convert to images</label>
                     <select id="latex-size">
-                        <option value="110" selected>Small</option>
+                        <option value="auto" selected>Match font size</option>
+                        <option value="110">Small</option>
                         <option value="150">Medium</option>
                         <option value="200">Large</option>
-                        <option value="auto">Match font size</option>
                     </select>
                 </div>
             </div>
@@ -683,15 +683,25 @@
             }
         });
 
-        // Ensure tables have visible borders for Google Docs
+        // Ensure tables have visible borders and full width for Google Docs
         clone.querySelectorAll('table').forEach(function(t) {
             t.setAttribute('border', '1');
-            t.setAttribute('cellpadding', '6');
+            t.setAttribute('cellpadding', '8');
             t.style.borderCollapse = 'collapse';
+            t.style.width = '100%';
+            t.style.tableLayout = 'auto';
         });
-        clone.querySelectorAll('th, td').forEach(function(c) {
-            c.style.border = '1px solid #999';
-            c.style.padding = '6px 10px';
+        clone.querySelectorAll('th').forEach(function(c) {
+            c.style.border = '1px solid #bbb';
+            c.style.padding = '8px 12px';
+            c.style.backgroundColor = '#f0f0f4';
+            c.style.fontWeight = 'bold';
+            c.style.textAlign = 'left';
+        });
+        clone.querySelectorAll('td').forEach(function(c) {
+            c.style.border = '1px solid #bbb';
+            c.style.padding = '8px 12px';
+            c.style.textAlign = 'left';
         });
 
         return '<div style="font-family: ' + fontFamily + '; font-size: ' + fontSize + 'pt;">' + clone.innerHTML + '</div>';
