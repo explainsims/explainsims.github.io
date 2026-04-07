@@ -357,14 +357,33 @@ async function extractDocxHtml(file) {
 }
 
 async function extractPdf(file) {
+    if (!window.pdfjsLib) {
+        throw new Error('PDF.js library not loaded. Please reload the page.');
+    }
     var buf = await readAsArrayBuffer(file);
-    var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
     var pages = [];
     for (var i = 1; i <= pdf.numPages; i++) {
         var page = await pdf.getPage(i);
         var content = await page.getTextContent();
-        var text = content.items.map(function(item) { return item.str; }).join(' ');
-        pages.push(text);
+        // Join items with spaces, but preserve line breaks by checking Y positions
+        var lastY = null;
+        var lineText = '';
+        var lineTexts = [];
+        for (var k = 0; k < content.items.length; k++) {
+            var item = content.items[k];
+            if (item.str === '') continue;
+            var y = Math.round(item.transform[5]);
+            if (lastY !== null && Math.abs(y - lastY) > 2) {
+                if (lineText) lineTexts.push(lineText);
+                lineText = item.str;
+            } else {
+                lineText += (lineText ? ' ' : '') + item.str;
+            }
+            lastY = y;
+        }
+        if (lineText) lineTexts.push(lineText);
+        pages.push(lineTexts.join('\n'));
     }
     return pages.join('\n\n');
 }
@@ -661,7 +680,7 @@ async function createGoogleDoc() {
         // Step 2: Insert content into the first (default) tab
         var firstTabContent = await getTabContent(tabs[0]);
         if (firstTabContent) {
-            if (tabs[0].importMode === 'markdown') {
+            if (tabs[0].importMode === 'markdown' || tabs[0].importMode === 'formatted') {
                 await insertMarkdownIntoDoc(docId, firstTabContent, null);
             } else {
                 await insertTextIntoDoc(docId, firstTabContent, null);
@@ -725,7 +744,7 @@ async function createGoogleDoc() {
                 var tabContent = await getTabContent(tabs[j]);
                 if (tabContent && updatedDoc.tabs && updatedDoc.tabs[j]) {
                     var tabId = updatedDoc.tabs[j].tabProperties.tabId;
-                    if (tabs[j].importMode === 'markdown') {
+                    if (tabs[j].importMode === 'markdown' || tabs[j].importMode === 'formatted') {
                         await insertMarkdownIntoDoc(docId, tabContent, tabId);
                     } else {
                         await insertTextIntoDoc(docId, tabContent, tabId);
@@ -753,7 +772,61 @@ async function createGoogleDoc() {
 }
 
 async function getTabContent(tab) {
+    // For DOCX "formatted" mode, re-extract with Mammoth HTML and convert to markdown-like text
+    if (tab.fileType === 'docx' && tab.importMode === 'formatted' && tab.rawFile) {
+        try {
+            await ensureMammoth();
+            var buf = await readAsArrayBuffer(tab.rawFile);
+            var result = await mammoth.convertToHtml({ arrayBuffer: buf });
+            return htmlToSimpleMarkdown(result.value);
+        } catch (e) {
+            // Fall back to raw text
+            return tab.content;
+        }
+    }
     return tab.content;
+}
+
+// Convert Mammoth HTML output to simple markdown for Docs API formatting
+function htmlToSimpleMarkdown(html) {
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    var lines = [];
+    function walk(node) {
+        if (node.nodeType === 3) { // text node
+            return node.textContent;
+        }
+        if (node.nodeType !== 1) return '';
+        var tag = node.tagName.toLowerCase();
+        var childText = '';
+        for (var i = 0; i < node.childNodes.length; i++) {
+            childText += walk(node.childNodes[i]);
+        }
+        if (tag === 'h1') return '# ' + childText + '\n';
+        if (tag === 'h2') return '## ' + childText + '\n';
+        if (tag === 'h3') return '### ' + childText + '\n';
+        if (tag === 'h4') return '#### ' + childText + '\n';
+        if (tag === 'h5') return '##### ' + childText + '\n';
+        if (tag === 'h6') return '###### ' + childText + '\n';
+        if (tag === 'strong' || tag === 'b') return '**' + childText + '**';
+        if (tag === 'em' || tag === 'i') return '*' + childText + '*';
+        if (tag === 'p') return childText + '\n';
+        if (tag === 'br') return '\n';
+        if (tag === 'li') {
+            var parent = node.parentElement;
+            if (parent && parent.tagName.toLowerCase() === 'ol') {
+                var idx = Array.prototype.indexOf.call(parent.children, node) + 1;
+                return idx + '. ' + childText + '\n';
+            }
+            return '- ' + childText + '\n';
+        }
+        if (tag === 'ul' || tag === 'ol') return childText;
+        return childText;
+    }
+    for (var i = 0; i < div.childNodes.length; i++) {
+        lines.push(walk(div.childNodes[i]));
+    }
+    return lines.join('');
 }
 
 // ── Markdown → Google Docs formatting ──
