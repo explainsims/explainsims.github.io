@@ -166,6 +166,13 @@ const BUILD_ID = 'YYYY-MM-DDTHH:MM:SSZ';  // Update this on every change
 1. External CDN URLs must match exactly between HTML and `ASSETS_TO_CACHE` (version/path/query included)
 2. If a cached page depends on local media assets (`.mp3`, `.webm`, images, fonts) for core UX, add those assets to `ASSETS_TO_CACHE`
 3. If `assets/sw-register.js` is updated (it is cached), bump `BUILD_ID` in `sw.js`
+
+### Offline-Ready Apps
+An app is **truly offline-ready** only when both its HTML file AND all CDN scripts/stylesheets it needs for core functionality are listed in `ASSETS_TO_CACHE`. Add every CDN `<script src="...">` and `<link rel="stylesheet" href="...">` the page requires to the cache list.
+
+Apps are **not** offline-ready if they depend on live network APIs (e.g. a rendering service called at runtime with dynamic query parameters) — those responses cannot be precached.
+
+For each new app, after adding CDN deps to `ASSETS_TO_CACHE`, also add the app path + all those same CDN URLs to `OFFLINE_CARD_REQUIREMENTS` in the relevant tab HTML (e.g. `tools.html`) so the Offline Ready pill appears on its card. Only add the pill when the app is genuinely fully offline-capable.
 ### When Adding New Pages
 1. Unless explicitly requested to publish, create the new page in the appropriate directory but do not add `sw-register.js`, link it from a gallery page, or add it to `ASSETS_TO_CACHE`
 2. For published pages, add the new page path to `ASSETS_TO_CACHE` array in `sw.js`
@@ -206,8 +213,10 @@ Then open `http://localhost:8000` in a browser.
 3. Use the standard theming CSS variables
 4. Add the shared footer (see Shared Footer below) just before `</body>`
 5. If published, add to `sw.js` `ASSETS_TO_CACHE` array and bump `BUILD_ID`
-6. Add link to the relevant gallery page in the appropriate section
-7. Add URL to `sitemap.xml` if page is public
+6. Add all CDN dependencies used by the page to `ASSETS_TO_CACHE` so the app is truly offline-capable (see Offline-Ready Apps below). If a dependency is a live API (e.g. a rendering service) that cannot be cached, the app cannot be fully offline-ready and should NOT get an Offline Ready pill.
+7. Add link to the relevant gallery page in the appropriate section, with the correct `card-source-pill` (tab name)
+8. Add the app to the `FEATURED_POOL` array in `index.html` so it can appear in the Featured section
+9. Add URL to `sitemap.xml` if page is public
 
 ### Updating the Theme System
 Theme colors are defined in CSS `:root` and `[data-theme="dark"]` selectors. Key variables:

@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-04-07T18:00:00Z';
+const BUILD_ID = '2026-04-07T19:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -65,12 +65,7 @@ const ASSETS_TO_CACHE = [
   '/teachers/jeopardy.html',
 
   // Tools
-  '/tools/chatbot_to_docs.html',
-  'https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js',
-  'https://cdn.jsdelivr.net/npm/dompurify@2.3.4/dist/purify.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css',
+  '/tools/chatbot_to_docs.html',  // not offline-ready (depends on CodeCogs live API)
   '/tools/pdf_splitter.html',
   'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
   'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js',
