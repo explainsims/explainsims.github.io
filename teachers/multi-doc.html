@@ -280,7 +280,7 @@
 
 <script>
 // ── Config ──
-const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '145857450332-jkggiigj7kmi87ha4afen7b4p6a4573n.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
 
 // PDF.js worker
@@ -545,7 +545,7 @@ function setStatus(msg, type) {
 // ── Google Auth ──
 function updateActionArea() {
     var html = '';
-    if (GOOGLE_CLIENT_ID === 'YOUR_CLIENT_ID.apps.googleusercontent.com') {
+    if (GOOGLE_CLIENT_ID === '145857450332-jkggiigj7kmi87ha4afen7b4p6a4573n.apps.googleusercontent.com') {
         html = '<div class="config-banner">To enable Google Docs integration, set your <code>GOOGLE_CLIENT_ID</code> in the script at the bottom of this file. You need a Google Cloud project with the Google Docs API and Google Drive API enabled, and an OAuth 2.0 Client ID for a Web application.</div>';
     } else if (!isSignedIn) {
         html = '<button class="google-signin-btn" id="signin-btn" type="button">' +
@@ -570,7 +570,7 @@ function updateActionArea() {
 }
 
 function initGoogleAuth() {
-    if (GOOGLE_CLIENT_ID === 'YOUR_CLIENT_ID.apps.googleusercontent.com') return;
+    if (GOOGLE_CLIENT_ID === '145857450332-jkggiigj7kmi87ha4afen7b4p6a4573n.apps.googleusercontent.com') return;
     if (typeof google === 'undefined' || !google.accounts) {
         setTimeout(initGoogleAuth, 500);
         return;
