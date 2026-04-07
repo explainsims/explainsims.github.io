@@ -962,6 +962,7 @@
     addRangeBtn.addEventListener('click', function() {
         addRangeRow();
         updatePreview();
+        updatePageGrid();
     });
 
     function addRangeRow(pageVal) {
@@ -976,8 +977,12 @@
         row.querySelector('.remove-range-btn').addEventListener('click', function() {
             row.remove();
             updatePreview();
+            updatePageGrid();
         });
-        row.querySelector('.range-page').addEventListener('input', updatePreview);
+        row.querySelector('.range-page').addEventListener('input', function() {
+            updatePreview();
+            updatePageGrid();
+        });
     }
 
     // Init first row events
@@ -986,8 +991,12 @@
         firstRow.querySelector('.remove-range-btn').addEventListener('click', function() {
             firstRow.remove();
             updatePreview();
+            updatePageGrid();
         });
-        firstRow.querySelector('.range-page').addEventListener('input', updatePreview);
+        firstRow.querySelector('.range-page').addEventListener('input', function() {
+            updatePreview();
+            updatePageGrid();
+        });
     })();
 
     // --- Select Pages ---
