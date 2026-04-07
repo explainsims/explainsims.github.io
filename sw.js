@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-04-07T21:00:00Z';
+const BUILD_ID = '2026-04-07T23:30:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -63,6 +63,9 @@ const ASSETS_TO_CACHE = [
   // Teachers
   '/teachers/cmdterm_wordle.html',
   '/teachers/jeopardy.html',
+  '/teachers/multi-doc.html',
+  'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
 
   // Tools
   '/tools/chatbot_to_docs.html',  // not offline-ready (depends on CodeCogs live API)
