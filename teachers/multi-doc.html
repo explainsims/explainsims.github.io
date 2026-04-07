@@ -213,6 +213,7 @@
     <div class="action-area" id="action-area">
         <div id="auth-section"></div>
         <div class="status-text" id="status-text"></div>
+        <button class="signout-btn" id="signout-btn" type="button" style="display:none">Sign out</button>
     </div>
 </main>
 
@@ -280,7 +281,7 @@
 
 <script>
 // ── Config ──
-const GOOGLE_CLIENT_ID = '145857450332-jkggiigj7kmi87ha4afen7b4p6a4573n.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '145857450332-e48aqkd6ukrrr5jt7jp20ele0ne2ff95.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
 
 // PDF.js worker
@@ -291,8 +292,8 @@ if (window.pdfjsLib) {
 // ── State ──
 let tabIdCounter = 0;
 const tabs = []; // { id, name, fileType, content, size, importMode }
-let accessToken = null;
-let isSignedIn = false;
+let accessToken = sessionStorage.getItem('docs-tab-builder-token');
+let isSignedIn = !!accessToken;
 let tokenClient = null;
 
 // ── DOM refs ──
@@ -573,19 +574,16 @@ function updateActionArea() {
             '<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>' +
             'Sign in with Google</button>';
     } else {
-        html = '<div class="user-info">Signed in</div>' +
-            '<button class="create-doc-btn" id="create-doc-btn" type="button"' + (tabs.length === 0 ? ' disabled' : '') + '>' +
+        html = '<button class="create-doc-btn" id="create-doc-btn" type="button"' + (tabs.length === 0 ? ' disabled' : '') + '>' +
             '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>' +
-            'Create Google Doc</button>' +
-            '<button class="signout-btn" id="signout-btn" type="button">Sign out</button>';
+            'Create Google Doc</button>';
     }
     authSection.innerHTML = html;
+    document.getElementById('signout-btn').style.display = isSignedIn ? '' : 'none';
 
     // Bind events
     var signinBtn = document.getElementById('signin-btn');
     if (signinBtn) signinBtn.addEventListener('click', handleSignIn);
-    var signoutBtn = document.getElementById('signout-btn');
-    if (signoutBtn) signoutBtn.addEventListener('click', handleSignOut);
     var createBtn = document.getElementById('create-doc-btn');
     if (createBtn) createBtn.addEventListener('click', createGoogleDoc);
 }
@@ -605,6 +603,7 @@ function initGoogleAuth() {
                 return;
             }
             accessToken = response.access_token;
+            sessionStorage.setItem('docs-tab-builder-token', accessToken);
             isSignedIn = true;
             setStatus('Signed in successfully', 'success');
             updateActionArea();
@@ -625,6 +624,7 @@ function handleSignOut() {
         google.accounts.oauth2.revoke(accessToken);
     }
     accessToken = null;
+    sessionStorage.removeItem('docs-tab-builder-token');
     isSignedIn = false;
     setStatus('Signed out', '');
     updateActionArea();
@@ -739,10 +739,12 @@ async function createGoogleDoc() {
 
     } catch (err) {
         setStatus('Error: ' + err.message, 'error');
-        if (err.message && err.message.includes('invalid_grant')) {
+        if (err.message && (err.message.includes('invalid_grant') || err.message.includes('401') || err.message.includes('Invalid Credentials'))) {
             isSignedIn = false;
             accessToken = null;
+            sessionStorage.removeItem('docs-tab-builder-token');
             updateActionArea();
+            setStatus('Session expired — please sign in again', 'error');
         }
     } finally {
         var btn = document.getElementById('create-doc-btn');
@@ -755,11 +757,53 @@ async function getTabContent(tab) {
 }
 
 // ── Markdown → Google Docs formatting ──
-function parseMarkdown(md) {
+
+// Split markdown into text sections and table sections
+function splitMarkdownSections(md) {
+    var lines = md.split('\n');
+    var sections = [];
+    var textBuf = [];
+    var tableBuf = [];
+    var inTable = false;
+
+    function flushText() {
+        if (textBuf.length > 0) {
+            sections.push({ type: 'text', content: textBuf.join('\n') });
+            textBuf = [];
+        }
+    }
+    function flushTable() {
+        if (tableBuf.length > 0) {
+            var rows = tableBuf.map(function(line) {
+                return line.split('|').slice(1, -1).map(function(c) { return c.trim(); });
+            });
+            if (rows.length > 0) sections.push({ type: 'table', rows: rows });
+            tableBuf = [];
+        }
+    }
+
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var isTableRow = /^\|(.+\|)+\s*$/.test(line.trim());
+        var isSeparator = /^\|[\s\-:|]+\|$/.test(line.trim());
+
+        if (isTableRow) {
+            if (!inTable) { flushText(); inTable = true; }
+            if (!isSeparator) tableBuf.push(line);
+        } else {
+            if (inTable) { flushTable(); inTable = false; }
+            textBuf.push(line);
+        }
+    }
+    if (inTable) flushTable(); else flushText();
+    return sections;
+}
+
+function parseMarkdown(md, startPos) {
     var lines = md.split('\n');
     var text = '';
     var styles = [];
-    var pos = 1; // Docs API 1-based index
+    var pos = startPos || 1;
 
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
@@ -847,57 +891,140 @@ function stylesToRequests(styles, tabId) {
     return reqs;
 }
 
-async function insertMarkdownIntoDoc(docId, markdown, tabId) {
-    var parsed = parseMarkdown(markdown);
-
-    // Step 1: Insert the plain text
-    await insertTextIntoDoc(docId, parsed.text, tabId);
-
-    // Step 2: Apply formatting
-    var fmtReqs = stylesToRequests(parsed.styles, tabId);
-    if (fmtReqs.length === 0) return;
-
+async function doBatchUpdate(docId, requests) {
     var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
         method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + accessToken,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ requests: fmtReqs })
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requests: requests })
     });
     if (!res.ok) {
         var err = await res.json().catch(function() { return {}; });
-        throw new Error(err.error ? err.error.message : 'Failed to apply formatting');
+        throw new Error(err.error ? err.error.message : 'batchUpdate failed');
+    }
+    return res.json();
+}
+
+async function getDocEndIndex(docId, tabId) {
+    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    var doc = await res.json();
+    var tab = tabId ? doc.tabs.find(function(t) { return t.tabProperties.tabId === tabId; }) : doc.tabs[0];
+    if (!tab) return 2;
+    var body = tab.documentTab.body;
+    var last = body.content[body.content.length - 1];
+    return last.endIndex;
+}
+
+async function insertTableIntoDoc(docId, rows, tabId) {
+    var numRows = rows.length;
+    var numCols = rows[0] ? rows[0].length : 0;
+    if (numRows === 0 || numCols === 0) return;
+
+    var endIdx = await getDocEndIndex(docId, tabId);
+    var loc = { index: endIdx - 1 };
+    if (tabId) loc.tabId = tabId;
+
+    // Insert empty table
+    await doBatchUpdate(docId, [{ insertTable: { rows: numRows, columns: numCols, location: loc } }]);
+
+    // Fetch doc to find table cell indices
+    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    var doc = await res.json();
+    var tab = tabId ? doc.tabs.find(function(t) { return t.tabProperties.tabId === tabId; }) : doc.tabs[0];
+    var body = tab.documentTab.body;
+
+    // Find the last table in the body
+    var table = null;
+    for (var i = body.content.length - 1; i >= 0; i--) {
+        if (body.content[i].table) { table = body.content[i].table; break; }
+    }
+    if (!table) return;
+
+    // Fill cells in REVERSE order so indices don't shift
+    var cellInserts = [];
+    for (var r = numRows - 1; r >= 0; r--) {
+        for (var c = numCols - 1; c >= 0; c--) {
+            var cellText = rows[r] && rows[r][c] ? rows[r][c] : '';
+            if (!cellText) continue;
+            var cell = table.tableRows[r].tableCells[c];
+            var cellIdx = cell.content[0].startIndex;
+            var req = { insertText: { text: cellText, location: { index: cellIdx } } };
+            if (tabId) req.insertText.location.tabId = tabId;
+            cellInserts.push(req);
+        }
+    }
+    if (cellInserts.length > 0) await doBatchUpdate(docId, cellInserts);
+
+    // Bold the header row (first row)
+    if (table.tableRows[0]) {
+        var boldReqs = [];
+        for (var c = 0; c < numCols; c++) {
+            var hCell = table.tableRows[0].tableCells[c];
+            var hStart = hCell.content[0].startIndex;
+            var hText = rows[0][c] || '';
+            if (hText) {
+                var range = { startIndex: hStart, endIndex: hStart + hText.length };
+                if (tabId) range.tabId = tabId;
+                boldReqs.push({ updateTextStyle: { range: range, textStyle: { bold: true }, fields: 'bold' } });
+            }
+        }
+        // Re-fetch to get updated indices after cell fills
+        if (boldReqs.length > 0) {
+            res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
+                headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            doc = await res.json();
+            tab = tabId ? doc.tabs.find(function(t) { return t.tabProperties.tabId === tabId; }) : doc.tabs[0];
+            body = tab.documentTab.body;
+            for (var i = body.content.length - 1; i >= 0; i--) {
+                if (body.content[i].table) { table = body.content[i].table; break; }
+            }
+            boldReqs = [];
+            for (var c = 0; c < numCols; c++) {
+                var hCell = table.tableRows[0].tableCells[c];
+                var hStart = hCell.content[0].startIndex;
+                var hEnd = hCell.content[0].endIndex - 1; // exclude trailing newline
+                if (hEnd > hStart) {
+                    var range = { startIndex: hStart, endIndex: hEnd };
+                    if (tabId) range.tabId = tabId;
+                    boldReqs.push({ updateTextStyle: { range: range, textStyle: { bold: true }, fields: 'bold' } });
+                }
+            }
+            if (boldReqs.length > 0) await doBatchUpdate(docId, boldReqs);
+        }
+    }
+}
+
+async function insertMarkdownIntoDoc(docId, markdown, tabId) {
+    var sections = splitMarkdownSections(markdown);
+
+    for (var i = 0; i < sections.length; i++) {
+        var section = sections[i];
+        if (section.type === 'table') {
+            await insertTableIntoDoc(docId, section.rows, tabId);
+        } else {
+            var endIdx = await getDocEndIndex(docId, tabId);
+            var parsed = parseMarkdown(section.content, endIdx - 1);
+            if (parsed.text.trim()) {
+                // Insert text at end of doc
+                var loc = { index: endIdx - 1 };
+                if (tabId) loc.tabId = tabId;
+                await doBatchUpdate(docId, [{ insertText: { text: parsed.text, location: loc } }]);
+                // Apply formatting
+                var fmtReqs = stylesToRequests(parsed.styles, tabId);
+                if (fmtReqs.length > 0) await doBatchUpdate(docId, fmtReqs);
+            }
+        }
     }
 }
 
 async function insertTextIntoDoc(docId, text, tabId) {
-    var requests = [{
-        insertText: {
-            text: text,
-            location: { index: 1 }
-        }
-    }];
-
-    var body = { requests: requests };
-    if (tabId) {
-        // Target a specific tab
-        requests[0].insertText.location.tabId = tabId;
-    }
-
-    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + accessToken,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-    });
-
-    if (!res.ok) {
-        var err = await res.json().catch(function() { return {}; });
-        throw new Error(err.error ? err.error.message : 'Failed to insert content');
-    }
+    var loc = { index: 1 };
+    if (tabId) loc.tabId = tabId;
+    await doBatchUpdate(docId, [{ insertText: { text: text, location: loc } }]);
 }
 
 // ── Event listeners ──
@@ -975,6 +1102,7 @@ themeButton.addEventListener('click', function () {
 });
 
 // ── Init ──
+document.getElementById('signout-btn').addEventListener('click', handleSignOut);
 renderTabs();
 updateActionArea();
 window.addEventListener('load', initGoogleAuth);
