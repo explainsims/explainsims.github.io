@@ -101,19 +101,63 @@ Each application is self-contained in a single HTML file:
 ```
 
 ### CSS Theming System
-All apps use CSS custom properties for light/dark theme support:
+All apps use CSS custom properties for light/dark theme support.
+
+**Canonical variable set for new apps** — copy this block exactly. `chatbot_to_docs.html` and `pdf_splitter.html` are the reference implementations.
+
+> ⚠️ **Do NOT copy `cmdterm_wordle.html` or `jeopardy.html` as color templates.** They use non-standard brand colors (teal/amber and Jeopardy blue) that are specific to those apps and should not be replicated.
 
 ```css
 :root {
-  --bg-color: #f8f9fa;
-  --text-main: #2d3436;
-  --brand-primary: #6c5ce7;
-  --brand-accent: #00cec9;
+    --font-sans: 'Inter', sans-serif;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --bg-color: #F4F4F8;
+    --bg-pattern: #EAEAEF;
+    --text-main: #1A1A2E;
+    --text-secondary: #6B7280;
+
+    --brand-primary: #6c5ce7;   /* indigo/purple — THE standard brand color */
+    --brand-secondary: #5a4fcf;
+    --brand-accent: #00cec9;    /* teal — THE standard accent color */
+
+    --card-bg: #FFFFFF;
+    --card-border: #E5E7EB;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 0 1px rgba(0,0,0,0.1);
+
+    --nav-bg: rgba(255, 255, 255, 0.92);
+    --nav-border: rgba(0, 0, 0, 0.10);
+
+    --section-bg: #EEEEF3;
+    --divider-color: #E5E7EB;
+
+    --status-ready: #059669;
+    --status-error: #DC2626;
 }
 
 [data-theme="dark"] {
-  --bg-color: #0f1014;
-  --text-main: #dfe6e9;
+    --bg-color: #111118;
+    --bg-pattern: #1E1E28;
+    --text-main: #F0F0F5;
+    --text-secondary: #9CA3AF;
+
+    --brand-primary: #a29bfe;   /* light indigo for dark bg */
+    --brand-secondary: #8b85fc;
+    --brand-accent: #81ecec;    /* light teal for dark bg */
+
+    --card-bg: #1E1E28;
+    --card-border: #2A2A36;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 1px rgba(255,255,255,0.04);
+
+    --nav-bg: rgba(17, 17, 24, 0.92);
+    --nav-border: rgba(255, 255, 255, 0.08);
+
+    --section-bg: #16161E;
+    --divider-color: #2A2A36;
+
+    --status-ready: #34D399;
+    --status-error: #F87171;
 }
 ```
 
