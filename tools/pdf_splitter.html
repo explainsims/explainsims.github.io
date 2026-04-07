@@ -623,6 +623,77 @@
             background: #fff;
         }
 
+        /* Help panel */
+        .help-backdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.25);
+            z-index: 199;
+        }
+        .help-backdrop.open { display: block; }
+        .help-panel {
+            position: fixed;
+            top: 0; right: 0;
+            width: 320px; height: 100dvh;
+            background: var(--card-bg);
+            border-left: 1px solid var(--card-border);
+            box-shadow: -6px 0 24px rgba(0,0,0,0.18);
+            z-index: 200;
+            display: flex; flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+        }
+        .help-panel.open { transform: translateX(0); }
+        .help-panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 700; font-size: 0.88rem;
+            flex-shrink: 0;
+        }
+        .help-close {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; line-height: 1; padding: 4px 6px;
+            border-radius: 6px; color: var(--text-secondary);
+            transition: background 0.15s;
+        }
+        .help-close:hover { background: var(--section-bg); color: var(--text-main); }
+        .help-panel-body {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 0.82rem;
+            line-height: 1.65;
+        }
+        .help-section { margin-bottom: 20px; }
+        .help-section h3 {
+            font-size: 0.73rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--brand-primary);
+            margin-bottom: 6px;
+        }
+        .help-section p { color: var(--text-main); margin-bottom: 5px; }
+        .help-section p:last-child { margin-bottom: 0; }
+        .help-divider {
+            height: 1px; background: var(--card-border);
+            margin-bottom: 20px;
+        }
+        @media (max-width: 480px) { .help-panel { width: 90vw; } }
+
+        .btn-help {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            color: #fff;
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 13px;
+            border: none; border-radius: 9px; cursor: pointer;
+            font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
+            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+            transition: filter 0.15s;
+            white-space: nowrap;
+        }
+        .btn-help:hover { filter: brightness(1.1); }
+        [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
+
         /* Responsive */
         @media (max-width: 600px) {
             .naming-row { flex-direction: column; gap: 10px; }
@@ -649,6 +720,10 @@
     </div>
     <div class="banner-title">PDF Splitter</div>
     <div class="banner-actions">
+        <button class="btn-help" id="help-btn" aria-label="Help" title="Show help">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Help
+        </button>
         <div class="theme-toggle">
             <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes"></button>
         </div>
@@ -775,6 +850,75 @@
     </div>
 
 </div>
+
+<!-- Help panel -->
+<div class="help-backdrop" id="help-backdrop"></div>
+<aside class="help-panel" id="help-panel" aria-label="Help">
+    <div class="help-panel-header">
+        <span>PDF Splitter Guide</span>
+        <button class="help-close" id="help-close" aria-label="Close help">&#x2715;</button>
+    </div>
+    <div class="help-panel-body">
+        <div class="help-section">
+            <h3>Upload PDF</h3>
+            <p>Click the upload area or drag and drop a PDF file onto it. The file is processed entirely in your browser — nothing is uploaded to any server.</p>
+            <p>Once loaded, the page count is shown and page thumbnails are rendered for preview.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Split Mode — Every X Pages</h3>
+            <p>Divides the PDF into equal chunks of X pages. For example, a 10-page PDF split every 3 pages gives files covering pages 1–3, 4–6, 7–9, and 10.</p>
+            <p>The last file may have fewer pages if the total doesn't divide evenly.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Split Mode — Custom Ranges</h3>
+            <p>Add split points by entering a page number in each "After page" row. The PDF is divided at each point — e.g. split after pages 4 and 8 of a 12-page PDF gives files for pages 1–4, 5–8, and 9–12.</p>
+            <p>All pages after the last split point are automatically bundled into the final file. Click <strong>+ Add split point</strong> to add more rows. Duplicate or out-of-range values are ignored.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Split Mode — Select Pages</h3>
+            <p>Click individual page thumbnails in the grid to select or deselect them (green checkmark = selected). You can also type page numbers directly in the text field using commas and ranges, e.g. <em>1, 3, 6-7, 10</em>.</p>
+            <p><strong>Merge selected pages into one PDF</strong> combines all selected pages into a single output file. When unchecked, each selected page becomes its own separate PDF.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>View All Pages</h3>
+            <p>Click <strong>View all pages</strong> to expand a visual grid showing every page grouped into its split. Large groups show the first two and last two pages with "…" in between.</p>
+            <p>In Select Pages mode the grid is always expanded and all pages are clickable.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Naming — Prefix &amp; Suffix</h3>
+            <p>Optional text added to the start or end of every filename, joined with " – ". For example, prefix <em>AP Physics</em> and suffix <em>Final Exam</em> produces <em>AP Physics – filename 01 – Final Exam.pdf</em>.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Naming — Default Numbering</h3>
+            <p>Files are named using the original PDF filename plus a sequential two-digit number: <em>filename 01</em>, <em>filename 02</em>, etc. Only unnamed files count toward the sequence — named files do not consume a number.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Naming — Name Per Range</h3>
+            <p>Assign a custom name to each output file individually. A name field appears for every split in the Naming section. Leave any field blank to fall back to default numbering for that file.</p>
+            <p>The default numbering counter only increments for unnamed files, so gaps in naming don't affect the sequence.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Naming — Name List</h3>
+            <p>Enter one name per line in the text box. Names are assigned to splits in order from top to bottom. If there are <strong>more names than files</strong>, only the first N names are used. If there are <strong>fewer names than files</strong>, remaining files fall back to default numbering.</p>
+            <p>A warning appears if the count doesn't match. You can still proceed — the mismatch is handled automatically.</p>
+            <p>While Name list is active, the per-range name fields are dimmed and inactive. Switching back to Name per range re-enables them (any values you entered are preserved).</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Download ZIP</h3>
+            <p>Click <strong>Download ZIP</strong> to split the PDF and package all output files into a single ZIP archive named <em>ExplAIn Sims PDF Splitter Output.zip</em>.</p>
+            <p>A progress bar tracks file creation. All processing happens locally in your browser — no data leaves your device.</p>
+        </div>
+    </div>
+</aside>
 
 <div id="site-footer"></div>
 <script src="/assets/footer.js"></script>
@@ -1423,6 +1567,18 @@
 
         processSplit(0);
     });
+
+    // --- Help panel ---
+    (function() {
+        var panel = document.getElementById('help-panel');
+        var backdrop = document.getElementById('help-backdrop');
+        function openHelp() { panel.classList.add('open'); backdrop.classList.add('open'); }
+        function closeHelp() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
+        document.getElementById('help-btn').addEventListener('click', openHelp);
+        document.getElementById('help-close').addEventListener('click', closeHelp);
+        backdrop.addEventListener('click', closeHelp);
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeHelp(); });
+    })();
 
     // --- Theme ---
     var themeButton = document.getElementById('theme-button');

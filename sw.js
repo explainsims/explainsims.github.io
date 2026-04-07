@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-04-07T16:00:00Z';
+const BUILD_ID = '2026-04-07T19:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -65,8 +65,12 @@ const ASSETS_TO_CACHE = [
   '/teachers/jeopardy.html',
 
   // Tools
-  '/tools/chatbot_to_docs.html',
+  '/tools/chatbot_to_docs.html',  // not offline-ready (depends on CodeCogs live API)
   '/tools/pdf_splitter.html',
+  'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+  'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
 ];
 
 // Install: pre-cache your core pages

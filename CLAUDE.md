@@ -166,6 +166,13 @@ const BUILD_ID = 'YYYY-MM-DDTHH:MM:SSZ';  // Update this on every change
 1. External CDN URLs must match exactly between HTML and `ASSETS_TO_CACHE` (version/path/query included)
 2. If a cached page depends on local media assets (`.mp3`, `.webm`, images, fonts) for core UX, add those assets to `ASSETS_TO_CACHE`
 3. If `assets/sw-register.js` is updated (it is cached), bump `BUILD_ID` in `sw.js`
+
+### Offline-Ready Apps
+An app is **truly offline-ready** only when both its HTML file AND all CDN scripts/stylesheets it needs for core functionality are listed in `ASSETS_TO_CACHE`. Add every CDN `<script src="...">` and `<link rel="stylesheet" href="...">` the page requires to the cache list.
+
+Apps are **not** offline-ready if they depend on live network APIs (e.g. a rendering service called at runtime with dynamic query parameters) — those responses cannot be precached.
+
+For each new app, after adding CDN deps to `ASSETS_TO_CACHE`, also add the app path + all those same CDN URLs to `OFFLINE_CARD_REQUIREMENTS` in the relevant tab HTML (e.g. `tools.html`) so the Offline Ready pill appears on its card. Only add the pill when the app is genuinely fully offline-capable.
 ### When Adding New Pages
 1. Unless explicitly requested to publish, create the new page in the appropriate directory but do not add `sw-register.js`, link it from a gallery page, or add it to `ASSETS_TO_CACHE`
 2. For published pages, add the new page path to `ASSETS_TO_CACHE` array in `sw.js`
@@ -206,8 +213,10 @@ Then open `http://localhost:8000` in a browser.
 3. Use the standard theming CSS variables
 4. Add the shared footer (see Shared Footer below) just before `</body>`
 5. If published, add to `sw.js` `ASSETS_TO_CACHE` array and bump `BUILD_ID`
-6. Add link to the relevant gallery page in the appropriate section
-7. Add URL to `sitemap.xml` if page is public
+6. Add all CDN dependencies used by the page to `ASSETS_TO_CACHE` so the app is truly offline-capable (see Offline-Ready Apps below). If a dependency is a live API (e.g. a rendering service) that cannot be cached, the app cannot be fully offline-ready and should NOT get an Offline Ready pill.
+7. Add link to the relevant gallery page in the appropriate section, with the correct `card-source-pill` (tab name)
+8. Add the app to the `FEATURED_POOL` array in `index.html` so it can appear in the Featured section
+9. Add URL to `sitemap.xml` if page is public
 
 ### Updating the Theme System
 Theme colors are defined in CSS `:root` and `[data-theme="dark"]` selectors. Key variables:
@@ -243,6 +252,106 @@ When using Three.js with a `ResizeObserver`, always follow this pattern to preve
 | `panphy/panphyplot/` | Complex plotting tool, good reference for modular patterns |
 
 ## Key Patterns
+
+### Help Button (REQUIRED for every app)
+
+Every app page must include a Help button in the banner that opens a slide-in panel. This is the standard pattern — always replicate it exactly.
+
+**CSS** (inside `<style>`):
+```css
+/* Help panel */
+.help-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.25); z-index: 199;
+}
+.help-backdrop.open { display: block; }
+.help-panel {
+    position: fixed; top: 0; right: 0;
+    width: 320px; height: 100dvh;
+    background: var(--card-bg); border-left: 1px solid var(--card-border);
+    box-shadow: -6px 0 24px rgba(0,0,0,0.18); z-index: 200;
+    display: flex; flex-direction: column;
+    transform: translateX(100%); transition: transform 0.25s ease;
+}
+.help-panel.open { transform: translateX(0); }
+.help-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid var(--card-border);
+    font-weight: 700; font-size: 0.88rem; flex-shrink: 0;
+}
+.help-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.2rem; line-height: 1; padding: 4px 6px;
+    border-radius: 6px; color: var(--text-secondary); transition: background 0.15s;
+}
+.help-close:hover { background: var(--section-bg); color: var(--text-main); }
+.help-panel-body { padding: 16px; overflow-y: auto; flex: 1; font-size: 0.82rem; line-height: 1.65; }
+.help-section { margin-bottom: 20px; }
+.help-section h3 {
+    font-size: 0.73rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--brand-primary); margin-bottom: 6px;
+}
+.help-section p { color: var(--text-main); margin-bottom: 5px; }
+.help-section p:last-child { margin-bottom: 0; }
+.help-divider { height: 1px; background: var(--card-border); margin-bottom: 20px; }
+@media (max-width: 480px) { .help-panel { width: 90vw; } }
+
+.btn-help {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+    color: #fff; display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 13px; border: none; border-radius: 9px; cursor: pointer;
+    font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
+    box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3); transition: filter 0.15s; white-space: nowrap;
+}
+.btn-help:hover { filter: brightness(1.1); }
+[data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
+```
+
+**Button HTML** (inside `.banner-actions`, before the theme button):
+```html
+<button class="btn-help" id="help-btn" aria-label="Help" title="Show help">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Help
+</button>
+```
+
+**Panel HTML** (immediately before `<div id="site-footer"></div>`):
+```html
+<div class="help-backdrop" id="help-backdrop"></div>
+<aside class="help-panel" id="help-panel" aria-label="Help">
+    <div class="help-panel-header">
+        <span>App Name Guide</span>
+        <button class="help-close" id="help-close" aria-label="Close help">&#x2715;</button>
+    </div>
+    <div class="help-panel-body">
+        <div class="help-section">
+            <h3>Section Title</h3>
+            <p>Explain the feature here. Be clear and concise.</p>
+        </div>
+        <div class="help-divider"></div>
+        <!-- Repeat help-section + help-divider blocks for each feature -->
+    </div>
+</aside>
+```
+
+**JS** (inside the main `<script>`, before the theme toggle):
+```javascript
+// --- Help panel ---
+(function() {
+    var panel = document.getElementById('help-panel');
+    var backdrop = document.getElementById('help-backdrop');
+    function openHelp() { panel.classList.add('open'); backdrop.classList.add('open'); }
+    function closeHelp() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
+    document.getElementById('help-btn').addEventListener('click', openHelp);
+    document.getElementById('help-close').addEventListener('click', closeHelp);
+    backdrop.addEventListener('click', closeHelp);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeHelp(); });
+})();
+```
+
+Write help content for **every meaningful option** in the app. Use one `help-section` per feature group, separated by `help-divider` elements. Help text should explain *what* the option does and *how* to use it — assume the user hasn't read any documentation.
+
+---
 
 ### Shared Footer
 

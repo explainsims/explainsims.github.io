@@ -1187,9 +1187,12 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/tools/dictation.html': [
-                '/tools/dictation.html',
-                'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js',
+            '/tools/pdf_splitter.html': [
+                '/tools/pdf_splitter.html',
+                'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+                'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
             ],
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
