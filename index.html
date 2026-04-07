@@ -1117,6 +1117,7 @@
         // Featured section — pick 6 random cards from the combined pool
         (function () {
             var FEATURED_POOL = [
+                // AP PCM
                 { t: 'Physical Pendulum', d: 'Explore how pivot position affects a physical pendulum\'s period and its equivalent simple pendulum.', h: '/appcm/physical_pendulum.html', c: 'Launch Sim', tab: 'AP PCM' },
                 { t: 'Elevator Physics Simulator', d: 'Explore Newton\'s 2nd law through an elevator\'s motion — apparent weight, free-body diagrams, and staged sequences.', h: '/appcm/elevator_physics.html', c: 'Launch Sim', tab: 'AP PCM' },
                 { t: 'Conical Pendulum Interactive Lab', d: 'Adjust string length, mass, and angle to see how tension, centripetal force, velocity, and period change.', h: '/appcm/conical_pendulum.html', c: 'Launch Sim', tab: 'AP PCM' },
@@ -1127,7 +1128,20 @@
                 { t: 'Power: Rate of Energy Transfer', d: 'Explore P = dW/dt and P = F\u00b7v with interactive force-velocity dot product and calculus relationship visualisations.', h: '/appcm/power.html', c: 'Launch Sim', tab: 'AP PCM' },
                 { t: 'Rotational Motion Simulator', d: 'Visualise angular velocity and angular acceleration on a spinning disk with live velocity, tangential, and centripetal vectors.', h: '/appcm/rotational_motion.html', c: 'Launch Sim', tab: 'AP PCM' },
                 { t: 'Rotational Atwood Machine', d: 'Explore how a massive pulley changes the acceleration of an Atwood machine via rotational inertia.', h: '/appcm/rotational_atwood.html', c: 'Launch Sim', tab: 'AP PCM' },
-                { t: 'Parallel-Axis Theorem', d: 'Discover why a cylinder rolls slower than it falls, and how rotational inertia changes with axis position.', h: '/appcm/parallel_axis.html', c: 'Launch Sim', tab: 'AP PCM' }
+                { t: 'Parallel-Axis Theorem', d: 'Discover why a cylinder rolls slower than it falls, and how rotational inertia changes with axis position.', h: '/appcm/parallel_axis.html', c: 'Launch Sim', tab: 'AP PCM' },
+                // PanPhy
+                { t: 'Data Plotting & Fitting', d: 'Process data, plot graphs, add uncertainties, and run best-fit curve analysis in the browser.', h: '/panphy/panphyplot.html', c: 'Plot Data', tab: 'PanPhy' },
+                { t: 'Motion Tracker', d: 'Step through video frames, click to track objects, and extract displacement and velocity data.', h: '/panphy/motion_tracker.html', c: 'Track Motion', tab: 'PanPhy' },
+                { t: 'Wave Superposition', d: 'Adjust amplitude, frequency, and phase of two waves to explore constructive and destructive interference.', h: '/panphy/superposition.html', c: 'Launch Sim', tab: 'PanPhy' },
+                { t: 'Lorentz Transform', d: 'Visualise how spacetime coordinates transform between inertial frames at relativistic speeds.', h: '/panphy/lorentz.html', c: 'Launch Sim', tab: 'PanPhy' },
+                { t: 'Exam Timer', d: 'Manage exam times with automatic extra-time support for multiple students across multiple sections.', h: '/panphy/timer.html', c: 'Open Timer', tab: 'PanPhy' },
+                { t: 'Camera Visualizer', d: 'Project your device camera to the big screen, then snap a frame and sketch or annotate over it.', h: '/panphy/visualizer.html', c: 'Use Camera', tab: 'PanPhy' },
+                // Tools
+                { t: 'Chatbot to Docs', d: 'Convert AI chatbot output into a clean format ready to paste into Google Docs, with LaTeX image rendering and font controls.', h: '/tools/chatbot_to_docs.html', c: 'Open', tab: 'Tools' },
+                { t: 'PDF Splitter', d: 'Split a PDF into multiple files by page count or custom ranges, name outputs individually or in bulk, and download as a ZIP.', h: '/tools/pdf_splitter.html', c: 'Open', tab: 'Tools' },
+                // Teachers
+                { t: 'Command Term Wordle', d: 'Guess the IB command term in as few attempts as possible. Choose a subject or play with all subjects combined.', h: '/teachers/cmdterm_wordle.html', c: 'Play', tab: 'Teachers' },
+                { t: 'Fun Jeopardy', d: 'Create your own Jeopardy! game for multiple teams. Edit questions in-app or import from CSV — great for review sessions.', h: '/teachers/jeopardy.html', c: 'Play', tab: 'Teachers' }
             ];
             var grid = document.getElementById('featured-grid');
             if (!grid) return;
