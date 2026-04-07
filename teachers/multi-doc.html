@@ -758,52 +758,11 @@ async function getTabContent(tab) {
 
 // ── Markdown → Google Docs formatting ──
 
-// Split markdown into text sections and table sections
-function splitMarkdownSections(md) {
-    var lines = md.split('\n');
-    var sections = [];
-    var textBuf = [];
-    var tableBuf = [];
-    var inTable = false;
-
-    function flushText() {
-        if (textBuf.length > 0) {
-            sections.push({ type: 'text', content: textBuf.join('\n') });
-            textBuf = [];
-        }
-    }
-    function flushTable() {
-        if (tableBuf.length > 0) {
-            var rows = tableBuf.map(function(line) {
-                return line.split('|').slice(1, -1).map(function(c) { return c.trim(); });
-            });
-            if (rows.length > 0) sections.push({ type: 'table', rows: rows });
-            tableBuf = [];
-        }
-    }
-
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        var isTableRow = /^\|(.+\|)+\s*$/.test(line.trim());
-        var isSeparator = /^\|[\s\-:|]+\|$/.test(line.trim());
-
-        if (isTableRow) {
-            if (!inTable) { flushText(); inTable = true; }
-            if (!isSeparator) tableBuf.push(line);
-        } else {
-            if (inTable) { flushTable(); inTable = false; }
-            textBuf.push(line);
-        }
-    }
-    if (inTable) flushTable(); else flushText();
-    return sections;
-}
-
-function parseMarkdown(md, startPos) {
+function parseMarkdown(md) {
     var lines = md.split('\n');
     var text = '';
     var styles = [];
-    var pos = startPos || 1;
+    var pos = 1;
 
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
@@ -891,140 +850,41 @@ function stylesToRequests(styles, tabId) {
     return reqs;
 }
 
-async function doBatchUpdate(docId, requests) {
+async function insertMarkdownIntoDoc(docId, markdown, tabId) {
+    var parsed = parseMarkdown(markdown);
+
+    // Insert the plain text first
+    var loc = { index: 1 };
+    if (tabId) loc.tabId = tabId;
+    var insertReqs = [{ insertText: { text: parsed.text, location: loc } }];
+
+    // Then apply formatting
+    var fmtReqs = stylesToRequests(parsed.styles, tabId);
+    var allReqs = insertReqs.concat(fmtReqs);
+
     var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requests: requests })
+        body: JSON.stringify({ requests: allReqs })
     });
     if (!res.ok) {
         var err = await res.json().catch(function() { return {}; });
-        throw new Error(err.error ? err.error.message : 'batchUpdate failed');
-    }
-    return res.json();
-}
-
-async function getDocEndIndex(docId, tabId) {
-    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
-        headers: { 'Authorization': 'Bearer ' + accessToken }
-    });
-    var doc = await res.json();
-    var tab = tabId ? doc.tabs.find(function(t) { return t.tabProperties.tabId === tabId; }) : doc.tabs[0];
-    if (!tab) return 2;
-    var body = tab.documentTab.body;
-    var last = body.content[body.content.length - 1];
-    return last.endIndex;
-}
-
-async function insertTableIntoDoc(docId, rows, tabId) {
-    var numRows = rows.length;
-    var numCols = rows[0] ? rows[0].length : 0;
-    if (numRows === 0 || numCols === 0) return;
-
-    var endIdx = await getDocEndIndex(docId, tabId);
-    var loc = { index: endIdx - 1 };
-    if (tabId) loc.tabId = tabId;
-
-    // Insert empty table
-    await doBatchUpdate(docId, [{ insertTable: { rows: numRows, columns: numCols, location: loc } }]);
-
-    // Fetch doc to find table cell indices
-    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
-        headers: { 'Authorization': 'Bearer ' + accessToken }
-    });
-    var doc = await res.json();
-    var tab = tabId ? doc.tabs.find(function(t) { return t.tabProperties.tabId === tabId; }) : doc.tabs[0];
-    var body = tab.documentTab.body;
-
-    // Find the last table in the body
-    var table = null;
-    for (var i = body.content.length - 1; i >= 0; i--) {
-        if (body.content[i].table) { table = body.content[i].table; break; }
-    }
-    if (!table) return;
-
-    // Fill cells in REVERSE order so indices don't shift
-    var cellInserts = [];
-    for (var r = numRows - 1; r >= 0; r--) {
-        for (var c = numCols - 1; c >= 0; c--) {
-            var cellText = rows[r] && rows[r][c] ? rows[r][c] : '';
-            if (!cellText) continue;
-            var cell = table.tableRows[r].tableCells[c];
-            var cellIdx = cell.content[0].startIndex;
-            var req = { insertText: { text: cellText, location: { index: cellIdx } } };
-            if (tabId) req.insertText.location.tabId = tabId;
-            cellInserts.push(req);
-        }
-    }
-    if (cellInserts.length > 0) await doBatchUpdate(docId, cellInserts);
-
-    // Bold the header row (first row)
-    if (table.tableRows[0]) {
-        var boldReqs = [];
-        for (var c = 0; c < numCols; c++) {
-            var hCell = table.tableRows[0].tableCells[c];
-            var hStart = hCell.content[0].startIndex;
-            var hText = rows[0][c] || '';
-            if (hText) {
-                var range = { startIndex: hStart, endIndex: hStart + hText.length };
-                if (tabId) range.tabId = tabId;
-                boldReqs.push({ updateTextStyle: { range: range, textStyle: { bold: true }, fields: 'bold' } });
-            }
-        }
-        // Re-fetch to get updated indices after cell fills
-        if (boldReqs.length > 0) {
-            res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
-                headers: { 'Authorization': 'Bearer ' + accessToken }
-            });
-            doc = await res.json();
-            tab = tabId ? doc.tabs.find(function(t) { return t.tabProperties.tabId === tabId; }) : doc.tabs[0];
-            body = tab.documentTab.body;
-            for (var i = body.content.length - 1; i >= 0; i--) {
-                if (body.content[i].table) { table = body.content[i].table; break; }
-            }
-            boldReqs = [];
-            for (var c = 0; c < numCols; c++) {
-                var hCell = table.tableRows[0].tableCells[c];
-                var hStart = hCell.content[0].startIndex;
-                var hEnd = hCell.content[0].endIndex - 1; // exclude trailing newline
-                if (hEnd > hStart) {
-                    var range = { startIndex: hStart, endIndex: hEnd };
-                    if (tabId) range.tabId = tabId;
-                    boldReqs.push({ updateTextStyle: { range: range, textStyle: { bold: true }, fields: 'bold' } });
-                }
-            }
-            if (boldReqs.length > 0) await doBatchUpdate(docId, boldReqs);
-        }
-    }
-}
-
-async function insertMarkdownIntoDoc(docId, markdown, tabId) {
-    var sections = splitMarkdownSections(markdown);
-
-    for (var i = 0; i < sections.length; i++) {
-        var section = sections[i];
-        if (section.type === 'table') {
-            await insertTableIntoDoc(docId, section.rows, tabId);
-        } else {
-            var endIdx = await getDocEndIndex(docId, tabId);
-            var parsed = parseMarkdown(section.content, endIdx - 1);
-            if (parsed.text.trim()) {
-                // Insert text at end of doc
-                var loc = { index: endIdx - 1 };
-                if (tabId) loc.tabId = tabId;
-                await doBatchUpdate(docId, [{ insertText: { text: parsed.text, location: loc } }]);
-                // Apply formatting
-                var fmtReqs = stylesToRequests(parsed.styles, tabId);
-                if (fmtReqs.length > 0) await doBatchUpdate(docId, fmtReqs);
-            }
-        }
+        throw new Error(err.error ? err.error.message : 'Failed to insert markdown content');
     }
 }
 
 async function insertTextIntoDoc(docId, text, tabId) {
     var loc = { index: 1 };
     if (tabId) loc.tabId = tabId;
-    await doBatchUpdate(docId, [{ insertText: { text: text, location: loc } }]);
+    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requests: [{ insertText: { text: text, location: loc } }] })
+    });
+    if (!res.ok) {
+        var err = await res.json().catch(function() { return {}; });
+        throw new Error(err.error ? err.error.message : 'Failed to insert text content');
+    }
 }
 
 // ── Event listeners ──
