@@ -446,26 +446,28 @@
             100% { box-shadow: 0 0 0 0 rgba(8, 145, 178, 0); }
         }
 
-        .card-type-pill {
+        .card-source-pill {
             display: inline-flex;
             align-items: center;
             position: absolute;
             top: 0.65rem;
             left: 1rem;
             z-index: 2;
-            padding: 0.22rem 0.5rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            border: 1px solid var(--brand-primary);
-            color: var(--brand-primary);
+            background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+            color: var(--brand-secondary);
             font-family: var(--font-mono);
             font-size: 9px;
             line-height: 1.1;
-            font-weight: 500;
-            letter-spacing: 0.1em;
+            font-weight: 600;
+            letter-spacing: 0.04em;
             white-space: nowrap;
             text-transform: uppercase;
-            opacity: 0.7;
-            transition: color 0.4s ease, border-color 0.4s ease;
+        }
+        [data-theme="dark"] .card-source-pill {
+            background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+            color: var(--brand-primary);
         }
 
         .card-offline-pill {
@@ -750,13 +752,13 @@
         <p class="section-desc">Educational games for classroom engagement and independent study.</p>
         <div class="grid">
             <div class="card">
-                <span class="card-type-pill">Game</span>
+                <span class="card-source-pill">Teachers</span>
                 <h3>Command Term Wordle</h3>
                 <p>Guess the IB command term in as few attempts as possible. Choose a subject to narrow the pool, or play with all subjects combined.</p>
                 <a href="/teachers/cmdterm_wordle.html">Play</a>
             </div>
             <div class="card">
-                <span class="card-type-pill">Game</span>
+                <span class="card-source-pill">Teachers</span>
                 <h3>Fun Jeopardy</h3>
                 <p>Create your own Jeopardy! game for multiple teams. Edit questions in-app or import from CSV. Great for review sessions.</p>
                 <a href="/teachers/jeopardy.html">Play</a>
