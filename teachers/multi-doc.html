@@ -125,8 +125,9 @@
         [data-theme="dark"] .badge-md { background: rgba(16,185,129,0.2); color: #6ee7b7; }
         [data-theme="dark"] .badge-docx { background: rgba(99,102,241,0.2); color: #a5b4fc; }
         [data-theme="dark"] .badge-pdf { background: rgba(239,68,68,0.2); color: #fca5a5; }
-        .tab-remove { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border: none; border-radius: 6px; background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: background 0.15s, color 0.15s; }
-        .tab-remove:hover { background: var(--status-error); color: #fff; }
+        .tab-remove { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border: 2px solid var(--card-border); border-radius: 50%; background: var(--card-bg); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0; line-height: 1; transition: background 0.15s, color 0.15s, border-color 0.15s; z-index: 3; }
+        .tab-remove svg { width: 12px; height: 12px; }
+        .tab-remove:hover { background: var(--status-error); color: #fff; border-color: var(--status-error); }
         .tab-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 0.78rem; color: var(--text-secondary); }
         .tab-preview { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; max-height: 3em; overflow: hidden; text-overflow: ellipsis; margin-bottom: 10px; font-family: var(--font-mono); background: var(--section-bg); padding: 8px 10px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; }
         .tab-import-row { display: flex; align-items: center; gap: 8px; }
@@ -149,6 +150,9 @@
         [data-theme="dark"] .create-doc-btn { color: #111118; }
         .signout-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.78rem; text-decoration: underline; padding: 4px 8px; }
         .signout-btn:hover { color: var(--text-main); }
+        .new-doc-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border: 1px solid var(--card-border); border-radius: 9px; background: var(--card-bg); color: var(--text-secondary); cursor: pointer; font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600; transition: border-color 0.2s, color 0.2s, background 0.2s; }
+        .new-doc-btn:hover { border-color: var(--brand-primary); color: var(--brand-primary); background: var(--section-bg); }
+        .new-doc-btn svg { width: 15px; height: 15px; }
         .status-text { font-size: 0.82rem; color: var(--text-secondary); text-align: center; min-height: 1.4em; }
         .status-text.error { color: var(--status-error); }
         .status-text.success { color: var(--status-ready); }
@@ -213,7 +217,13 @@
     <div class="action-area" id="action-area">
         <div id="auth-section"></div>
         <div class="status-text" id="status-text"></div>
-        <button class="signout-btn" id="signout-btn" type="button" style="display:none">Sign out</button>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button class="new-doc-btn" id="new-doc-btn" type="button" style="display:none">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                New Document
+            </button>
+            <button class="signout-btn" id="signout-btn" type="button" style="display:none">Sign out</button>
+        </div>
     </div>
 </main>
 
@@ -511,7 +521,7 @@ function renderTabs() {
                 '<input class="tab-name-input" type="text" value="' + escapeAttr(tab.name) + '" data-tab-id="' + tab.id + '">' +
                 '<span class="file-type-badge ' + getBadgeClass(tab.fileType) + '">' + tab.fileType + '</span>' +
             '</div>' +
-            '<button class="tab-remove" data-tab-id="' + tab.id + '" title="Remove">&times;</button>' +
+            '<button class="tab-remove" data-tab-id="' + tab.id + '" title="Remove tab" aria-label="Remove tab"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
             '<div class="tab-meta"><span>' + formatFileSize(tab.size) + '</span></div>' +
             '<div class="tab-preview">' + escapeHtml(preview) + '</div>' +
             (modes.length > 1
@@ -599,6 +609,7 @@ function updateActionArea() {
     }
     authSection.innerHTML = html;
     document.getElementById('signout-btn').style.display = isSignedIn ? '' : 'none';
+    document.getElementById('new-doc-btn').style.display = tabs.length > 0 ? '' : 'none';
 
     // Bind events
     var signinBtn = document.getElementById('signin-btn');
@@ -959,6 +970,17 @@ async function insertTextIntoDoc(docId, text, tabId) {
         throw new Error(err.error ? err.error.message : 'Failed to insert text content');
     }
 }
+
+// ── New Document (reset) ──
+function resetDocument() {
+    tabs.length = 0;
+    tabIdCounter = 0;
+    docTitleInput.value = '';
+    setStatus('', '');
+    renderTabs();
+    updateActionArea();
+}
+document.getElementById('new-doc-btn').addEventListener('click', resetDocument);
 
 // ── Event listeners ──
 addTabBtn.addEventListener('click', function() { fileInput.click(); });
