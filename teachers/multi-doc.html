@@ -661,7 +661,11 @@ async function createGoogleDoc() {
         // Step 2: Insert content into the first (default) tab
         var firstTabContent = await getTabContent(tabs[0]);
         if (firstTabContent) {
-            await insertTextIntoDoc(docId, firstTabContent, null);
+            if (tabs[0].importMode === 'markdown') {
+                await insertMarkdownIntoDoc(docId, firstTabContent, null);
+            } else {
+                await insertTextIntoDoc(docId, firstTabContent, null);
+            }
         }
 
         // Step 3: Rename the default tab to match first file name
@@ -721,7 +725,11 @@ async function createGoogleDoc() {
                 var tabContent = await getTabContent(tabs[j]);
                 if (tabContent && updatedDoc.tabs && updatedDoc.tabs[j]) {
                     var tabId = updatedDoc.tabs[j].tabProperties.tabId;
-                    await insertTextIntoDoc(docId, tabContent, tabId);
+                    if (tabs[j].importMode === 'markdown') {
+                        await insertMarkdownIntoDoc(docId, tabContent, tabId);
+                    } else {
+                        await insertTextIntoDoc(docId, tabContent, tabId);
+                    }
                 }
             }
         }
@@ -743,21 +751,124 @@ async function createGoogleDoc() {
 }
 
 async function getTabContent(tab) {
-    if (tab.importMode === 'plain') {
-        return tab.content;
-    }
-    if (tab.importMode === 'markdown' && tab.fileType === 'md') {
-        // Return raw markdown — Docs API doesn't have native MD support,
-        // so we insert as plain text (structured formatting would need
-        // individual InsertText + UpdateTextStyle calls per element)
-        return tab.content;
-    }
-    if (tab.importMode === 'formatted' && tab.fileType === 'docx' && tab.rawFile) {
-        // For formatted docx, we still insert as plain text for now
-        // Full formatting would require mapping mammoth HTML to Docs API style requests
-        return tab.content;
-    }
     return tab.content;
+}
+
+// ── Markdown → Google Docs formatting ──
+function parseMarkdown(md) {
+    var lines = md.split('\n');
+    var text = '';
+    var styles = [];
+    var pos = 1; // Docs API 1-based index
+
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var lineStart = pos;
+
+        // Heading
+        var hm = line.match(/^(#{1,6})\s+(.*)/);
+        if (hm) {
+            var r = stripInline(hm[2], pos);
+            text += r.text + '\n';
+            styles.push({ s: lineStart, e: pos + r.text.length + 1, t: 'h', l: hm[1].length });
+            styles = styles.concat(r.styles);
+            pos += r.text.length + 1;
+            continue;
+        }
+
+        // Bullet list (- or *)
+        var bm = line.match(/^[\-\*]\s+(.*)/);
+        if (bm) {
+            var r = stripInline(bm[1], pos);
+            text += r.text + '\n';
+            styles.push({ s: lineStart, e: pos + r.text.length + 1, t: 'ul' });
+            styles = styles.concat(r.styles);
+            pos += r.text.length + 1;
+            continue;
+        }
+
+        // Numbered list
+        var nm = line.match(/^\d+\.\s+(.*)/);
+        if (nm) {
+            var r = stripInline(nm[1], pos);
+            text += r.text + '\n';
+            styles.push({ s: lineStart, e: pos + r.text.length + 1, t: 'ol' });
+            styles = styles.concat(r.styles);
+            pos += r.text.length + 1;
+            continue;
+        }
+
+        // Regular line
+        var r = stripInline(line, pos);
+        text += r.text + '\n';
+        styles = styles.concat(r.styles);
+        pos += r.text.length + 1;
+    }
+    return { text: text, styles: styles };
+}
+
+function stripInline(text, startPos) {
+    var styles = [];
+    var result = '';
+    var regex = /(\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*)/g;
+    var lastIdx = 0;
+    var m;
+    while ((m = regex.exec(text)) !== null) {
+        result += text.substring(lastIdx, m.index);
+        var p = startPos + result.length;
+        var content = m[2] || m[3] || m[4];
+        if (m[2] || m[3]) styles.push({ s: p, e: p + content.length, t: 'b' });
+        if (m[2] || m[4]) styles.push({ s: p, e: p + content.length, t: 'i' });
+        result += content;
+        lastIdx = m.index + m[0].length;
+    }
+    result += text.substring(lastIdx);
+    return { text: result, styles: styles };
+}
+
+function stylesToRequests(styles, tabId) {
+    var reqs = [];
+    for (var i = 0; i < styles.length; i++) {
+        var st = styles[i];
+        var range = { startIndex: st.s, endIndex: st.e };
+        if (tabId) range.tabId = tabId;
+        if (st.t === 'h') {
+            reqs.push({ updateParagraphStyle: { range: range, paragraphStyle: { namedStyleType: 'HEADING_' + st.l }, fields: 'namedStyleType' } });
+        } else if (st.t === 'b') {
+            reqs.push({ updateTextStyle: { range: range, textStyle: { bold: true }, fields: 'bold' } });
+        } else if (st.t === 'i') {
+            reqs.push({ updateTextStyle: { range: range, textStyle: { italic: true }, fields: 'italic' } });
+        } else if (st.t === 'ul') {
+            reqs.push({ createParagraphBullets: { range: range, bulletPreset: 'BULLET_DISC_CIRCLE_SQUARE' } });
+        } else if (st.t === 'ol') {
+            reqs.push({ createParagraphBullets: { range: range, bulletPreset: 'NUMBERED_DECIMAL_ALPHA_ROMAN' } });
+        }
+    }
+    return reqs;
+}
+
+async function insertMarkdownIntoDoc(docId, markdown, tabId) {
+    var parsed = parseMarkdown(markdown);
+
+    // Step 1: Insert the plain text
+    await insertTextIntoDoc(docId, parsed.text, tabId);
+
+    // Step 2: Apply formatting
+    var fmtReqs = stylesToRequests(parsed.styles, tabId);
+    if (fmtReqs.length === 0) return;
+
+    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ requests: fmtReqs })
+    });
+    if (!res.ok) {
+        var err = await res.json().catch(function() { return {}; });
+        throw new Error(err.error ? err.error.message : 'Failed to apply formatting');
+    }
 }
 
 async function insertTextIntoDoc(docId, text, tabId) {
