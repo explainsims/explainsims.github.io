@@ -446,6 +446,30 @@
             100% { box-shadow: 0 0 0 0 rgba(8, 145, 178, 0); }
         }
 
+        .card-source-pill {
+            display: inline-flex;
+            align-items: center;
+            position: absolute;
+            top: 0.65rem;
+            left: 1rem;
+            z-index: 2;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+            color: var(--brand-secondary);
+            font-family: var(--font-mono);
+            font-size: 9px;
+            line-height: 1.1;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+        [data-theme="dark"] .card-source-pill {
+            background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+            color: var(--brand-primary);
+        }
+
         .card-offline-pill {
             display: inline-flex;
             align-items: center;
@@ -713,31 +737,37 @@
         <p class="section-desc">Tools and simulations ported from PanPhy Labs — the project that inspired this site.</p>
         <div class="grid">
             <div class="card">
+                <span class="card-source-pill">PanPhy</span>
                 <h3>Data Plotting &amp; Fitting</h3>
                 <p>Process data, plot graphs, add uncertainties, and run best-fit analysis.</p>
                 <a href="/panphy/panphyplot.html">Plot Data</a>
             </div>
             <div class="card">
+                <span class="card-source-pill">PanPhy</span>
                 <h3>Motion Tracker</h3>
                 <p>Step through video frames, click to track objects, and extract motion data.</p>
                 <a href="/panphy/motion_tracker.html">Track Motion</a>
             </div>
             <div class="card">
+                <span class="card-source-pill">PanPhy</span>
                 <h3>Wave Superposition</h3>
                 <p>Learn how waves interact.</p>
                 <a href="/panphy/superposition.html">Launch Sim</a>
             </div>
             <div class="card">
+                <span class="card-source-pill">PanPhy</span>
                 <h3>Lorentz Transform</h3>
                 <p>Learn how spacetime transforms between inertial frames.</p>
                 <a href="/panphy/lorentz.html">Launch Sim</a>
             </div>
             <div class="card">
+                <span class="card-source-pill">PanPhy</span>
                 <h3>Exam Timer</h3>
                 <p>Manage exam times with an automatic extra-time timer.</p>
                 <a href="/panphy/timer.html">Open Timer</a>
             </div>
             <div class="card">
+                <span class="card-source-pill">PanPhy</span>
                 <h3>Camera Visualizer</h3>
                 <p>Project your device camera to the big screen, then snap &amp; sketch.</p>
                 <a href="/panphy/visualizer.html">Use Camera</a>

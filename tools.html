@@ -439,25 +439,28 @@
             line-height: 1.65;
         }
 
-        .card-type-pill {
+        .card-source-pill {
             display: inline-flex;
             align-items: center;
             position: absolute;
             top: 0.65rem;
             left: 1rem;
             z-index: 2;
-            padding: 0.22rem 0.5rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            border: 1px solid var(--brand-primary);
-            color: var(--brand-primary);
+            background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+            color: var(--brand-secondary);
             font-family: var(--font-mono);
             font-size: 9px;
-            font-weight: 500;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
+            line-height: 1.1;
+            font-weight: 600;
+            letter-spacing: 0.04em;
             white-space: nowrap;
-            opacity: 0.7;
-            transition: color 0.4s ease, border-color 0.4s ease;
+            text-transform: uppercase;
+        }
+        [data-theme="dark"] .card-source-pill {
+            background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+            color: var(--brand-primary);
         }
 
         /* Offline pill on cards */
@@ -734,13 +737,13 @@
         <p class="section-desc">Analyse data, create scientific documents, and explore sound with this collection of browser-based physics tools.</p>
         <div class="grid">
             <div class="card">
-                <span class="card-type-pill">Tool</span>
+                <span class="card-source-pill">Tools</span>
                 <h3>Chatbot to Docs</h3>
                 <p>Convert AI chatbot output into a clean format ready to paste into Google Docs. Strips citations, renders LaTeX as images, and lets you control fonts and sizing.</p>
                 <a href="/tools/chatbot_to_docs.html">Open</a>
             </div>
             <div class="card">
-                <span class="card-type-pill">Tool</span>
+                <span class="card-source-pill">Tools</span>
                 <h3>PDF Splitter</h3>
                 <p>Split a PDF into multiple files by page count or custom ranges. Name outputs individually or in bulk, then download everything as a ZIP.</p>
                 <a href="/tools/pdf_splitter.html">Open</a>

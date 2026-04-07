@@ -446,6 +446,30 @@
             100% { box-shadow: 0 0 0 0 rgba(8, 145, 178, 0); }
         }
 
+        .card-source-pill {
+            display: inline-flex;
+            align-items: center;
+            position: absolute;
+            top: 0.65rem;
+            left: 1rem;
+            z-index: 2;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+            color: var(--brand-secondary);
+            font-family: var(--font-mono);
+            font-size: 9px;
+            line-height: 1.1;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+        [data-theme="dark"] .card-source-pill {
+            background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+            color: var(--brand-primary);
+        }
+
         .card-offline-pill {
             display: inline-flex;
             align-items: center;
@@ -775,21 +799,25 @@
             <h3 class="unit-heading">Unit 2: <span class="section-label">Force and Translational Dynamics</span></h3>
             <div class="grid">
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Elevator Physics Simulator</h3>
                     <p>Explore Newton's 2nd law through an elevator's motion — apparent weight, free-body diagrams, and staged up/down/free-fall sequences.</p>
                     <a href="/appcm/elevator_physics.html">Launch Sim</a>
                 </div>
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Conical Pendulum Interactive Lab</h3>
                     <p>Adjust string length, mass, and angle to see how tension, centripetal force, velocity, and period change in a conical pendulum.</p>
                     <a href="/appcm/conical_pendulum.html">Launch Sim</a>
                 </div>
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Gravitas — Gravitational Force Simulator</h3>
                     <p>Explore Newton's law of gravitation, the Shell Theorem, gravitational field strength, and test your knowledge with a built-in quiz.</p>
                     <a href="/appcm/gravitas.html">Launch Sim</a>
                 </div>
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Banked Track Physics Simulator</h3>
                     <p>Investigate circular motion on a banked curve — visualise forces, calculate ideal/min/max speeds, and see full derivations.</p>
                     <a href="/appcm/banked_track.html">Launch Sim</a>
@@ -801,16 +829,19 @@
             <h3 class="unit-heading">Unit 3: <span class="section-label">Work, Energy, and Power</span></h3>
             <div class="grid">
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Conservation of Energy Lab</h3>
                     <p>Slide a block down a ramp and explore how system boundary choice changes the energy conservation equation — block only, block + Earth, or fully isolated.</p>
                     <a href="/appcm/cons_energy_systems.html">Launch Sim</a>
                 </div>
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Work &amp; Energy: Spring System Explorer</h3>
                     <p>Drag a spring-mass block on an inclined ramp, release it, and watch how kinetic, spring potential, gravitational potential, and thermal energy trade off across five system definitions.</p>
                     <a href="/appcm/cons_spring_energy_systems.html">Launch Sim</a>
                 </div>
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Power: Rate of Energy Transfer</h3>
                     <p>Explore the definition of power, the calculus relationship P = dW/dt, and the dot product P = F·v with interactive visualisations of force and velocity vectors.</p>
                     <a href="/appcm/power.html">Launch Sim</a>
@@ -828,16 +859,19 @@
             <h3 class="unit-heading">Unit 5: <span class="section-label">Torque and Rotational Dynamics</span></h3>
             <div class="grid">
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Rotational Motion Simulator</h3>
                     <p>Visualise angular velocity and angular acceleration on a spinning disk. Watch velocity, tangential, and centripetal acceleration vectors update in real time as you adjust ω and α.</p>
                     <a href="/appcm/rotational_motion.html">Launch Sim</a>
                 </div>
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Rotational Atwood Machine</h3>
                     <p>Explore how a massive pulley changes the acceleration of an Atwood machine. Adjust the two hanging masses and pulley mass to see the effect of rotational inertia on the system.</p>
                     <a href="/appcm/rotational_atwood.html">Launch Sim</a>
                 </div>
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Parallel-Axis Theorem</h3>
                     <p>Discover why a cylinder rolls slower than it falls. Use the Falling Roll and Pivoting Rod modes to explore how rotational inertia depends on axis position via the parallel-axis theorem.</p>
                     <a href="/appcm/parallel_axis.html">Launch Sim</a>
@@ -855,6 +889,7 @@
             <h3 class="unit-heading">Unit 7: <span class="section-label">Oscillations</span></h3>
             <div class="grid">
                 <div class="card">
+                    <span class="card-source-pill">AP PCM</span>
                     <h3>Physical Pendulum</h3>
                     <p>Explore how pivot position affects a physical pendulum's period and its equivalent simple pendulum.</p>
                     <a href="/appcm/physical_pendulum.html">Launch Sim</a>
