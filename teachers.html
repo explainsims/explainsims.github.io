@@ -749,6 +749,12 @@
                 <p>Create your own Jeopardy! game for multiple teams. Edit questions in-app or import from CSV. Great for review sessions.</p>
                 <a href="/teachers/jeopardy.html">Play</a>
             </div>
+            <div class="card">
+                <span class="card-source-pill">Teachers</span>
+                <h3>Docs Tab Builder</h3>
+                <p>Upload multiple files (.txt, .md, .docx, .pdf) and combine them into a single Google Doc with each file in its own tab.</p>
+                <a href="/teachers/multi-doc.html">Open</a>
+            </div>
         </div>
     </div>
 
@@ -1189,7 +1195,12 @@
 
         const OFFLINE_CARD_REQUIREMENTS = {
             '/teachers/cmdterm_wordle.html': ['/teachers/cmdterm_wordle.html'],
-            '/teachers/jeopardy.html': ['/teachers/jeopardy.html']
+            '/teachers/jeopardy.html': ['/teachers/jeopardy.html'],
+            '/teachers/multi-doc.html': [
+                '/teachers/multi-doc.html',
+                'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'
+            ]
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(
