@@ -672,7 +672,7 @@ async function createGoogleDoc() {
         var defaultTabId = doc.tabs && doc.tabs[0] ? doc.tabs[0].tabProperties.tabId : null;
         if (defaultTabId && tabs[0].name) {
             batchRequests.push({
-                updateDocumentTab: {
+                updateDocumentTabProperties: {
                     tabProperties: {
                         tabId: defaultTabId,
                         title: tabs[0].name
