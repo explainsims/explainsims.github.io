@@ -1217,19 +1217,7 @@
         });
 
         const OFFLINE_CARD_REQUIREMENTS = {
-            '/tools/panphyplot.html': [
-                '/tools/panphyplot.html',
-                '/tools/panphyplot/js/main.js',
-                '/tools/panphyplot/js/fit-worker.js',
-                'https://cdn.plot.ly/plotly-basic-2.29.1.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js'
-            ],
-            '/tools/motion_tracker.html': [
-                '/tools/motion_tracker.html',
-                'https://cdn.jsdelivr.net/npm/chart.js'
-            ],
-            '/appcm/superposition.html': ['/appcm/superposition.html'],
+            // AP PCM sims
             '/appcm/physical_pendulum.html': ['/appcm/physical_pendulum.html'],
             '/appcm/elevator_physics.html': ['/appcm/elevator_physics.html'],
             '/appcm/conical_pendulum.html': ['/appcm/conical_pendulum.html'],
@@ -1241,12 +1229,34 @@
             '/appcm/rotational_motion.html': ['/appcm/rotational_motion.html'],
             '/appcm/rotational_atwood.html': ['/appcm/rotational_atwood.html'],
             '/appcm/parallel_axis.html': ['/appcm/parallel_axis.html'],
-            '/panphy/lorentz.html': ['/panphy/lorentz.html'],
-            '/panphy/timer.html': [
-                '/panphy/timer.html',
-                '/panphy/timer_beep.mp3'
+            // PanPhy tools
+            '/panphy/panphyplot.html': [
+                '/panphy/panphyplot.html',
+                '/panphy/panphyplot/js/main.js',
+                '/panphy/panphyplot/js/fit-worker.js',
+                'https://cdn.plot.ly/plotly-basic-2.29.1.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG.js'
             ],
-            '/panphy/visualizer.html': ['/panphy/visualizer.html']
+            '/panphy/motion_tracker.html': [
+                '/panphy/motion_tracker.html',
+                'https://cdn.jsdelivr.net/npm/chart.js'
+            ],
+            '/panphy/superposition.html': ['/panphy/superposition.html'],
+            '/panphy/lorentz.html': ['/panphy/lorentz.html'],
+            '/panphy/timer.html': ['/panphy/timer.html', '/panphy/timer_beep.mp3'],
+            '/panphy/visualizer.html': ['/panphy/visualizer.html'],
+            // Teachers
+            '/teachers/cmdterm_wordle.html': ['/teachers/cmdterm_wordle.html'],
+            '/teachers/jeopardy.html': ['/teachers/jeopardy.html'],
+            // Tools
+            '/tools/pdf_splitter.html': [
+                '/tools/pdf_splitter.html',
+                'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+                'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+            ]
         };
         const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
         const OFFLINE_REQUIRED_ASSETS = [...new Set(
