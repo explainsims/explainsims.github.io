@@ -428,26 +428,34 @@ Key rules:
 
 ### Card Pills (tab-page cards only)
 
-Cards on the tab pages (appcm.html, tools.html, teachers.html, etc.) support two pills positioned at the top of each card:
+Cards on the tab pages (appcm.html, tools.html, teachers.html, etc.) have two pill positions:
 
-**Type pill** (top-left) — matches `section-label` style: brand-primary border and text, monospace, uppercase:
+**Source pill** (top-left) — uses the tab name, soft background with no border:
 ```css
-.card-type-pill {
+.card-source-pill {
     display: inline-flex; align-items: center;
     position: absolute; top: 0.65rem; left: 1rem; z-index: 2;
-    padding: 0.22rem 0.5rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    border: 1px solid var(--brand-primary);
+    background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+    color: var(--brand-secondary);
+    font-family: var(--font-mono); font-size: 9px; line-height: 1.1;
+    font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; text-transform: uppercase;
+}
+[data-theme="dark"] .card-source-pill {
+    background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
     color: var(--brand-primary);
-    font-family: var(--font-mono); font-size: 9px; font-weight: 500;
-    letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
-    opacity: 0.7;
-    transition: color 0.4s ease, border-color 0.4s ease;
 }
 ```
-Usage: `<span class="card-type-pill">Game</span>` (or "Sim", "Tool", etc.)
+Usage: `<span class="card-source-pill">Tools</span>` — the text is always the **tab name**, not the content type:
+- `tools.html` cards → `"Tools"`
+- `appcm.html` cards → `"AP PCM"`
+- `teachers.html` cards → `"Teachers"`
+- `panphy.html` cards → `"PanPhy"`
 
-**Offline pill** (top-right) — added dynamically by JS via `initOfflineCardPills()` when the card path appears in `OFFLINE_CARD_REQUIREMENTS`. Do not add this manually in HTML.
+Every card on every tab page must have this pill. Do **not** use the old `.card-type-pill` class.
+
+**Offline pill** (top-right) — added dynamically by JS via `initOfflineCardPills()` when the card path appears in `OFFLINE_CARD_REQUIREMENTS`. Do not add this manually in HTML. If the app is not offline-capable, the top-right is left blank.
 
 ## Offline Behavior
 
