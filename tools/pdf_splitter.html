@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('pdf-splitter-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>PDF Splitter — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --bg-color: #F4F4F8;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+            --brand-primary: #6c5ce7;
+            --brand-accent: #00cec9;
+            --nav-bg: rgba(244, 244, 248, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.06);
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
+            --input-bg: #FFFFFF;
+            --input-border: #D1D5DB;
+            --btn-bg: #6c5ce7;
+            --btn-text: #FFFFFF;
+            --btn-hover: #5a4bd6;
+            --section-bg: #f0f0f4;
+            --danger: #e74c3c;
+            --danger-hover: #c0392b;
+            --success: #27ae60;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+            --brand-primary: #a29bfe;
+            --brand-accent: #81ecec;
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.06);
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
+            --input-bg: #1E1E28;
+            --input-border: #3A3A4A;
+            --btn-bg: #a29bfe;
+            --btn-text: #111118;
+            --btn-hover: #8b82fd;
+            --section-bg: #1a1a24;
+            --danger: #e74c3c;
+            --danger-hover: #c0392b;
+            --success: #2ecc71;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Banner */
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; padding: 6px; border-radius: 8px;
+            transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* Main layout */
+        .app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 16px;
+            gap: 20px;
+        }
+
+        /* Sections */
+        .section-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .section-card h2 {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-card h2 .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            color: var(--btn-text);
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2px dashed var(--card-border);
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--brand-primary);
+            background: color-mix(in srgb, var(--brand-primary) 5%, transparent);
+        }
+        .upload-zone p { color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem; }
+        .upload-zone .upload-icon { font-size: 2rem; margin-bottom: 4px; }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--section-bg);
+            border-radius: 8px;
+            gap: 12px;
+        }
+        .file-info .file-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .file-info .file-meta {
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        .file-info .remove-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--danger); font-size: 1.1rem; padding: 4px;
+            border-radius: 6px; line-height: 1;
+        }
+        .file-info .remove-btn:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+        /* Split mode */
+        .mode-tabs {
+            display: flex; gap: 8px; margin-bottom: 16px;
+        }
+        .mode-tab {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .mode-tab.active {
+            border-color: var(--brand-primary);
+            background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+            color: var(--brand-primary);
+            font-weight: 600;
+        }
+
+        .mode-content { display: none; }
+        .mode-content.active { display: block; }
+
+        /* Inputs */
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        input[type="number"], input[type="text"], textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+        }
+        input:disabled, textarea:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-count-input {
+            max-width: 160px;
+        }
+
+        /* Range rows */
+        .ranges-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .range-row .range-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            min-width: 75px;
+        }
+        .range-row input[type="number"] {
+            width: 90px;
+            flex-shrink: 0;
+        }
+        .range-row input[type="text"] {
+            flex: 1;
+            min-width: 0;
+        }
+        .range-row .remove-range-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--danger); font-size: 1rem; padding: 4px 6px;
+            border-radius: 6px; line-height: 1; flex-shrink: 0;
+        }
+        .range-row .remove-range-btn:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+        .add-range-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 14px;
+            border: 1px dashed var(--card-border);
+            border-radius: 8px;
+            background: none;
+            color: var(--brand-primary);
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .add-range-btn:hover {
+            border-color: var(--brand-primary);
+            background: color-mix(in srgb, var(--brand-primary) 5%, transparent);
+        }
+
+        /* Naming */
+        .naming-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .naming-row .field { flex: 1; }
+
+        .naming-method-tabs {
+            display: flex; gap: 8px; margin-bottom: 12px;
+        }
+        .naming-method-tab {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .naming-method-tab.active {
+            border-color: var(--brand-primary);
+            background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+            color: var(--brand-primary);
+            font-weight: 600;
+        }
+
+        .naming-method-content { display: none; }
+        .naming-method-content.active { display: block; }
+
+        .name-list-area {
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .warning-msg {
+            display: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--danger) 10%, transparent);
+            border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+            color: var(--danger);
+            font-size: 0.82rem;
+            margin-top: 8px;
+        }
+        .warning-msg.visible { display: block; }
+
+        .hint {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* Preview */
+        .preview-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .preview-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--section-bg);
+            border-radius: 8px;
+            font-size: 0.88rem;
+        }
+        .preview-item .preview-name {
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .preview-item .preview-pages {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            white-space: nowrap;
+            margin-left: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+        }
+        .btn-primary:hover:not(:disabled) { background: var(--btn-hover); }
+        .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Progress */
+        .progress-bar {
+            display: none;
+            height: 4px;
+            background: var(--card-border);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .progress-bar.visible { display: block; }
+        .progress-bar .progress-fill {
+            height: 100%;
+            background: var(--brand-primary);
+            border-radius: 2px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .status-msg {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            min-height: 1.2em;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .naming-row { flex-direction: column; gap: 10px; }
+            .range-row { flex-wrap: wrap; }
+            .range-row input[type="text"] { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="banner">
+    <div class="banner-logo">
+        <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+        <button onclick="history.back()" title="Go back" aria-label="Go back"
+            style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+            onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+    </div>
+    <div class="banner-title">PDF Splitter</div>
+    <div class="banner-actions">
+        <div class="theme-toggle">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes"></button>
+        </div>
+    </div>
+</header>
+
+<div class="app-container">
+
+    <!-- Step 1: Upload -->
+    <div class="section-card" id="upload-section">
+        <h2><span class="step-num">1</span> Upload PDF</h2>
+        <div class="upload-zone" id="upload-zone">
+            <div class="upload-icon">&#128196;</div>
+            <p><strong>Click to select</strong> or drag and drop a PDF file</p>
+        </div>
+        <div class="file-info" id="file-info" style="display:none;">
+            <div style="overflow:hidden;">
+                <div class="file-name" id="file-name"></div>
+                <div class="file-meta" id="file-meta"></div>
+            </div>
+            <button class="remove-btn" id="remove-file" title="Remove file">&times;</button>
+        </div>
+        <input type="file" id="file-input" accept="application/pdf" style="display:none;">
+    </div>
+
+    <!-- Step 2: Split mode -->
+    <div class="section-card" id="split-section">
+        <h2><span class="step-num">2</span> Split Mode</h2>
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="every">Every X pages</button>
+            <button class="mode-tab" data-mode="ranges">Custom ranges</button>
+        </div>
+
+        <div class="mode-content active" id="mode-every">
+            <label for="pages-per-split">Pages per file</label>
+            <input type="number" id="pages-per-split" class="page-count-input" min="1" value="1" placeholder="e.g. 3">
+        </div>
+
+        <div class="mode-content" id="mode-ranges">
+            <label>Split after these pages</label>
+            <div class="ranges-list" id="ranges-list">
+                <div class="range-row" data-index="0">
+                    <span class="range-label">After page</span>
+                    <input type="number" min="1" class="range-page" placeholder="#">
+                    <input type="text" class="range-name" placeholder="Name (optional)">
+                    <button class="remove-range-btn" title="Remove">&times;</button>
+                </div>
+            </div>
+            <button class="add-range-btn" id="add-range">+ Add split point</button>
+            <p class="hint">Pages after the last split point are bundled into the final file.</p>
+        </div>
+    </div>
+
+    <!-- Step 3: Naming -->
+    <div class="section-card" id="naming-section">
+        <h2><span class="step-num">3</span> Naming</h2>
+
+        <div class="naming-row">
+            <div class="field">
+                <label for="prefix-input">Prefix (before name)</label>
+                <input type="text" id="prefix-input" placeholder='e.g. AP Physics'>
+            </div>
+            <div class="field">
+                <label for="suffix-input">Suffix (after name)</label>
+                <input type="text" id="suffix-input" placeholder='e.g. Final Exam'>
+            </div>
+        </div>
+
+        <label style="margin-bottom:8px;">File names</label>
+        <div class="naming-method-tabs">
+            <button class="naming-method-tab active" data-method="default">Default numbering</button>
+            <button class="naming-method-tab" data-method="inline">Name per range</button>
+            <button class="naming-method-tab" data-method="list">Name list</button>
+        </div>
+
+        <div class="naming-method-content active" id="method-default">
+            <p class="hint">Files will be named using the original filename with sequential numbering (01, 02, 03...).</p>
+        </div>
+
+        <div class="naming-method-content" id="method-inline">
+            <p class="hint">Use the "Name" fields next to each range in Custom ranges mode, or leave blank for default numbering. In "Every X pages" mode, this is not available.</p>
+        </div>
+
+        <div class="naming-method-content" id="method-list">
+            <label for="name-list">One name per line</label>
+            <textarea id="name-list" class="name-list-area" placeholder="Student A&#10;Student B&#10;Student C"></textarea>
+            <div class="warning-msg" id="name-list-warning"></div>
+        </div>
+    </div>
+
+    <!-- Step 4: Preview & Download -->
+    <div class="section-card" id="preview-section">
+        <h2><span class="step-num">4</span> Preview &amp; Download</h2>
+        <div class="preview-list" id="preview-list">
+            <div class="empty-state">Upload a PDF to see the split preview.</div>
+        </div>
+        <div style="margin-top:16px;">
+            <button class="btn-primary" id="download-btn" disabled>Download ZIP</button>
+            <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <div class="status-msg" id="status-msg"></div>
+        </div>
+    </div>
+
+</div>
+
+<div id="site-footer"></div>
+<script src="/assets/footer.js"></script>
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<script>
+(function() {
+    'use strict';
+
+    // State
+    var pdfBytes = null;
+    var pdfDoc = null;
+    var totalPages = 0;
+    var originalFileName = '';
+    var splitMode = 'every'; // 'every' | 'ranges'
+    var namingMethod = 'default'; // 'default' | 'inline' | 'list'
+
+    // DOM refs
+    var uploadZone = document.getElementById('upload-zone');
+    var fileInput = document.getElementById('file-input');
+    var fileInfo = document.getElementById('file-info');
+    var fileNameEl = document.getElementById('file-name');
+    var fileMetaEl = document.getElementById('file-meta');
+    var removeFileBtn = document.getElementById('remove-file');
+    var pagesPerSplit = document.getElementById('pages-per-split');
+    var rangesList = document.getElementById('ranges-list');
+    var addRangeBtn = document.getElementById('add-range');
+    var prefixInput = document.getElementById('prefix-input');
+    var suffixInput = document.getElementById('suffix-input');
+    var nameListArea = document.getElementById('name-list');
+    var nameListWarning = document.getElementById('name-list-warning');
+    var previewList = document.getElementById('preview-list');
+    var downloadBtn = document.getElementById('download-btn');
+    var progressBar = document.getElementById('progress-bar');
+    var progressFill = document.getElementById('progress-fill');
+    var statusMsg = document.getElementById('status-msg');
+
+    // --- File Upload ---
+    uploadZone.addEventListener('click', function() { fileInput.click(); });
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+    uploadZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadZone.classList.add('drag-over');
+    });
+    uploadZone.addEventListener('dragleave', function() {
+        uploadZone.classList.remove('drag-over');
+    });
+    uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    removeFileBtn.addEventListener('click', clearFile);
+
+    function handleFile(file) {
+        if (file.type !== 'application/pdf') {
+            alert('Please select a PDF file.');
+            return;
+        }
+        originalFileName = file.name.replace(/\.pdf$/i, '');
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            pdfBytes = new Uint8Array(e.target.result);
+            loadPdf();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function loadPdf() {
+        PDFLib.PDFDocument.load(pdfBytes, { ignoreEncryption: true }).then(function(doc) {
+            pdfDoc = doc;
+            totalPages = doc.getPageCount();
+            fileNameEl.textContent = originalFileName + '.pdf';
+            fileMetaEl.textContent = totalPages + ' page' + (totalPages !== 1 ? 's' : '');
+            uploadZone.style.display = 'none';
+            fileInfo.style.display = 'flex';
+            pagesPerSplit.max = totalPages;
+            updatePreview();
+        }).catch(function(err) {
+            alert('Could not read PDF: ' + err.message);
+        });
+    }
+
+    function clearFile() {
+        pdfBytes = null;
+        pdfDoc = null;
+        totalPages = 0;
+        originalFileName = '';
+        fileInput.value = '';
+        uploadZone.style.display = '';
+        fileInfo.style.display = 'none';
+        updatePreview();
+    }
+
+    // --- Split Mode Tabs ---
+    document.querySelectorAll('.mode-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.mode-tab').forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            splitMode = tab.getAttribute('data-mode');
+            document.querySelectorAll('.mode-content').forEach(function(c) { c.classList.remove('active'); });
+            document.getElementById('mode-' + splitMode).classList.add('active');
+            updatePreview();
+        });
+    });
+
+    // --- Naming Method Tabs ---
+    document.querySelectorAll('.naming-method-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.naming-method-tab').forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            namingMethod = tab.getAttribute('data-method');
+            document.querySelectorAll('.naming-method-content').forEach(function(c) { c.classList.remove('active'); });
+            document.getElementById('method-' + namingMethod).classList.add('active');
+            updatePreview();
+        });
+    });
+
+    // --- Custom Ranges ---
+    addRangeBtn.addEventListener('click', function() {
+        addRangeRow();
+        updatePreview();
+    });
+
+    function addRangeRow(pageVal, nameVal) {
+        var row = document.createElement('div');
+        row.className = 'range-row';
+        row.innerHTML =
+            '<span class="range-label">After page</span>' +
+            '<input type="number" min="1" class="range-page" placeholder="#">' +
+            '<input type="text" class="range-name" placeholder="Name (optional)">' +
+            '<button class="remove-range-btn" title="Remove">&times;</button>';
+        if (pageVal) row.querySelector('.range-page').value = pageVal;
+        if (nameVal) row.querySelector('.range-name').value = nameVal;
+        rangesList.appendChild(row);
+        row.querySelector('.remove-range-btn').addEventListener('click', function() {
+            row.remove();
+            updatePreview();
+        });
+        row.querySelector('.range-page').addEventListener('input', updatePreview);
+        row.querySelector('.range-name').addEventListener('input', updatePreview);
+    }
+
+    // Init first row events
+    (function() {
+        var firstRow = rangesList.querySelector('.range-row');
+        firstRow.querySelector('.remove-range-btn').addEventListener('click', function() {
+            firstRow.remove();
+            updatePreview();
+        });
+        firstRow.querySelector('.range-page').addEventListener('input', updatePreview);
+        firstRow.querySelector('.range-name').addEventListener('input', updatePreview);
+    })();
+
+    // --- Compute Splits ---
+    function computeSplits() {
+        if (!totalPages) return [];
+        var splits = []; // Array of { startPage, endPage, inlineName }
+
+        if (splitMode === 'every') {
+            var n = parseInt(pagesPerSplit.value) || 1;
+            if (n < 1) n = 1;
+            for (var i = 0; i < totalPages; i += n) {
+                splits.push({
+                    startPage: i + 1,
+                    endPage: Math.min(i + n, totalPages),
+                    inlineName: ''
+                });
+            }
+        } else {
+            // Collect split-after pages
+            var points = [];
+            var inlineNames = {};
+            var rows = rangesList.querySelectorAll('.range-row');
+            rows.forEach(function(row) {
+                var val = parseInt(row.querySelector('.range-page').value);
+                var name = row.querySelector('.range-name').value.trim();
+                if (val && val >= 1 && val < totalPages) {
+                    if (points.indexOf(val) === -1) {
+                        points.push(val);
+                        inlineNames[val] = name;
+                    }
+                }
+            });
+            points.sort(function(a, b) { return a - b; });
+
+            var start = 1;
+            for (var j = 0; j < points.length; j++) {
+                splits.push({
+                    startPage: start,
+                    endPage: points[j],
+                    inlineName: inlineNames[points[j]] || ''
+                });
+                start = points[j] + 1;
+            }
+            // Remaining pages
+            if (start <= totalPages) {
+                splits.push({
+                    startPage: start,
+                    endPage: totalPages,
+                    inlineName: ''
+                });
+            }
+        }
+        return splits;
+    }
+
+    // --- Build File Names ---
+    function buildFileNames(splits) {
+        var prefix = prefixInput.value.trim();
+        var suffix = suffixInput.value.trim();
+        var listNames = [];
+        if (namingMethod === 'list') {
+            listNames = nameListArea.value.split('\n').map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+        }
+
+        return splits.map(function(split, idx) {
+            var coreName = '';
+            var hasCustomName = false;
+
+            if (namingMethod === 'inline' && splitMode === 'ranges' && split.inlineName) {
+                coreName = split.inlineName;
+                hasCustomName = true;
+            } else if (namingMethod === 'list' && idx < listNames.length && listNames[idx]) {
+                coreName = listNames[idx];
+                hasCustomName = true;
+            }
+
+            if (!hasCustomName) {
+                var num = String(idx + 1);
+                if (num.length < 2) num = '0' + num;
+                coreName = originalFileName + ' ' + num;
+            }
+
+            var parts = [];
+            if (prefix) parts.push(prefix);
+            parts.push(coreName);
+            if (suffix) parts.push(suffix);
+            return parts.join(' - ');
+        });
+    }
+
+    // --- Preview ---
+    function updatePreview() {
+        var splits = computeSplits();
+        var names = buildFileNames(splits);
+
+        // Name list warning
+        if (namingMethod === 'list' && totalPages) {
+            var listNames = nameListArea.value.split('\n').map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+            if (listNames.length > 0 && listNames.length !== splits.length) {
+                nameListWarning.textContent = 'You have ' + listNames.length + ' name' + (listNames.length !== 1 ? 's' : '') + ' but ' + splits.length + ' file' + (splits.length !== 1 ? 's' : '') + ' will be created. Unmatched files will use default naming.';
+                nameListWarning.classList.add('visible');
+            } else {
+                nameListWarning.classList.remove('visible');
+            }
+        } else {
+            nameListWarning.classList.remove('visible');
+        }
+
+        if (!splits.length) {
+            previewList.innerHTML = '<div class="empty-state">Upload a PDF to see the split preview.</div>';
+            downloadBtn.disabled = true;
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < splits.length; i++) {
+            var pages = splits[i].startPage === splits[i].endPage
+                ? 'Page ' + splits[i].startPage
+                : 'Pages ' + splits[i].startPage + '–' + splits[i].endPage;
+            html += '<div class="preview-item">' +
+                '<span class="preview-name">' + escapeHtml(names[i]) + '.pdf</span>' +
+                '<span class="preview-pages">' + pages + '</span>' +
+                '</div>';
+        }
+        previewList.innerHTML = html;
+        downloadBtn.disabled = false;
+        statusMsg.textContent = '';
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // Listen for input changes
+    pagesPerSplit.addEventListener('input', updatePreview);
+    prefixInput.addEventListener('input', updatePreview);
+    suffixInput.addEventListener('input', updatePreview);
+    nameListArea.addEventListener('input', updatePreview);
+
+    // --- Download ---
+    downloadBtn.addEventListener('click', function() {
+        if (!pdfBytes) return;
+        var splits = computeSplits();
+        var names = buildFileNames(splits);
+        if (!splits.length) return;
+
+        downloadBtn.disabled = true;
+        progressBar.classList.add('visible');
+        progressFill.style.width = '0%';
+        statusMsg.textContent = 'Splitting PDF...';
+
+        var zip = new JSZip();
+        var done = 0;
+
+        function processSplit(i) {
+            if (i >= splits.length) {
+                statusMsg.textContent = 'Creating ZIP...';
+                zip.generateAsync({ type: 'blob' }).then(function(blob) {
+                    progressFill.style.width = '100%';
+                    statusMsg.textContent = 'Done!';
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    var zipName = originalFileName + ' (split).zip';
+                    a.download = zipName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href);
+                    setTimeout(function() {
+                        downloadBtn.disabled = false;
+                        progressBar.classList.remove('visible');
+                        statusMsg.textContent = '';
+                    }, 2000);
+                });
+                return;
+            }
+
+            var split = splits[i];
+            PDFLib.PDFDocument.create().then(function(newDoc) {
+                var pageIndices = [];
+                for (var p = split.startPage - 1; p < split.endPage; p++) {
+                    pageIndices.push(p);
+                }
+                return newDoc.copyPages(pdfDoc, pageIndices).then(function(copiedPages) {
+                    copiedPages.forEach(function(page) { newDoc.addPage(page); });
+                    return newDoc.save();
+                });
+            }).then(function(bytes) {
+                zip.file(names[i] + '.pdf', bytes);
+                done++;
+                progressFill.style.width = Math.round((done / splits.length) * 90) + '%';
+                statusMsg.textContent = 'Processing file ' + done + ' of ' + splits.length + '...';
+                processSplit(i + 1);
+            }).catch(function(err) {
+                statusMsg.textContent = 'Error: ' + err.message;
+                downloadBtn.disabled = false;
+                progressBar.classList.remove('visible');
+            });
+        }
+
+        processSplit(0);
+    });
+
+    // --- Theme ---
+    var themeButton = document.getElementById('theme-button');
+    var DARK_KEY = 'pdf-splitter-dark';
+    var LIGHT_KEY = 'pdf-splitter-light';
+
+    function updateAppChromeTheme(theme) {
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        var dark = theme === 'dark';
+        if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+        if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+    }
+    function updateButtonEmoji(theme) {
+        themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+    }
+    var initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', initTheme);
+    updateAppChromeTheme(initTheme);
+    updateButtonEmoji(initTheme);
+    window.addEventListener('pageshow', function() {
+        updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+    });
+    themeButton.addEventListener('click', function() {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        if (next === 'dark') {
+            localStorage.setItem(DARK_KEY, 'true');
+            localStorage.removeItem(LIGHT_KEY);
+        } else {
+            localStorage.setItem(LIGHT_KEY, 'true');
+            localStorage.removeItem(DARK_KEY);
+        }
+        updateAppChromeTheme(next);
+        updateButtonEmoji(next);
+    });
+})();
+</script>
+
+<!-- Brave iOS gradient text fix -->
+<script>
+(function () {
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+    document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+})();
+</script>
+
+</body>
+</html>
