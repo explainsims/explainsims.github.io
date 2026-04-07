@@ -274,7 +274,6 @@
 <div id="site-footer"></div>
 <script src="/assets/footer.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
@@ -305,6 +304,18 @@ const statusText = document.getElementById('status-text');
 const docTitleInput = document.getElementById('doc-title');
 const appContainer = document.getElementById('app-container');
 
+// ── Lazy script loader ──
+function loadScript(url) {
+    return new Promise(function(resolve, reject) {
+        if (document.querySelector('script[src="' + url + '"]')) { resolve(); return; }
+        var s = document.createElement('script');
+        s.src = url;
+        s.onload = resolve;
+        s.onerror = function() { reject(new Error('Failed to load: ' + url)); };
+        document.head.appendChild(s);
+    });
+}
+
 // ── File reading ──
 function readAsText(file) {
     return new Promise(function(resolve, reject) {
@@ -324,7 +335,15 @@ function readAsArrayBuffer(file) {
     });
 }
 
+var MAMMOTH_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js';
+
+async function ensureMammoth() {
+    if (window.mammoth) return;
+    await loadScript(MAMMOTH_CDN);
+}
+
 async function extractDocx(file) {
+    await ensureMammoth();
     var buf = await readAsArrayBuffer(file);
     var result = await mammoth.extractRawText({ arrayBuffer: buf });
     return result.value;
