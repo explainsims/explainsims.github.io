@@ -350,10 +350,20 @@ if (window.pdfjsLib) {
 let tabIdCounter = 0;
 const tabs = []; // { id, name, fileType, content, size, importMode }
 let accessToken = sessionStorage.getItem('docs-tab-builder-token');
+let tokenExpiry = parseInt(sessionStorage.getItem('docs-tab-builder-token-expiry') || '0', 10);
+// Discard token that has already expired
+if (accessToken && Date.now() > tokenExpiry) {
+    accessToken = null;
+    tokenExpiry = 0;
+    sessionStorage.removeItem('docs-tab-builder-token');
+    sessionStorage.removeItem('docs-tab-builder-token-expiry');
+}
 let isSignedIn = !!accessToken;
 let tokenClient = null;
 var pendingPickerOpen = false;
 var pickerLoaded = false;
+var _tokenRefreshResolvers = []; // pending {resolve, reject} callbacks for ensureFreshToken
+var _tokenRefreshing = false;
 
 // ── DOM refs ──
 const tabListEl = document.getElementById('tab-list');
@@ -679,15 +689,30 @@ function initGoogleAuth() {
         client_id: GOOGLE_CLIENT_ID,
         scope: SCOPES,
         callback: function(response) {
+            var resolvers = _tokenRefreshResolvers.splice(0);
+            _tokenRefreshing = false;
             if (response.error) {
-                setStatus('Sign-in failed: ' + response.error, 'error');
+                if (resolvers.length > 0) {
+                    resolvers.forEach(function(r) { r.reject(new Error(response.error)); });
+                } else {
+                    setStatus('Sign-in failed: ' + response.error, 'error');
+                }
                 return;
             }
             accessToken = response.access_token;
+            tokenExpiry = Date.now() + ((response.expires_in || 3600) * 1000);
             sessionStorage.setItem('docs-tab-builder-token', accessToken);
+            sessionStorage.setItem('docs-tab-builder-token-expiry', String(tokenExpiry));
             isSignedIn = true;
-            setStatus('Signed in successfully', 'success');
-            updateActionArea();
+            if (resolvers.length > 0) {
+                // Silent token refresh — resolve callers without showing a message
+                resolvers.forEach(function(r) { r.resolve(); });
+                updateActionArea();
+            } else {
+                // Explicit user sign-in
+                setStatus('Signed in successfully', 'success');
+                updateActionArea();
+            }
             if (pendingPickerOpen) {
                 pendingPickerOpen = false;
                 openGoogleDocPicker();
@@ -709,10 +734,33 @@ function handleSignOut() {
         google.accounts.oauth2.revoke(accessToken);
     }
     accessToken = null;
+    tokenExpiry = 0;
     sessionStorage.removeItem('docs-tab-builder-token');
+    sessionStorage.removeItem('docs-tab-builder-token-expiry');
     isSignedIn = false;
     setStatus('Signed out', '');
     updateActionArea();
+}
+
+// Returns a Promise that resolves once we have a fresh (non-expired) access token.
+// Only call this when the user is already signed in; for first-time sign-in use handleSignIn.
+function ensureFreshToken() {
+    // Token is still valid with at least 60 s to spare
+    if (accessToken && Date.now() < tokenExpiry - 60000) {
+        return Promise.resolve();
+    }
+    // A refresh is already in flight — queue onto it
+    if (_tokenRefreshing) {
+        return new Promise(function(resolve, reject) {
+            _tokenRefreshResolvers.push({ resolve: resolve, reject: reject });
+        });
+    }
+    // Kick off a silent refresh (prompt: '' avoids showing the consent screen)
+    _tokenRefreshing = true;
+    return new Promise(function(resolve, reject) {
+        _tokenRefreshResolvers.push({ resolve: resolve, reject: reject });
+        tokenClient.requestAccessToken({ prompt: '' });
+    });
 }
 
 // ── Google Docs creation ──
@@ -725,6 +773,7 @@ async function createGoogleDoc() {
     if (createBtn) createBtn.disabled = true;
 
     try {
+        await ensureFreshToken();
         // Find the first Google Doc tab (for full-fidelity copy via Drive)
         var baseGdocIdx = -1;
         for (var bi = 0; bi < tabs.length; bi++) {
@@ -1117,6 +1166,7 @@ async function openGoogleDocPicker() {
         return;
     }
     try {
+        await ensureFreshToken();
         await loadPickerApi();
     } catch (e) {
         setStatus('Could not load Google Picker. Please reload the page.', 'error');
