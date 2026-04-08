@@ -39,5 +39,6 @@
       '<p>Free to use, share, and remix. &nbsp;&middot;&nbsp; h/t to ' +
       '<a href="https://panphy.github.io/" target="_blank" rel="noopener noreferrer">PanPhy</a>' +
       '</p>' +
+      '<p><a href="/privacy.html">Privacy Policy</a></p>' +
     '</footer>';
 })();

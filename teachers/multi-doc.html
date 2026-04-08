@@ -316,8 +316,8 @@
         <div class="help-divider"></div>
         <div class="help-section">
             <h3>From Google Doc</h3>
-            <p>Click <strong>Add from Google Doc</strong> to open your Google Drive and select an existing document. If the document has multiple tabs, you will be asked to pick which tab to import.</p>
-            <p>Content is copied as faithfully as possible: headings, bold, italic, underline, and bullet/numbered lists are preserved. Tables are converted to tab-separated text. Images, drawings, and headers/footers are not copied.</p>
+            <p>Click <strong>Add from Google Doc</strong> to open your Google Drive and select an existing document. Browse My Drive, Starred, Shared with me, or Shared drives. If the document has multiple tabs, you will be asked to pick which tab to import.</p>
+            <p>The first Google Doc tab is copied with <strong>full fidelity</strong> — all formatting, images, tables, fonts, and colors are preserved exactly. Additional Google Doc tabs from different source documents use text-level copying (headings, bold, italic, lists preserved; images and precise styling may be simplified).</p>
             <p>You must be signed in with Google to use this feature.</p>
         </div>
         <div class="help-divider"></div>
@@ -725,28 +725,97 @@ async function createGoogleDoc() {
     if (createBtn) createBtn.disabled = true;
 
     try {
-        // Step 1: Create the document
-        var createRes = await fetch('https://docs.googleapis.com/v1/documents', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + accessToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ title: title })
-        });
-
-        if (!createRes.ok) {
-            var errData = await createRes.json().catch(function() { return {}; });
-            throw new Error(errData.error ? errData.error.message : 'Failed to create document');
+        // Find the first Google Doc tab (for full-fidelity copy via Drive)
+        var baseGdocIdx = -1;
+        for (var bi = 0; bi < tabs.length; bi++) {
+            if (tabs[bi].fileType === 'gdoc') { baseGdocIdx = bi; break; }
         }
 
-        var doc = await createRes.json();
-        var docId = doc.documentId;
+        var docId;
+        var baseTabId = null;  // tab ID of the base gdoc tab in the new doc
+        var usedBaseCopy = false;
 
-        // Step 2: Insert content into the first (default) tab
-        if (tabs[0].fileType === 'gdoc') {
-            await insertStructuredContentIntoDoc(docId, tabs[0].gdocStructured, null);
-        } else {
+        if (baseGdocIdx >= 0) {
+            // Full-fidelity: copy the source doc, then delete unwanted tabs
+            setStatus('Copying source document...', '');
+            var copyRes = await fetch('https://www.googleapis.com/drive/v3/files/' + tabs[baseGdocIdx].gdocId + '/copy', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: title })
+            });
+            if (!copyRes.ok) {
+                // Fall back to creating a new doc if copy fails (e.g. scope issues)
+                baseGdocIdx = -1;
+            } else {
+                var copiedFile = await copyRes.json();
+                docId = copiedFile.id;
+                usedBaseCopy = true;
+
+                // Get the copy's tabs
+                setStatus('Preparing tabs...', '');
+                var copyDocRes = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=false', {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                });
+                var copyDoc = await copyDocRes.json();
+                var copyTabs = copyDoc.tabs || [];
+
+                // Find the desired tab (match by tab ID from original doc)
+                var desiredTabId = tabs[baseGdocIdx].gdocTabId;
+                var foundTab = null;
+                for (var fi = 0; fi < copyTabs.length; fi++) {
+                    if (copyTabs[fi].tabProperties.tabId === desiredTabId) {
+                        foundTab = copyTabs[fi]; break;
+                    }
+                }
+                // If tab ID didn't match (IDs changed on copy), match by title
+                if (!foundTab) {
+                    var srcTitle = tabs[baseGdocIdx].name;
+                    for (var fi = 0; fi < copyTabs.length; fi++) {
+                        if (copyTabs[fi].tabProperties.title === srcTitle) {
+                            foundTab = copyTabs[fi]; break;
+                        }
+                    }
+                }
+                if (!foundTab) foundTab = copyTabs[0];
+                baseTabId = foundTab.tabProperties.tabId;
+
+                // Delete all tabs except the desired one
+                var deleteReqs = [];
+                for (var di = 0; di < copyTabs.length; di++) {
+                    var ctId = copyTabs[di].tabProperties.tabId;
+                    if (ctId !== baseTabId) {
+                        deleteReqs.push({ deleteDocumentTab: { tabId: ctId } });
+                    }
+                }
+                if (deleteReqs.length > 0) {
+                    await batchUpdateDoc(docId, deleteReqs);
+                }
+
+                // Rename the remaining tab
+                await batchUpdateDoc(docId, [{
+                    updateDocumentTabProperties: {
+                        tabProperties: { tabId: baseTabId, title: tabs[baseGdocIdx].name },
+                        fields: 'title'
+                    }
+                }]);
+            }
+        }
+
+        // If no base copy was used, create a fresh document
+        if (!usedBaseCopy) {
+            var createRes = await fetch('https://docs.googleapis.com/v1/documents', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: title })
+            });
+            if (!createRes.ok) {
+                var errData = await createRes.json().catch(function() { return {}; });
+                throw new Error(errData.error ? errData.error.message : 'Failed to create document');
+            }
+            var doc = await createRes.json();
+            docId = doc.documentId;
+
+            // Insert content into the first (default) tab
             var firstTabContent = await getTabContent(tabs[0]);
             if (firstTabContent) {
                 if (tabs[0].importMode === 'markdown' || tabs[0].importMode === 'formatted') {
@@ -755,78 +824,74 @@ async function createGoogleDoc() {
                     await insertTextIntoDoc(docId, firstTabContent, null);
                 }
             }
-        }
 
-        // Step 3: Rename the default tab to match first file name
-        // and add remaining tabs
-        var batchRequests = [];
-
-        // Rename default tab
-        var defaultTabId = doc.tabs && doc.tabs[0] ? doc.tabs[0].tabProperties.tabId : null;
-        if (defaultTabId && tabs[0].name) {
-            batchRequests.push({
-                updateDocumentTabProperties: {
-                    tabProperties: {
-                        tabId: defaultTabId,
-                        title: tabs[0].name
-                    },
-                    fields: 'title'
-                }
-            });
-        }
-
-        // Add new tabs for remaining files
-        for (var i = 1; i < tabs.length; i++) {
-            batchRequests.push({
-                addDocumentTab: {
-                    tabProperties: {
-                        title: tabs[i].name
+            // Rename default tab
+            var defaultTabId = doc.tabs && doc.tabs[0] ? doc.tabs[0].tabProperties.tabId : null;
+            if (defaultTabId && tabs[0].name) {
+                await batchUpdateDoc(docId, [{
+                    updateDocumentTabProperties: {
+                        tabProperties: { tabId: defaultTabId, title: tabs[0].name },
+                        fields: 'title'
                     }
-                }
-            });
+                }]);
+            }
         }
 
-        if (batchRequests.length > 0) {
-            setStatus('Setting up tabs...', '');
-            var batchRes = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + accessToken,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ requests: batchRequests })
+        // Build the list of tabs that still need to be added
+        // (all tabs except the one already in the doc)
+        var tabsToAdd = [];
+        for (var ti = 0; ti < tabs.length; ti++) {
+            if (usedBaseCopy && ti === baseGdocIdx) continue;  // already in doc via copy
+            if (!usedBaseCopy && ti === 0) continue;           // already in doc as default tab
+            tabsToAdd.push(tabs[ti]);
+        }
+
+        // Add new tabs for remaining entries
+        if (tabsToAdd.length > 0) {
+            var addReqs = tabsToAdd.map(function(t) {
+                return { addDocumentTab: { tabProperties: { title: t.name } } };
             });
+            setStatus('Setting up tabs...', '');
+            await batchUpdateDoc(docId, addReqs);
 
-            if (!batchRes.ok) {
-                var batchErr = await batchRes.json().catch(function() { return {}; });
-                throw new Error(batchErr.error ? batchErr.error.message : 'Failed to configure tabs');
-            }
-
-            // Step 4: Get updated doc to find new tab IDs
+            // Get updated doc to find new tab IDs
             var updatedDocRes = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
                 headers: { 'Authorization': 'Bearer ' + accessToken }
             });
             var updatedDoc = await updatedDocRes.json();
+            var allDocTabs = updatedDoc.tabs || [];
 
-            // Step 5: Insert content into each additional tab
-            for (var j = 1; j < tabs.length; j++) {
-                setStatus('Adding content to tab ' + (j + 1) + ' of ' + tabs.length + '...', '');
-                if (updatedDoc.tabs && updatedDoc.tabs[j]) {
-                    var tabId = updatedDoc.tabs[j].tabProperties.tabId;
-                    if (tabs[j].fileType === 'gdoc') {
-                        await insertStructuredContentIntoDoc(docId, tabs[j].gdocStructured, tabId);
-                    } else {
-                        var tabContent = await getTabContent(tabs[j]);
-                        if (tabContent) {
-                            if (tabs[j].importMode === 'markdown' || tabs[j].importMode === 'formatted') {
-                                await insertMarkdownIntoDoc(docId, tabContent, tabId);
-                            } else {
-                                await insertTextIntoDoc(docId, tabContent, tabId);
-                            }
+            // The added tabs start at index 1 (index 0 is the base tab)
+            for (var aj = 0; aj < tabsToAdd.length; aj++) {
+                setStatus('Adding content to tab ' + (aj + 2) + ' of ' + tabs.length + '...', '');
+                var docTab = allDocTabs[aj + 1];
+                if (!docTab) continue;
+                var targetTabId = docTab.tabProperties.tabId;
+                var srcTab = tabsToAdd[aj];
+
+                if (srcTab.fileType === 'gdoc') {
+                    await insertStructuredContentIntoDoc(docId, srcTab.gdocStructured, targetTabId);
+                } else {
+                    var tabContent = await getTabContent(srcTab);
+                    if (tabContent) {
+                        if (srcTab.importMode === 'markdown' || srcTab.importMode === 'formatted') {
+                            await insertMarkdownIntoDoc(docId, tabContent, targetTabId);
+                        } else {
+                            await insertTextIntoDoc(docId, tabContent, targetTabId);
                         }
                     }
                 }
             }
+        }
+
+        // If we used a base copy and it wasn't the first tab, reorder
+        if (usedBaseCopy && baseGdocIdx > 0 && baseTabId) {
+            await batchUpdateDoc(docId, [{
+                updateDocumentTabProperties: {
+                    tabProperties: { tabId: baseTabId, index: baseGdocIdx },
+                    fields: 'index'
+                }
+            }]);
         }
 
         setStatus('Document created! Opening...', 'success');
@@ -1059,13 +1124,22 @@ async function openGoogleDocPicker() {
     }
     var myDriveView = new google.picker.DocsView(google.picker.ViewId.DOCS)
         .setMimeTypes('application/vnd.google-apps.document')
-        .setIncludeFolders(true);
+        .setIncludeFolders(true)
+        .setOwnedByMe(true);
+    var starredView = new google.picker.DocsView(google.picker.ViewId.DOCS)
+        .setMimeTypes('application/vnd.google-apps.document')
+        .setStarred(true);
     var sharedDriveView = new google.picker.DocsView(google.picker.ViewId.DOCS)
         .setMimeTypes('application/vnd.google-apps.document')
         .setIncludeFolders(true)
         .setEnableDrives(true);
+    var sharedWithMeView = new google.picker.DocsView(google.picker.ViewId.DOCS)
+        .setMimeTypes('application/vnd.google-apps.document')
+        .setOwnedByMe(false);
     var picker = new google.picker.PickerBuilder()
         .addView(myDriveView)
+        .addView(starredView)
+        .addView(sharedWithMeView)
         .addView(sharedDriveView)
         .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
         .setOAuthToken(accessToken)
