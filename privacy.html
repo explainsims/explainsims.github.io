@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('privacy-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Privacy Policy — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <script src="/assets/sw-register.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+            --brand-primary: #6c5ce7;
+            --brand-secondary: #5a4fcf;
+            --brand-accent: #00cec9;
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 0 1px rgba(0,0,0,0.1);
+            --nav-bg: rgba(255, 255, 255, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.10);
+            --section-bg: #EEEEF3;
+            --divider-color: #E5E7EB;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+            --brand-primary: #a29bfe;
+            --brand-secondary: #8b85fc;
+            --brand-accent: #81ecec;
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 1px rgba(255,255,255,0.04);
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.08);
+            --section-bg: #16161E;
+            --divider-color: #2A2A36;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-sans); background: var(--bg-color); color: var(--text-main); min-height: 100dvh; display: flex; flex-direction: column; transition: background-color 0.3s, color 0.3s; }
+
+        /* Banner */
+        .banner { position: sticky; top: 0; z-index: 100; background: var(--nav-bg); border-bottom: 1px solid var(--nav-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title { font-family: var(--font-display); font-size: clamp(1.1rem, 3vw, 1.4rem); font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
+        .banner-title.gradient-text { background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button { background: none; border: none; cursor: pointer; font-size: 1.2rem; padding: 6px; border-radius: 8px; transition: background 0.15s; line-height: 1; }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* Content */
+        .page-container { max-width: 720px; margin: 0 auto; padding: 40px 20px 24px; flex: 1; width: 100%; }
+        .page-header { margin-bottom: 36px; }
+        .page-header h1 { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; margin-bottom: 6px; }
+        .page-header .effective-date { font-size: 0.82rem; color: var(--text-secondary); }
+
+        .policy-section { margin-bottom: 32px; }
+        .policy-section h2 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; color: var(--brand-primary); }
+        .policy-section p { font-size: 0.9rem; line-height: 1.7; color: var(--text-main); margin-bottom: 10px; }
+        .policy-section p:last-child { margin-bottom: 0; }
+        .policy-section ul { padding-left: 20px; margin-bottom: 10px; }
+        .policy-section li { font-size: 0.9rem; line-height: 1.7; color: var(--text-main); margin-bottom: 6px; }
+        .policy-section li:last-child { margin-bottom: 0; }
+        .policy-section strong { color: var(--text-main); }
+
+        .highlight-box { background: var(--section-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+        .highlight-box p { font-size: 0.85rem; line-height: 1.65; margin-bottom: 0; }
+
+        .divider { height: 1px; background: var(--divider-color); margin-bottom: 32px; }
+
+        a { color: var(--brand-primary); text-decoration: none; font-weight: 500; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<header class="banner">
+    <div class="banner-logo">
+        <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+        <button onclick="history.back()" title="Go back" aria-label="Go back"
+            style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+            onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+    </div>
+    <div class="banner-title">Privacy Policy</div>
+    <div class="banner-actions">
+        <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes">&#x2600;&#xFE0F;</button>
+    </div>
+</header>
+
+<main class="page-container">
+    <div class="page-header">
+        <h1>Privacy Policy</h1>
+        <p class="effective-date">Effective date: April 8, 2026 &nbsp;&middot;&nbsp; <a href="https://explainsims.github.io/">explainsims.github.io</a></p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Overview</h2>
+        <p>ExplAIn Sims is a free, open educational site providing physics simulations and teacher tools. This policy explains how information is handled when you use the site, particularly when using features that connect to your Google account.</p>
+        <div class="highlight-box">
+            <p><strong>Short version:</strong> We don't collect or store your data. Some tools let you create or copy Google Docs in your own Drive — that content goes directly from your browser to Google. We see nothing, store nothing, and sell nothing.</p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="policy-section">
+        <h2>1. Information We Do Not Collect</h2>
+        <p>ExplAIn Sims has no backend servers, databases, or analytics. We do not collect:</p>
+        <ul>
+            <li>Personal information (name, email, location)</li>
+            <li>Usage analytics or tracking data</li>
+            <li>Cookies (none are set by this site)</li>
+            <li>Any content from files you upload or documents you create</li>
+        </ul>
+        <p>The site is served as static files from GitHub Pages. Nothing you do on this site is logged or recorded by us.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="policy-section">
+        <h2>2. Google Sign-In and Google Workspace APIs</h2>
+        <p>Some tools — currently <strong>Docs Tab Builder</strong> and <strong>Chatbot to Docs</strong> — use Google Sign-In and Google Workspace APIs (Google Docs and Google Drive) to create or read documents in your Google Drive. This section explains exactly what happens when you use these features.</p>
+
+        <p><strong>What permissions are requested:</strong></p>
+        <ul>
+            <li><em>Create and manage Google Docs files</em> — so the tool can create new documents in your Drive.</li>
+            <li><em>Read-only access to Google Drive</em> — so you can browse and select existing documents to import. We do not modify, delete, or access any files other than those you explicitly select and any new documents the tool creates for you.</li>
+        </ul>
+
+        <p><strong>What happens with your data:</strong></p>
+        <ul>
+            <li>Your OAuth access token is stored in your browser's <code>sessionStorage</code> only — it is never sent to any server other than Google, and is automatically cleared when you close the browser tab.</li>
+            <li>Files you upload (PDFs, Word docs, text files) are read and processed entirely within your browser. Their content is never transmitted to us.</li>
+            <li>Document content is only sent to Google when you explicitly click a button to create or copy a document. It goes directly from your browser to Google's servers.</li>
+            <li>We do not read, store, or retain any of your Google Drive contents, document text, or account information.</li>
+        </ul>
+
+        <p><strong>What we do not do:</strong></p>
+        <ul>
+            <li>We do not store, cache, or log any Google user data.</li>
+            <li>We do not share or transfer Google user data to any third party.</li>
+            <li>We do not use Google user data for advertising or any purpose other than providing the feature you requested.</li>
+            <li>We do not sell Google user data. Ever.</li>
+        </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="policy-section">
+        <h2>3. Google API Services — Limited Use Disclosure</h2>
+        <p>ExplAIn Sims's use and transfer of information received from Google APIs to any other app will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="policy-section">
+        <h2>4. Third-Party Scripts and CDNs</h2>
+        <p>The site loads open-source libraries from third-party CDNs (such as cdnjs.cloudflare.com and googleapis.com) to power features like PDF rendering, graphing, and math typesetting. These CDN providers may log standard HTTP request metadata (IP address, browser type, timestamp) as part of normal server operation. We have no control over and no access to those logs. Please review the privacy policies of <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google</a> for details.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="policy-section">
+        <h2>5. Children</h2>
+        <p>This site is designed for educational use by teachers and students of all ages. We do not knowingly collect personal information from anyone. Because we collect no data at all, there is no special handling required for younger users.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="policy-section">
+        <h2>6. Changes to This Policy</h2>
+        <p>If we add new features that change how data is handled, we will update this policy and revise the effective date at the top of this page. Continued use of the site after changes are posted constitutes acceptance of the updated policy.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="policy-section">
+        <h2>7. Contact</h2>
+        <p>Questions about this privacy policy can be directed to the project's GitHub repository: <a href="https://github.com/explainsims/explainsims.github.io" target="_blank" rel="noopener noreferrer">github.com/explainsims/explainsims.github.io</a></p>
+    </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="/assets/footer.js"></script>
+
+<script>
+const themeButton = document.getElementById('theme-button');
+const DARK_KEY = 'privacy-dark';
+const LIGHT_KEY = 'privacy-light';
+
+function updateAppChromeTheme(theme) {
+    const tc = document.querySelector('meta[name="theme-color"]');
+    const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    const dark = theme === 'dark';
+    if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+    if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+}
+function updateButtonEmoji(theme) {
+    themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+}
+const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+document.documentElement.setAttribute('data-theme', initTheme);
+updateAppChromeTheme(initTheme);
+updateButtonEmoji(initTheme);
+window.addEventListener('pageshow', function () {
+    updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+});
+themeButton.addEventListener('click', function () {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    if (next === 'dark') {
+        localStorage.setItem(DARK_KEY, 'true');
+        localStorage.removeItem(LIGHT_KEY);
+    } else {
+        localStorage.setItem(LIGHT_KEY, 'true');
+        localStorage.removeItem(DARK_KEY);
+    }
+    updateAppChromeTheme(next);
+    updateButtonEmoji(next);
+});
+</script>
+
+<!-- Brave iOS gradient text fix -->
+<script>
+(function () {
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+    document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+})();
+</script>
+
+</body>
+</html>
