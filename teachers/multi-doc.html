@@ -1057,12 +1057,16 @@ async function openGoogleDocPicker() {
         setStatus('Could not load Google Picker. Please reload the page.', 'error');
         return;
     }
-    var view = new google.picker.DocsView()
+    var myDriveView = new google.picker.DocsView(google.picker.ViewId.DOCS)
+        .setMimeTypes('application/vnd.google-apps.document')
+        .setIncludeFolders(true);
+    var sharedDriveView = new google.picker.DocsView(google.picker.ViewId.DOCS)
         .setMimeTypes('application/vnd.google-apps.document')
         .setIncludeFolders(true)
         .setEnableDrives(true);
     var picker = new google.picker.PickerBuilder()
-        .addView(view)
+        .addView(myDriveView)
+        .addView(sharedDriveView)
         .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
         .setOAuthToken(accessToken)
         .setDeveloperKey(GOOGLE_API_KEY)
