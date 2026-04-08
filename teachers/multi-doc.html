@@ -125,6 +125,8 @@
         [data-theme="dark"] .badge-md { background: rgba(16,185,129,0.2); color: #6ee7b7; }
         [data-theme="dark"] .badge-docx { background: rgba(99,102,241,0.2); color: #a5b4fc; }
         [data-theme="dark"] .badge-pdf { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .badge-gdoc { background: #e8f0fe; color: #1558d6; }
+        [data-theme="dark"] .badge-gdoc { background: rgba(66,133,244,0.18); color: #8ab4f8; }
         .tab-remove { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border: 2px solid var(--card-border); border-radius: 50%; background: var(--card-bg); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0; line-height: 1; transition: background 0.15s, color 0.15s, border-color 0.15s; z-index: 3; }
         .tab-remove svg { width: 12px; height: 12px; }
         .tab-remove:hover { background: var(--status-error); color: #fff; border-color: var(--status-error); }
@@ -135,9 +137,29 @@
         .tab-import-row select { padding: 4px 8px; font-size: 0.78rem; font-family: var(--font-sans); border: 1px solid var(--card-border); border-radius: 6px; background: var(--card-bg); color: var(--text-main); outline: none; }
 
         /* Add tab button */
-        .add-tab-btn { width: 100%; padding: 20px; border: 2px dashed var(--card-border); border-radius: 12px; background: transparent; color: var(--text-secondary); cursor: pointer; font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: border-color 0.2s, color 0.2s, background 0.2s; margin-bottom: 24px; }
+        .add-tab-btn { width: 100%; padding: 20px; border: 2px dashed var(--card-border); border-radius: 12px; background: transparent; color: var(--text-secondary); cursor: pointer; font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: border-color 0.2s, color 0.2s, background 0.2s; margin-bottom: 8px; }
         .add-tab-btn:hover { border-color: var(--brand-primary); color: var(--brand-primary); background: var(--section-bg); }
         .add-tab-btn svg { width: 20px; height: 20px; }
+
+        /* Add from Google Doc button */
+        .add-gdoc-btn { width: 100%; padding: 14px; border: 2px dashed #4285f4; border-radius: 12px; background: transparent; color: #4285f4; cursor: pointer; font-family: var(--font-sans); font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: border-color 0.2s, color 0.2s, background 0.2s; margin-bottom: 24px; }
+        .add-gdoc-btn:hover { background: rgba(66,133,244,0.06); }
+        .add-gdoc-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+        [data-theme="dark"] .add-gdoc-btn { border-color: #8ab4f8; color: #8ab4f8; }
+        [data-theme="dark"] .add-gdoc-btn:hover { background: rgba(138,180,248,0.08); }
+
+        /* Tab picker modal */
+        .tab-picker-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; align-items: center; justify-content: center; }
+        .tab-picker-backdrop.open { display: flex; }
+        .tab-picker-modal { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.22); width: 360px; max-width: 90vw; max-height: 60vh; display: flex; flex-direction: column; overflow: hidden; }
+        .tab-picker-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--card-border); gap: 8px; }
+        .tab-picker-header > div > span { font-weight: 700; font-size: 0.88rem; display: block; }
+        .tab-picker-header > div > small { color: var(--text-secondary); font-size: 0.75rem; display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+        .tab-picker-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 4px 6px; border-radius: 6px; color: var(--text-secondary); transition: background 0.15s; line-height: 1; flex-shrink: 0; }
+        .tab-picker-close:hover { background: var(--section-bg); color: var(--text-main); }
+        .tab-picker-list { overflow-y: auto; padding: 8px; }
+        .tab-picker-item { display: block; width: 100%; text-align: left; padding: 10px 12px; border: none; border-radius: 8px; background: transparent; color: var(--text-main); cursor: pointer; font-family: var(--font-sans); font-size: 0.88rem; font-weight: 500; transition: background 0.15s; margin-bottom: 2px; }
+        .tab-picker-item:hover { background: color-mix(in srgb, var(--brand-primary) 10%, transparent); color: var(--brand-primary); }
 
         /* Action area */
         .action-area { display: flex; flex-direction: column; gap: 12px; align-items: center; padding: 20px 0; }
@@ -212,6 +234,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Tab
     </button>
+    <button class="add-gdoc-btn" id="add-gdoc-btn" type="button">
+        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Add from Google Doc
+    </button>
     <input type="file" id="file-input" multiple accept=".txt,.md,.docx,.pdf" style="display:none">
 
     <div class="action-area" id="action-area">
@@ -226,6 +252,19 @@
         </div>
     </div>
 </main>
+
+<div class="tab-picker-backdrop" id="tab-picker-backdrop">
+    <div class="tab-picker-modal" id="tab-picker-modal">
+        <div class="tab-picker-header">
+            <div>
+                <span>Select a tab</span>
+                <small id="tab-picker-doc-name"></small>
+            </div>
+            <button class="tab-picker-close" id="tab-picker-close" aria-label="Close">&#x2715;</button>
+        </div>
+        <div class="tab-picker-list" id="tab-picker-list"></div>
+    </div>
+</div>
 
 <div class="help-backdrop" id="help-backdrop"></div>
 <aside class="help-panel" id="help-panel" aria-label="Help">
@@ -276,6 +315,13 @@
         </div>
         <div class="help-divider"></div>
         <div class="help-section">
+            <h3>From Google Doc</h3>
+            <p>Click <strong>Add from Google Doc</strong> to open your Google Drive and select an existing document. If the document has multiple tabs, you will be asked to pick which tab to import.</p>
+            <p>Content is copied as faithfully as possible: headings, bold, italic, underline, and bullet/numbered lists are preserved. Tables are converted to tab-separated text. Images, drawings, and headers/footers are not copied.</p>
+            <p>You must be signed in with Google to use this feature.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
             <h3>Privacy</h3>
             <p>All file processing happens locally in your browser. File contents are only sent to Google when you click Create. No data is stored on any server besides your Google Drive.</p>
         </div>
@@ -292,7 +338,8 @@
 <script>
 // ── Config ──
 const GOOGLE_CLIENT_ID = '145857450332-e48aqkd6ukrrr5jt7jp20ele0ne2ff95.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
+const GOOGLE_API_KEY = 'AIzaSyBN08wOq2cj3NcNf3G-Jaxrb_ucK6lbeLc';
+const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
 
 // PDF.js worker
 if (window.pdfjsLib) {
@@ -305,6 +352,8 @@ const tabs = []; // { id, name, fileType, content, size, importMode }
 let accessToken = sessionStorage.getItem('docs-tab-builder-token');
 let isSignedIn = !!accessToken;
 let tokenClient = null;
+var pendingPickerOpen = false;
+var pickerLoaded = false;
 
 // ── DOM refs ──
 const tabListEl = document.getElementById('tab-list');
@@ -427,6 +476,7 @@ function getImportModes(ext) {
             { value: 'formatted', label: 'Preserve formatting' }
         ];
         case 'pdf': return [{ value: 'plain', label: 'Extract text' }];
+        case 'gdoc': return [{ value: 'structured', label: 'Copy content' }];
         default: return [{ value: 'plain', label: 'Plain text' }];
     }
 }
@@ -436,6 +486,7 @@ function getBadgeClass(ext) {
     if (ext === 'md') return 'badge-md';
     if (ext === 'docx' || ext === 'doc') return 'badge-docx';
     if (ext === 'pdf') return 'badge-pdf';
+    if (ext === 'gdoc') return 'badge-gdoc';
     return 'badge-txt';
 }
 
@@ -522,7 +573,7 @@ function renderTabs() {
                 '<span class="file-type-badge ' + getBadgeClass(tab.fileType) + '">' + tab.fileType + '</span>' +
             '</div>' +
             '<button class="tab-remove" data-tab-id="' + tab.id + '" title="Remove tab" aria-label="Remove tab"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
-            '<div class="tab-meta"><span>' + formatFileSize(tab.size) + '</span></div>' +
+            '<div class="tab-meta"><span>' + (tab.fileType === 'gdoc' ? 'From: ' + escapeHtml(tab.gdocTitle) : formatFileSize(tab.size)) + '</span></div>' +
             '<div class="tab-preview">' + escapeHtml(preview) + '</div>' +
             (modes.length > 1
                 ? '<div class="tab-import-row"><label>Import as:</label><select data-tab-id="' + tab.id + '">' + modeOptions + '</select></div>'
@@ -637,6 +688,10 @@ function initGoogleAuth() {
             isSignedIn = true;
             setStatus('Signed in successfully', 'success');
             updateActionArea();
+            if (pendingPickerOpen) {
+                pendingPickerOpen = false;
+                openGoogleDocPicker();
+            }
         }
     });
 }
@@ -689,12 +744,16 @@ async function createGoogleDoc() {
         var docId = doc.documentId;
 
         // Step 2: Insert content into the first (default) tab
-        var firstTabContent = await getTabContent(tabs[0]);
-        if (firstTabContent) {
-            if (tabs[0].importMode === 'markdown' || tabs[0].importMode === 'formatted') {
-                await insertMarkdownIntoDoc(docId, firstTabContent, null);
-            } else {
-                await insertTextIntoDoc(docId, firstTabContent, null);
+        if (tabs[0].fileType === 'gdoc') {
+            await insertStructuredContentIntoDoc(docId, tabs[0].gdocStructured, null);
+        } else {
+            var firstTabContent = await getTabContent(tabs[0]);
+            if (firstTabContent) {
+                if (tabs[0].importMode === 'markdown' || tabs[0].importMode === 'formatted') {
+                    await insertMarkdownIntoDoc(docId, firstTabContent, null);
+                } else {
+                    await insertTextIntoDoc(docId, firstTabContent, null);
+                }
             }
         }
 
@@ -752,13 +811,19 @@ async function createGoogleDoc() {
             // Step 5: Insert content into each additional tab
             for (var j = 1; j < tabs.length; j++) {
                 setStatus('Adding content to tab ' + (j + 1) + ' of ' + tabs.length + '...', '');
-                var tabContent = await getTabContent(tabs[j]);
-                if (tabContent && updatedDoc.tabs && updatedDoc.tabs[j]) {
+                if (updatedDoc.tabs && updatedDoc.tabs[j]) {
                     var tabId = updatedDoc.tabs[j].tabProperties.tabId;
-                    if (tabs[j].importMode === 'markdown' || tabs[j].importMode === 'formatted') {
-                        await insertMarkdownIntoDoc(docId, tabContent, tabId);
+                    if (tabs[j].fileType === 'gdoc') {
+                        await insertStructuredContentIntoDoc(docId, tabs[j].gdocStructured, tabId);
                     } else {
-                        await insertTextIntoDoc(docId, tabContent, tabId);
+                        var tabContent = await getTabContent(tabs[j]);
+                        if (tabContent) {
+                            if (tabs[j].importMode === 'markdown' || tabs[j].importMode === 'formatted') {
+                                await insertMarkdownIntoDoc(docId, tabContent, tabId);
+                            } else {
+                                await insertTextIntoDoc(docId, tabContent, tabId);
+                            }
+                        }
                     }
                 }
             }
@@ -934,40 +999,276 @@ function stylesToRequests(styles, tabId) {
     return reqs;
 }
 
+async function batchUpdateDoc(docId, requests) {
+    if (requests.length === 0) return;
+    var chunkSize = 100;
+    for (var i = 0; i < requests.length; i += chunkSize) {
+        var chunk = requests.slice(i, i + chunkSize);
+        var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requests: chunk })
+        });
+        if (!res.ok) {
+            var err = await res.json().catch(function() { return {}; });
+            throw new Error(err.error ? err.error.message : 'Failed to update document');
+        }
+    }
+}
+
 async function insertMarkdownIntoDoc(docId, markdown, tabId) {
     var parsed = parseMarkdown(markdown);
-
-    // Insert the plain text first
     var loc = { index: 1 };
     if (tabId) loc.tabId = tabId;
-    var insertReqs = [{ insertText: { text: parsed.text, location: loc } }];
-
-    // Then apply formatting
-    var fmtReqs = stylesToRequests(parsed.styles, tabId);
-    var allReqs = insertReqs.concat(fmtReqs);
-
-    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requests: allReqs })
-    });
-    if (!res.ok) {
-        var err = await res.json().catch(function() { return {}; });
-        throw new Error(err.error ? err.error.message : 'Failed to insert markdown content');
-    }
+    await batchUpdateDoc(docId, [{ insertText: { text: parsed.text, location: loc } }].concat(stylesToRequests(parsed.styles, tabId)));
 }
 
 async function insertTextIntoDoc(docId, text, tabId) {
     var loc = { index: 1 };
     if (tabId) loc.tabId = tabId;
-    var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requests: [{ insertText: { text: text, location: loc } }] })
+    await batchUpdateDoc(docId, [{ insertText: { text: text, location: loc } }]);
+}
+
+// ── Google Picker ──
+function loadPickerApi() {
+    return new Promise(function(resolve, reject) {
+        if (pickerLoaded) { resolve(); return; }
+        if (!window.gapi) {
+            setTimeout(function() { loadPickerApi().then(resolve).catch(reject); }, 300);
+            return;
+        }
+        gapi.load('picker', {
+            callback: function() { pickerLoaded = true; resolve(); },
+            onerror: function() { reject(new Error('Failed to load Picker API')); }
+        });
     });
-    if (!res.ok) {
-        var err = await res.json().catch(function() { return {}; });
-        throw new Error(err.error ? err.error.message : 'Failed to insert text content');
+}
+
+async function openGoogleDocPicker() {
+    if (!isSignedIn) {
+        if (!tokenClient) { setStatus('Google API not loaded yet. Please wait and try again.', 'error'); return; }
+        pendingPickerOpen = true;
+        tokenClient.requestAccessToken();
+        return;
+    }
+    try {
+        await loadPickerApi();
+    } catch (e) {
+        setStatus('Could not load Google Picker. Please reload the page.', 'error');
+        return;
+    }
+    var view = new google.picker.DocsView()
+        .setMimeTypes('application/vnd.google-apps.document')
+        .setIncludeFolders(true)
+        .setEnableDrives(true);
+    var picker = new google.picker.PickerBuilder()
+        .addView(view)
+        .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
+        .setOAuthToken(accessToken)
+        .setDeveloperKey(GOOGLE_API_KEY)
+        .setCallback(pickerCallback)
+        .setTitle('Select a Google Doc')
+        .build();
+    picker.setVisible(true);
+}
+
+function pickerCallback(data) {
+    if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) {
+        var doc = data[google.picker.Response.DOCUMENTS][0];
+        handleDocPicked(doc[google.picker.Document.ID], doc[google.picker.Document.NAME]);
+    }
+}
+
+async function handleDocPicked(docId, docTitle) {
+    setStatus('Loading tabs from "' + docTitle + '"...', '');
+    try {
+        var res = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        if (!res.ok) {
+            var errData = await res.json().catch(function() { return {}; });
+            throw new Error(errData.error ? errData.error.message : 'Could not load document');
+        }
+        var doc = await res.json();
+        var docTabs = doc.tabs || [];
+        if (docTabs.length === 0) throw new Error('Document has no readable tabs');
+        if (docTabs.length === 1) {
+            addGdocTab(docId, docTitle, docTabs[0], doc.lists || {});
+            setStatus('', '');
+        } else {
+            showTabPickerModal(docId, docTitle, docTabs, doc.lists || {});
+            setStatus('', '');
+        }
+    } catch (err) {
+        setStatus('Error loading document: ' + err.message, 'error');
+    }
+}
+
+function showTabPickerModal(docId, docTitle, docTabs, lists) {
+    var nameEl = document.getElementById('tab-picker-doc-name');
+    var listEl = document.getElementById('tab-picker-list');
+    nameEl.textContent = docTitle;
+    listEl.innerHTML = '';
+    docTabs.forEach(function(tab) {
+        var tabProps = tab.tabProperties || {};
+        var btn = document.createElement('button');
+        btn.className = 'tab-picker-item';
+        btn.textContent = tabProps.title || 'Untitled tab';
+        btn.addEventListener('click', function() {
+            closeTabPickerModal();
+            addGdocTab(docId, docTitle, tab, lists);
+        });
+        listEl.appendChild(btn);
+    });
+    document.getElementById('tab-picker-backdrop').classList.add('open');
+}
+
+function closeTabPickerModal() {
+    document.getElementById('tab-picker-backdrop').classList.remove('open');
+}
+
+function addGdocTab(docId, docTitle, sourceTab, lists) {
+    var tabProps = sourceTab.tabProperties || {};
+    var bodyContent = (sourceTab.documentTab && sourceTab.documentTab.body && sourceTab.documentTab.body.content) || [];
+    var structured = extractStructuredContent(bodyContent, lists);
+    tabs.push({
+        id: ++tabIdCounter,
+        name: tabProps.title || 'Untitled',
+        fileType: 'gdoc',
+        content: structured.text.substring(0, 120),
+        size: structured.text.length,
+        importMode: 'structured',
+        gdocId: docId,
+        gdocTitle: docTitle,
+        gdocTabId: tabProps.tabId,
+        gdocStructured: structured
+    });
+    renderTabs();
+    updateActionArea();
+}
+
+// ── Structured content extraction (Google Docs API → local) ──
+function extractStructuredContent(bodyContent, lists) {
+    var fullText = '';
+    var paraStyleReqs = [];
+    var textStyleReqs = [];
+    var listReqs = [];
+    var pos = 1;
+
+    for (var i = 0; i < bodyContent.length; i++) {
+        var el = bodyContent[i];
+        if (el.sectionBreak) continue;
+
+        if (el.paragraph) {
+            var para = el.paragraph;
+            var paraStart = pos;
+            var paraText = '';
+            var paraEls = para.elements || [];
+
+            for (var j = 0; j < paraEls.length; j++) {
+                var pEl = paraEls[j];
+                if (pEl.textRun) {
+                    var runText = pEl.textRun.content || '';
+                    var runStart = pos + paraText.length;
+                    var ts = pEl.textRun.textStyle || {};
+                    if (ts.bold || ts.italic || ts.underline) {
+                        textStyleReqs.push({ s: runStart, e: runStart + runText.length, ts: ts });
+                    }
+                    paraText += runText;
+                }
+                // inlineObjectElement, pageBreak, etc. → skip
+            }
+
+            fullText += paraText;
+            var paraEnd = pos + paraText.length;
+
+            var ns = (para.paragraphStyle || {}).namedStyleType || 'NORMAL_TEXT';
+            if (ns !== 'NORMAL_TEXT') {
+                paraStyleReqs.push({ s: paraStart, e: paraEnd, type: ns });
+            }
+
+            if (para.bullet) {
+                var ordered = false;
+                var listId = para.bullet.listId;
+                if (lists && lists[listId]) {
+                    var level = para.bullet.nestingLevel || 0;
+                    var nestingLevels = ((lists[listId].listProperties || {}).nestingLevels) || [];
+                    var nl = nestingLevels[level] || {};
+                    ordered = /DECIMAL|ALPHA|ROMAN/.test(nl.glyphType || '');
+                }
+                listReqs.push({ s: paraStart, e: paraEnd, ordered: ordered });
+            }
+
+            pos = paraEnd;
+        } else if (el.table) {
+            var tableRows = el.table.tableRows || [];
+            for (var ri = 0; ri < tableRows.length; ri++) {
+                var cells = tableRows[ri].tableCells || [];
+                var cellTexts = [];
+                for (var ci = 0; ci < cells.length; ci++) {
+                    var cellContent = cells[ci].content || [];
+                    var cellText = '';
+                    for (var ki = 0; ki < cellContent.length; ki++) {
+                        var cellEl = cellContent[ki];
+                        if (cellEl.paragraph) {
+                            var cellParaEls = cellEl.paragraph.elements || [];
+                            for (var mi = 0; mi < cellParaEls.length; mi++) {
+                                if (cellParaEls[mi].textRun) {
+                                    cellText += (cellParaEls[mi].textRun.content || '').replace(/\n$/, '');
+                                }
+                            }
+                        }
+                    }
+                    cellTexts.push(cellText);
+                }
+                var rowText = cellTexts.join('\t') + '\n';
+                fullText += rowText;
+                pos += rowText.length;
+            }
+            fullText += '\n';
+            pos += 1;
+        }
+    }
+
+    return { text: fullText, paraStyleReqs: paraStyleReqs, textStyleReqs: textStyleReqs, listReqs: listReqs };
+}
+
+// ── Structured content insertion ──
+async function insertStructuredContentIntoDoc(docId, structured, tabId) {
+    var text = structured.text;
+    if (!text) return;
+    var loc = { index: 1 };
+    if (tabId) loc.tabId = tabId;
+    await batchUpdateDoc(docId, [{ insertText: { text: text, location: loc } }]);
+
+    var fmtReqs = [];
+    for (var i = 0; i < structured.paraStyleReqs.length; i++) {
+        var r = structured.paraStyleReqs[i];
+        var range = { startIndex: r.s, endIndex: r.e };
+        if (tabId) range.tabId = tabId;
+        fmtReqs.push({ updateParagraphStyle: { range: range, paragraphStyle: { namedStyleType: r.type }, fields: 'namedStyleType' } });
+    }
+    for (var i = 0; i < structured.textStyleReqs.length; i++) {
+        var r = structured.textStyleReqs[i];
+        var range = { startIndex: r.s, endIndex: r.e };
+        if (tabId) range.tabId = tabId;
+        var style = {};
+        var fields = [];
+        if (r.ts.bold) { style.bold = true; fields.push('bold'); }
+        if (r.ts.italic) { style.italic = true; fields.push('italic'); }
+        if (r.ts.underline) { style.underline = true; fields.push('underline'); }
+        if (fields.length > 0) {
+            fmtReqs.push({ updateTextStyle: { range: range, textStyle: style, fields: fields.join(',') } });
+        }
+    }
+    for (var i = 0; i < structured.listReqs.length; i++) {
+        var r = structured.listReqs[i];
+        var range = { startIndex: r.s, endIndex: r.e };
+        if (tabId) range.tabId = tabId;
+        fmtReqs.push({ createParagraphBullets: { range: range, bulletPreset: r.ordered ? 'NUMBERED_DECIMAL_ALPHA_ROMAN' : 'BULLET_DISC_CIRCLE_SQUARE' } });
+    }
+    if (fmtReqs.length > 0) {
+        await batchUpdateDoc(docId, fmtReqs);
     }
 }
 
@@ -984,6 +1285,7 @@ document.getElementById('new-doc-btn').addEventListener('click', resetDocument);
 
 // ── Event listeners ──
 addTabBtn.addEventListener('click', function() { fileInput.click(); });
+document.getElementById('add-gdoc-btn').addEventListener('click', openGoogleDocPicker);
 fileInput.addEventListener('change', function() {
     if (fileInput.files.length > 0) addFiles(fileInput.files);
     fileInput.value = '';
@@ -1017,6 +1319,19 @@ appContainer.addEventListener('drop', function(e) {
     document.getElementById('help-close').addEventListener('click', closeHelp);
     backdrop.addEventListener('click', closeHelp);
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeHelp(); });
+})();
+
+// ── Tab picker modal ──
+(function() {
+    document.getElementById('tab-picker-close').addEventListener('click', closeTabPickerModal);
+    document.getElementById('tab-picker-backdrop').addEventListener('click', function(e) {
+        if (e.target === document.getElementById('tab-picker-backdrop')) closeTabPickerModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('tab-picker-backdrop').classList.contains('open')) {
+            closeTabPickerModal();
+        }
+    });
 })();
 
 // ── Theme toggle ──
