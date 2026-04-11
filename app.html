@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('app-directory-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>App Directory — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+            --brand-primary: #6c5ce7;
+            --brand-secondary: #5a4fcf;
+            --brand-accent: #00cec9;
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 0 1px rgba(0,0,0,0.1);
+            --nav-bg: rgba(255, 255, 255, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.10);
+            --section-bg: #EEEEF3;
+            --divider-color: #E5E7EB;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+            --brand-primary: #a29bfe;
+            --brand-secondary: #8b85fc;
+            --brand-accent: #81ecec;
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 1px rgba(255,255,255,0.04);
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.08);
+            --section-bg: #16161E;
+            --divider-color: #2A2A36;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-sans); background: var(--bg-color); color: var(--text-main); min-height: 100dvh; display: flex; flex-direction: column; transition: background-color 0.3s, color 0.3s; }
+
+        /* Banner */
+        .banner { position: sticky; top: 0; z-index: 100; background: var(--nav-bg); border-bottom: 1px solid var(--nav-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title { font-family: var(--font-display); font-size: clamp(1.1rem, 3vw, 1.4rem); font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
+        .banner-title.gradient-text { background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button { background: none; border: none; cursor: pointer; font-size: 1.2rem; padding: 6px; border-radius: 8px; transition: background 0.15s; line-height: 1; }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* Content */
+        .page-container { max-width: 720px; margin: 0 auto; padding: 40px 20px 24px; flex: 1; width: 100%; }
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; }
+
+        .app-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .app-list li a {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            color: var(--brand-primary);
+            text-decoration: none;
+            padding: 7px 12px;
+            border-radius: 8px;
+            transition: background 0.12s, color 0.12s;
+        }
+        .app-list li a:hover {
+            background: var(--section-bg);
+            color: var(--brand-secondary);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<header class="banner">
+    <div class="banner-logo">
+        <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+        <button onclick="history.back()" title="Go back" aria-label="Go back"
+            style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+            onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+    </div>
+    <div class="banner-title">App Directory</div>
+    <div class="banner-actions">
+        <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes">&#x2600;&#xFE0F;</button>
+    </div>
+</header>
+
+<main class="page-container">
+    <div class="page-header">
+        <h1>App Directory</h1>
+    </div>
+
+    <ul class="app-list">
+        <li><a href="https://explainsims.com/ap-fnc-access" target="_blank" rel="noopener noreferrer">ap-fnc-access</a></li>
+        <li><a href="https://explainsims.com/app-worksheet-builder" target="_blank" rel="noopener noreferrer">app-worksheet-builder</a></li>
+        <li><a href="https://explainsims.com/appchem-infinite-frq-generator" target="_blank" rel="noopener noreferrer">appchem-infinite-frq-generator</a></li>
+        <li><a href="https://explainsims.com/appcm-angular-momentum" target="_blank" rel="noopener noreferrer">appcm-angular-momentum</a></li>
+        <li><a href="https://explainsims.com/appcm-infinite-frq-generator" target="_blank" rel="noopener noreferrer">appcm-infinite-frq-generator</a></li>
+        <li><a href="https://explainsims.com/appcm-oscillation-energy" target="_blank" rel="noopener noreferrer">appcm-oscillation-energy</a></li>
+        <li><a href="https://explainsims.com/appcm-parallel-axis" target="_blank" rel="noopener noreferrer">appcm-parallel-axis</a></li>
+        <li><a href="https://explainsims.com/appcm-physical-pendulum" target="_blank" rel="noopener noreferrer">appcm-physical-pendulum</a></li>
+        <li><a href="https://explainsims.com/appcm-power" target="_blank" rel="noopener noreferrer">appcm-power</a></li>
+        <li><a href="https://explainsims.com/appcm-question-analyzer" target="_blank" rel="noopener noreferrer">appcm-question-analyzer</a></li>
+        <li><a href="https://explainsims.com/appcm-rolling-race" target="_blank" rel="noopener noreferrer">appcm-rolling-race</a></li>
+        <li><a href="https://explainsims.com/appcm-rolling-slipping" target="_blank" rel="noopener noreferrer">appcm-rolling-slipping</a></li>
+        <li><a href="https://explainsims.com/appcm-rotational-atwood" target="_blank" rel="noopener noreferrer">appcm-rotational-atwood</a></li>
+        <li><a href="https://explainsims.com/appcm-rotational-motion-simulator" target="_blank" rel="noopener noreferrer">appcm-rotational-motion-simulator</a></li>
+        <li><a href="https://explainsims.com/appcm-shm-and-circular-motion" target="_blank" rel="noopener noreferrer">appcm-shm-and-circular-motion</a></li>
+        <li><a href="https://explainsims.com/appcm-torque-lab-v2" target="_blank" rel="noopener noreferrer">appcm-torque-lab-v2</a></li>
+        <li><a href="https://explainsims.com/appcm-unit3-slap01" target="_blank" rel="noopener noreferrer">appcm-unit3-slap01</a></li>
+        <li><a href="https://explainsims.com/appcm-unit3-slap02" target="_blank" rel="noopener noreferrer">appcm-unit3-slap02</a></li>
+        <li><a href="https://explainsims.com/appcm-unit3-slap03" target="_blank" rel="noopener noreferrer">appcm-unit3-slap03</a></li>
+        <li><a href="https://explainsims.com/appcm-unit3-slap04" target="_blank" rel="noopener noreferrer">appcm-unit3-slap04</a></li>
+        <li><a href="https://explainsims.com/appcm-unit3-slap05" target="_blank" rel="noopener noreferrer">appcm-unit3-slap05</a></li>
+        <li><a href="https://explainsims.com/appcm-unit3-slap06" target="_blank" rel="noopener noreferrer">appcm-unit3-slap06</a></li>
+        <li><a href="https://explainsims.com/appcm-unit3-slap07" target="_blank" rel="noopener noreferrer">appcm-unit3-slap07</a></li>
+        <li><a href="https://explainsims.com/appcm-unit4-linearmomentum" target="_blank" rel="noopener noreferrer">appcm-unit4-linearmomentum</a></li>
+        <li><a href="https://explainsims.com/appgphys-astrophysics" target="_blank" rel="noopener noreferrer">appgphys-astrophysics</a></li>
+        <li><a href="https://explainsims.com/appgphys-sharktank-feedback" target="_blank" rel="noopener noreferrer">appgphys-sharktank-feedback</a></li>
+        <li><a href="https://explainsims.com/appgphys-sharktank-grader" target="_blank" rel="noopener noreferrer">appgphys-sharktank-grader</a></li>
+        <li><a href="https://explainsims.com/appgphys-sharktank-questions" target="_blank" rel="noopener noreferrer">appgphys-sharktank-questions</a></li>
+        <li><a href="https://explainsims.com/appsych-infinite-frq-generator" target="_blank" rel="noopener noreferrer">appsych-infinite-frq-generator</a></li>
+        <li><a href="https://explainsims.com/banked-track" target="_blank" rel="noopener noreferrer">banked-track</a></li>
+        <li><a href="https://explainsims.com/cat-blood-sugar" target="_blank" rel="noopener noreferrer">cat-blood-sugar</a></li>
+        <li><a href="https://explainsims.com/coffee-filter-terminal-velocity-lab" target="_blank" rel="noopener noreferrer">coffee-filter-terminal-velocity-lab</a></li>
+        <li><a href="https://explainsims.com/conical-pendulum" target="_blank" rel="noopener noreferrer">conical-pendulum</a></li>
+        <li><a href="https://explainsims.com/cons-energy-systems" target="_blank" rel="noopener noreferrer">cons-energy-systems</a></li>
+        <li><a href="https://explainsims.com/cons-spring-energy-systems" target="_blank" rel="noopener noreferrer">cons-spring-energy-systems</a></li>
+        <li><a href="https://explainsims.com/credibility-quest" target="_blank" rel="noopener noreferrer">credibility-quest</a></li>
+        <li><a href="https://explainsims.com/dictation-app" target="_blank" rel="noopener noreferrer">dictation-app</a></li>
+        <li><a href="https://explainsims.com/elevator-physics" target="_blank" rel="noopener noreferrer">elevator-physics</a></li>
+        <li><a href="https://explainsims.com/equivalent-circuit-calculator" target="_blank" rel="noopener noreferrer">equivalent-circuit-calculator</a></li>
+        <li><a href="https://explainsims.com/ethical-quest" target="_blank" rel="noopener noreferrer">ethical-quest</a></li>
+        <li><a href="https://explainsims.com/folks-i-know" target="_blank" rel="noopener noreferrer">folks-i-know</a></li>
+        <li><a href="https://explainsims.com/forces-potential-energy" target="_blank" rel="noopener noreferrer">forces-potential-energy</a></li>
+        <li><a href="https://explainsims.com/friction-app" target="_blank" rel="noopener noreferrer">friction-app</a></li>
+        <li><a href="https://explainsims.com/fun-jeopardy-app" target="_blank" rel="noopener noreferrer">fun-jeopardy-app</a></li>
+        <li><a href="https://explainsims.com/gravitas-a-gravitational-force-simulator" target="_blank" rel="noopener noreferrer">gravitas-a-gravitational-force-simulator</a></li>
+        <li><a href="https://explainsims.com/isr-final-feedback" target="_blank" rel="noopener noreferrer">isr-final-feedback</a></li>
+        <li><a href="https://explainsims.com/isr-q2-submission" target="_blank" rel="noopener noreferrer">isr-q2-submission</a></li>
+        <li><a href="https://explainsims.com/isr-science-simplifier" target="_blank" rel="noopener noreferrer">isr-science-simplifier</a></li>
+        <li><a href="https://explainsims.com/isr-semester1-grader" target="_blank" rel="noopener noreferrer">isr-semester1-grader</a></li>
+        <li><a href="https://explainsims.com/kinetic-energy-explorer" target="_blank" rel="noopener noreferrer">kinetic-energy-explorer</a></li>
+        <li><a href="https://explainsims.com/momentum-tracker" target="_blank" rel="noopener noreferrer">momentum-tracker</a></li>
+        <li><a href="https://explainsims.com/ohms-law-interactive-dashboard" target="_blank" rel="noopener noreferrer">ohms-law-interactive-dashboard</a></li>
+        <li><a href="https://explainsims.com/research-question-builder" target="_blank" rel="noopener noreferrer">research-question-builder</a></li>
+        <li><a href="https://explainsims.com/resistor-rockstar" target="_blank" rel="noopener noreferrer">resistor-rockstar</a></li>
+        <li><a href="https://explainsims.com/rsvp-reader" target="_blank" rel="noopener noreferrer">rsvp-reader</a></li>
+        <li><a href="https://explainsims.com/science-lab-inventory-assistant" target="_blank" rel="noopener noreferrer">science-lab-inventory-assistant</a></li>
+        <li><a href="https://explainsims.com/science-lab-inventory-assistant-updated" target="_blank" rel="noopener noreferrer">science-lab-inventory-assistant-updated</a></li>
+        <li><a href="https://explainsims.com/sds-lab-assistant" target="_blank" rel="noopener noreferrer">sds-lab-assistant</a></li>
+        <li><a href="https://explainsims.com/ski-jump-simulator" target="_blank" rel="noopener noreferrer">ski-jump-simulator</a></li>
+        <li><a href="https://explainsims.com/ssis-ai-hub" target="_blank" rel="noopener noreferrer">ssis-ai-hub</a></li>
+        <li><a href="https://explainsims.com/student-payment-log" target="_blank" rel="noopener noreferrer">student-payment-log</a></li>
+        <li><a href="https://explainsims.com/video-to-learning-app" target="_blank" rel="noopener noreferrer">video-to-learning-app</a></li>
+    </ul>
+</main>
+
+<div id="site-footer"></div>
+<script src="/assets/footer.js"></script>
+
+<script>
+const themeButton = document.getElementById('theme-button');
+const DARK_KEY = 'app-directory-dark';
+const LIGHT_KEY = 'app-directory-light';
+
+function updateAppChromeTheme(theme) {
+    const tc = document.querySelector('meta[name="theme-color"]');
+    const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    const dark = theme === 'dark';
+    if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+    if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+}
+function updateButtonEmoji(theme) {
+    themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+}
+const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+document.documentElement.setAttribute('data-theme', initTheme);
+updateAppChromeTheme(initTheme);
+updateButtonEmoji(initTheme);
+window.addEventListener('pageshow', function () {
+    updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+});
+themeButton.addEventListener('click', function () {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    if (next === 'dark') {
+        localStorage.setItem(DARK_KEY, 'true');
+        localStorage.removeItem(LIGHT_KEY);
+    } else {
+        localStorage.setItem(LIGHT_KEY, 'true');
+        localStorage.removeItem(DARK_KEY);
+    }
+    updateAppChromeTheme(next);
+    updateButtonEmoji(next);
+});
+</script>
+
+<!-- Brave iOS gradient text fix -->
+<script>
+(function () {
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+    document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+})();
+</script>
+
+</body>
+</html>
