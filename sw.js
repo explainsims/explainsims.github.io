@@ -1,4 +1,4 @@
-const BUILD_ID = '2026-04-08T13:00:00Z';
+const BUILD_ID = '2026-04-11T00:00:00Z';
 const CACHE_PREFIX = 'site';
 const PRECACHE_NAME = `${CACHE_PREFIX}-precache-${BUILD_ID}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${BUILD_ID}`;
@@ -214,27 +214,31 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigations: Cache first
+  // Navigations: Network-first, fallback to cache
+  // Network-first prevents the SW from returning a cached /index.html when the
+  // user navigates to a path that isn't pre-cached (e.g. /some-app).
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
-      const navigationCandidates = getNavigationFallbackCandidates(url);
-
-      for (const candidate of navigationCandidates) {
-        const cachedCandidate = await matchCurrentCaches(candidate);
-        if (cachedCandidate) return cachedCandidate;
-      }
-
       try {
         const preload = await event.preloadResponse;
         const fresh = preload || await fetch(req);
         if (fresh && (fresh.ok || fresh.type === 'opaque')) {
           const cache = await caches.open(RUNTIME_CACHE);
           await cache.put(req, fresh.clone());
+          return fresh;
         }
-        return fresh;
       } catch {
-        return Response.error();
+        // Network unavailable — fall through to cache.
       }
+
+      // Offline fallback: try cached versions of the requested path, then /index.html.
+      const navigationCandidates = getNavigationFallbackCandidates(url);
+      for (const candidate of navigationCandidates) {
+        const cachedCandidate = await matchCurrentCaches(candidate);
+        if (cachedCandidate) return cachedCandidate;
+      }
+
+      return Response.error();
     })());
     return;
   }
