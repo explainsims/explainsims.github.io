@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('frq-directory-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>FRQ Generators — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+            --brand-primary: #6c5ce7;
+            --brand-secondary: #5a4fcf;
+            --brand-accent: #00cec9;
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 0 1px rgba(0,0,0,0.1);
+            --nav-bg: rgba(255, 255, 255, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.10);
+            --section-bg: #EEEEF3;
+            --divider-color: #E5E7EB;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+            --brand-primary: #a29bfe;
+            --brand-secondary: #8b85fc;
+            --brand-accent: #81ecec;
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 1px rgba(255,255,255,0.04);
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.08);
+            --section-bg: #16161E;
+            --divider-color: #2A2A36;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-sans); background: var(--bg-color); color: var(--text-main); min-height: 100dvh; display: flex; flex-direction: column; transition: background-color 0.3s, color 0.3s; }
+
+        /* Banner */
+        .banner { position: sticky; top: 0; z-index: 100; background: var(--nav-bg); border-bottom: 1px solid var(--nav-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title { font-family: var(--font-display); font-size: clamp(1.1rem, 3vw, 1.4rem); font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
+        .banner-title.gradient-text { background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button { background: none; border: none; cursor: pointer; font-size: 1.2rem; padding: 6px; border-radius: 8px; transition: background 0.15s; line-height: 1; }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* Content */
+        .page-container { max-width: 1100px; margin: 0 auto; padding: 40px 20px 24px; flex: 1; width: 100%; }
+        .page-header { margin-bottom: 28px; }
+        .page-header h1 { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; margin-bottom: 6px; }
+        .page-header p { color: var(--text-secondary); font-size: 0.95rem; max-width: 640px; line-height: 1.5; }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px 36px;
+            margin-top: 12px;
+        }
+
+        .category {
+            display: flex;
+            flex-direction: column;
+        }
+        .category-rule {
+            height: 3px;
+            background: var(--text-main);
+            margin-bottom: 14px;
+        }
+        .category-title {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+
+        .subject-list { list-style: none; display: flex; flex-direction: column; }
+        .subject-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 4px;
+            border-bottom: 1px solid var(--divider-color);
+            font-size: 0.9rem;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: color 0.12s, padding-left 0.12s;
+        }
+        a.subject-row:hover {
+            color: var(--brand-primary);
+            padding-left: 8px;
+        }
+        .subject-row .chev {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            transition: transform 0.12s, color 0.12s;
+        }
+        a.subject-row:hover .chev {
+            color: var(--brand-primary);
+            transform: translateX(3px);
+        }
+        .subject-row.disabled {
+            color: var(--text-secondary);
+            cursor: default;
+        }
+        .subject-row.disabled .coming {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--section-bg);
+            border: 1px solid var(--divider-color);
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+<header class="banner">
+    <div class="banner-logo">
+        <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+        <button onclick="history.back()" title="Go back" aria-label="Go back"
+            style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+            onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+    </div>
+    <div class="banner-title">FRQ Generators</div>
+    <div class="banner-actions">
+        <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes">&#x2600;&#xFE0F;</button>
+    </div>
+</header>
+
+<main class="page-container">
+    <div class="page-header">
+        <h1>FRQ Generators</h1>
+        <p>AI-generated free-response questions aligned to College Board standards, organized by AP subject category.</p>
+    </div>
+
+    <div class="category-grid">
+
+        <section class="category">
+            <div class="category-rule"></div>
+            <h2 class="category-title">Arts</h2>
+            <ul class="subject-list">
+                <li><div class="subject-row disabled"><span>AP 2-D Art and Design</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP 3-D Art and Design</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Drawing</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Art History</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Music Theory</span><span class="coming">Coming soon</span></div></li>
+            </ul>
+        </section>
+
+        <section class="category">
+            <div class="category-rule"></div>
+            <h2 class="category-title">English</h2>
+            <ul class="subject-list">
+                <li><div class="subject-row disabled"><span>AP English Language and Composition</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP English Literature and Composition</span><span class="coming">Coming soon</span></div></li>
+            </ul>
+        </section>
+
+        <section class="category">
+            <div class="category-rule"></div>
+            <h2 class="category-title">History and Social Sciences</h2>
+            <ul class="subject-list">
+                <li><div class="subject-row disabled"><span>AP African American Studies</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Comparative Government and Politics</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP European History</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Human Geography</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Macroeconomics</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Microeconomics</span><span class="coming">Coming soon</span></div></li>
+                <li><a class="subject-row" href="https://explainsims.com/appsych-infinite-frq-generator" target="_blank" rel="noopener noreferrer"><span>AP Psychology</span><span class="chev">&rsaquo;</span></a></li>
+                <li><div class="subject-row disabled"><span>AP United States Government and Politics</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP United States History</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP World History: Modern</span><span class="coming">Coming soon</span></div></li>
+            </ul>
+        </section>
+
+        <section class="category">
+            <div class="category-rule"></div>
+            <h2 class="category-title">Math and Computer Science</h2>
+            <ul class="subject-list">
+                <li><div class="subject-row disabled"><span>AP Calculus AB</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Calculus BC</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Computer Science A</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Computer Science Principles</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Precalculus</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Statistics</span><span class="coming">Coming soon</span></div></li>
+            </ul>
+        </section>
+
+        <section class="category">
+            <div class="category-rule"></div>
+            <h2 class="category-title">Sciences</h2>
+            <ul class="subject-list">
+                <li><a class="subject-row" href="https://explainsims.com/apbio-infinite-frq-generator" target="_blank" rel="noopener noreferrer"><span>AP Biology</span><span class="chev">&rsaquo;</span></a></li>
+                <li><a class="subject-row" href="https://explainsims.com/apchem-infinite-frq-generator" target="_blank" rel="noopener noreferrer"><span>AP Chemistry</span><span class="chev">&rsaquo;</span></a></li>
+                <li><div class="subject-row disabled"><span>AP Environmental Science</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Physics 1: Algebra-Based</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Physics 2: Algebra-Based</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Physics C: Electricity and Magnetism</span><span class="coming">Coming soon</span></div></li>
+                <li><a class="subject-row" href="https://explainsims.com/appcm-infinite-frq-generator" target="_blank" rel="noopener noreferrer"><span>AP Physics C: Mechanics</span><span class="chev">&rsaquo;</span></a></li>
+            </ul>
+        </section>
+
+        <section class="category">
+            <div class="category-rule"></div>
+            <h2 class="category-title">World Languages and Cultures</h2>
+            <ul class="subject-list">
+                <li><div class="subject-row disabled"><span>AP Chinese Language and Culture</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP French Language and Culture</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP German Language and Culture</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Italian Language and Culture</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Japanese Language and Culture</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Latin</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Spanish Language and Culture</span><span class="coming">Coming soon</span></div></li>
+                <li><div class="subject-row disabled"><span>AP Spanish Literature and Culture</span><span class="coming">Coming soon</span></div></li>
+            </ul>
+        </section>
+
+    </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="/assets/footer.js"></script>
+
+<script>
+const themeButton = document.getElementById('theme-button');
+const DARK_KEY = 'frq-directory-dark';
+const LIGHT_KEY = 'frq-directory-light';
+
+function updateAppChromeTheme(theme) {
+    const tc = document.querySelector('meta[name="theme-color"]');
+    const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    const dark = theme === 'dark';
+    if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+    if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+}
+function updateButtonEmoji(theme) {
+    themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}\uFE0F';
+}
+const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+document.documentElement.setAttribute('data-theme', initTheme);
+updateAppChromeTheme(initTheme);
+updateButtonEmoji(initTheme);
+window.addEventListener('pageshow', function () {
+    updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+});
+themeButton.addEventListener('click', function () {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    if (next === 'dark') {
+        localStorage.setItem(DARK_KEY, 'true');
+        localStorage.removeItem(LIGHT_KEY);
+    } else {
+        localStorage.setItem(LIGHT_KEY, 'true');
+        localStorage.removeItem(DARK_KEY);
+    }
+    updateAppChromeTheme(next);
+    updateButtonEmoji(next);
+});
+</script>
+
+<!-- Brave iOS gradient text fix -->
+<script>
+(function () {
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+    document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+})();
+</script>
+
+</body>
+</html>
