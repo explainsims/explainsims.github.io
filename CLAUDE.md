@@ -579,6 +579,35 @@ Key rules:
 - Use a **per-app** localStorage key (`<APP-SLUG>-dark`) so theme state doesn't bleed between apps
 - The gradient is applied by JS (not CSS class in HTML) to avoid the Brave iOS rendering bug
 
+### Page Content Width (avoid the narrow-column bug)
+
+The banner (`.banner`) is always full-viewport width. A recurring bug is to put the main content inside a container with a narrow `max-width` (e.g. `max-width: 1100px; margin: 0 auto`), which centers the content and leaves empty gutters on wide screens. The page title then visibly does not "stretch" across the page and looks misaligned with the banner above it.
+
+**Rule**: for the top-level page container on non-app directory/info pages (e.g. `/app`, `/frq`, or any page whose primary purpose is a list/grid/directory), do NOT use a narrow `max-width` on the outermost content wrapper. Let it fill the viewport and control breathing room with horizontal `padding` only.
+
+✅ Correct:
+```css
+.page-container {
+    margin: 0;
+    padding: 40px clamp(16px, 3vw, 40px) 24px;
+    flex: 1;
+    width: 100%;
+}
+```
+
+❌ Incorrect (creates narrow-column bug):
+```css
+.page-container {
+    max-width: 1100px;   /* content visually detaches from full-width banner */
+    margin: 0 auto;
+    padding: 40px 20px 24px;
+}
+```
+
+Also avoid adding a narrow `max-width` to header text (e.g. `max-width: 640px` on `.page-header p`) — that creates the same visual effect on the intro copy. Use line-height and font-size for readability, not a hard width cap.
+
+Exception: individual tool/sim apps that display a bounded reading surface (long-form article, form-only tool) may use a moderate `max-width` (e.g. `720px` for narrative like `/app`'s simple list) when it genuinely improves readability. The rule above applies to directory/overview pages where content should visually anchor to the banner.
+
 ### Card Pills (tab-page cards only)
 
 Cards on the tab pages (appcm.html, tools.html, teachers.html, etc.) have two pill positions:
