@@ -79,6 +79,25 @@
         .page-header h1 { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; margin-bottom: 6px; }
         .page-header p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; }
 
+        .archive-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+            transition: filter 0.15s, transform 0.15s;
+        }
+        .archive-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .archive-cta svg { flex-shrink: 0; }
+        [data-theme="dark"] .archive-cta { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
+
         .category-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -178,6 +197,15 @@
     <div class="page-header">
         <h1>FRQ Generators</h1>
         <p>AI-generated free-response questions aligned to College Board standards, organized by AP subject category.</p>
+        <a class="archive-cta" href="https://explainsims.com/ap-frq-access" target="_blank" rel="noopener noreferrer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Z"/>
+                <path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                <path d="M2 13h20"/>
+            </svg>
+            Browse all generated FRQs
+            <span aria-hidden="true" style="opacity:0.85;">&rsaquo;</span>
+        </a>
     </div>
 
     <div class="category-grid">
