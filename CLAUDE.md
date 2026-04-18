@@ -2,10 +2,10 @@
 
 ## Project Overview
 
-**ExplAIn Sims** is a Progressive Web App (PWA) providing interactive physics tools, simulations, and educational games for teachers and students. The site is designed to work offline after the first visit.
+**ExplAIn Sims** provides interactive physics tools, simulations, and educational games for teachers and students.
 
 - **Repository**: `explainsims.github.io` (GitHub Pages)
-- **Type**: Static site / PWA with no build system
+- **Type**: Static site with no build system
 - **Tech Stack**: Vanilla JavaScript, HTML5, CSS3
 - **Deployment**: GitHub Pages (direct file serving)
 
@@ -14,7 +14,6 @@
 ```
 /
 ├── index.html              # Main landing page
-├── sw.js                   # Service Worker for offline support
 ├── manifest.json           # PWA configuration
 ├── _headers                # HTTP headers configuration
 ├── robots.txt              # Search engine crawl rules
@@ -23,8 +22,7 @@
 ├── assets/
 │   ├── favicon.png             # Site favicon (48x48)
 │   ├── ExplAIn Sims.png        # App icon (512x512)
-│   ├── apple-touch-icon.png    # iOS icon (180x180)
-│   └── sw-register.js          # Service Worker registration script
+│   └── apple-touch-icon.png    # iOS icon (180x180)
 │
 ├── appcm/                  # AP Physics C: Mechanics simulations (AP PCM tab)
 │   ├── superposition.html
@@ -45,15 +43,11 @@
 Not every HTML file in the repo is currently treated as a published page.
 
 - **Published pages** are linked from `index.html` and listed in `sitemap.xml`
-- Only published pages should include `<script src="/assets/sw-register.js" defer></script>` and be included in `sw.js` `ASSETS_TO_CACHE`
-- Unlisted/internal pages should remain outside SW registration and pre-cache unless intentionally promoted
+- Unlisted/internal pages should remain outside gallery navigation unless intentionally promoted
 
 If you promote an unlisted page to production, do all of the following:
-1. Add `<script src="/assets/sw-register.js" defer></script>` if missing
-2. Add page path + required assets to `ASSETS_TO_CACHE` in `sw.js`
-3. Bump `BUILD_ID` in `sw.js`
-4. Add a card/link in `index.html`
-5. Add the page URL to `sitemap.xml`
+1. Add a card/link in the relevant gallery page (`index.html`, `tools.html`, etc.)
+2. Add the page URL to `sitemap.xml`
 
 ## Tech Stack & Dependencies
 
@@ -61,7 +55,6 @@ If you promote an unlisted page to production, do all of the following:
 - **HTML5**: Semantic markup, inline styles
 - **CSS3**: CSS custom properties for theming
 - **Vanilla JavaScript**: No frameworks (React, Vue, etc.)
-- **Service Workers**: Offline functionality
 
 ### External Libraries (CDN)
 - `Plotly.js` (2.29.1) - Graphing and data visualization
@@ -88,8 +81,6 @@ Each application is self-contained in a single HTML file:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Title</title>
-    <!-- Include only for published pages -->
-    <script src="/assets/sw-register.js" defer></script>
     <style>/* CSS with variables for theming */</style>
 </head>
 <body>
@@ -188,46 +179,8 @@ panphyplot.html (imports scripts)
 ```
 
 
-## Service Worker & Caching
-
-**File**: `sw.js`
-**Cache Version**: `site-precache-<BUILD_ID>` where `BUILD_ID` is a timestamp string
-
-### Caching Strategy
-- **Install**: Pre-caches core assets listed in `ASSETS_TO_CACHE`
-- **Navigations**: Network-first, fallback to cache
-- **Assets**: Cache-first, then fetch and update
-- **Exclusions**: Dodge game routes, and Supabase API calls (always fetch fresh)
-
-### When Modifying Any Cached Asset
-Any time you change a file listed in `ASSETS_TO_CACHE`, **bump the `BUILD_ID` timestamp** at the top of `sw.js`. Without this, returning users will keep getting the old cached version.
-
-```javascript
-const BUILD_ID = 'YYYY-MM-DDTHH:MM:SSZ';  // Update this on every change
-```
-
-### Cache-Manifest Accuracy Rules
-1. External CDN URLs must match exactly between HTML and `ASSETS_TO_CACHE` (version/path/query included)
-2. If a cached page depends on local media assets (`.mp3`, `.webm`, images, fonts) for core UX, add those assets to `ASSETS_TO_CACHE`
-3. If `assets/sw-register.js` is updated (it is cached), bump `BUILD_ID` in `sw.js`
-
-### Offline-Ready Apps
-An app is **truly offline-ready** only when both its HTML file AND all CDN scripts/stylesheets it needs for core functionality are listed in `ASSETS_TO_CACHE`. Add every CDN `<script src="...">` and `<link rel="stylesheet" href="...">` the page requires to the cache list.
-
-Apps are **not** offline-ready if they depend on live network APIs (e.g. a rendering service called at runtime with dynamic query parameters) — those responses cannot be precached.
-
-For each new app, after adding CDN deps to `ASSETS_TO_CACHE`, also add the app path + all those same CDN URLs to `OFFLINE_CARD_REQUIREMENTS` in the relevant tab HTML (e.g. `tools.html`) so the Offline Ready pill appears on its card. Only add the pill when the app is genuinely fully offline-capable.
 ### When Adding New Pages
-1. Unless explicitly requested to publish, create the new page in the appropriate directory but do not add `sw-register.js`, link it from a gallery page, or add it to `ASSETS_TO_CACHE`
-2. For published pages, add the new page path to `ASSETS_TO_CACHE` array in `sw.js`
-3. Bump the `BUILD_ID` timestamp for published/cached additions
-
-```javascript
-const ASSETS_TO_CACHE = [
-  // ... existing assets ...
-  '/tools/new_tool.html',  // Add new pages here
-];
-```
+Unless explicitly requested to publish, create the new page in the appropriate directory but do not link it from a gallery page.
 
 ## Development Workflow
 
@@ -253,14 +206,11 @@ Then open `http://localhost:8000` in a browser.
 
 ### Adding a New Tool/Page
 1. If it will be published, create/move it in the appropriate public directory (`appcm/` for AP PCM sims, `tools/`, `teachers/`, or a future tab directory)
-2. If it will be published from `index.html`, include `<script src="/assets/sw-register.js" defer></script>` in `<head>`
-3. Use the standard theming CSS variables
-4. Add the shared footer (see Shared Footer below) just before `</body>`
-5. If published, add to `sw.js` `ASSETS_TO_CACHE` array and bump `BUILD_ID`
-6. Add all CDN dependencies used by the page to `ASSETS_TO_CACHE` so the app is truly offline-capable (see Offline-Ready Apps below). If a dependency is a live API (e.g. a rendering service) that cannot be cached, the app cannot be fully offline-ready and should NOT get an Offline Ready pill.
-7. Add link to the relevant gallery page in the appropriate section, with the correct `card-source-pill` (tab name)
-8. Add the app to the `FEATURED_POOL` array in `index.html` so it can appear in the Featured section
-9. Add URL to `sitemap.xml` if page is public
+2. Use the standard theming CSS variables
+3. Add the shared footer (see Shared Footer below) just before `</body>`
+4. Add link to the relevant gallery page in the appropriate section, with the correct `card-source-pill` (tab name)
+5. Add the app to the `FEATURED_POOL` array in `index.html` so it can appear in the Featured section
+6. Add URL to `sitemap.xml` if page is public
 
 ### Updating the Theme System
 Theme colors are defined in CSS `:root` and `[data-theme="dark"]` selectors. Key variables:
@@ -291,7 +241,6 @@ When using Three.js with a `ResizeObserver`, always follow this pattern to preve
 | File | Purpose |
 |------|---------|
 | `index.html` | Main landing page with links to all tools |
-| `sw.js` | Service Worker - update cache list when adding pages |
 | `manifest.json` | PWA metadata (name, icons, display mode) |
 | `panphy/panphyplot/` | Complex plotting tool, good reference for modular patterns |
 
@@ -430,12 +379,6 @@ function toggleTheme() {
 }
 ```
 
-### Service Worker Registration
-```html
-<script src="/assets/sw-register.js" defer></script>
-```
-Use this only on published pages.
-
 ### Standard App Banner (REQUIRED for every app)
 
 Every app page must use this exact header structure. Do not invent a custom nav or heading — always copy this pattern.
@@ -463,7 +406,6 @@ Every app page must use this exact header structure. Do not invent a custom nav 
     </script>
     <title>App Name — ExplAIn Sims</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
-    <script src="/assets/sw-register.js" defer></script>  <!-- published pages only -->
 ```
 
 **Banner CSS** (inside `<style>`):
@@ -637,28 +579,17 @@ Usage: `<span class="card-source-pill">Tools</span>` — the text is always the 
 
 Every card on every tab page must have this pill. Do **not** use the old `.card-type-pill` class.
 
-**Offline pill** (top-right) — added dynamically by JS via `initOfflineCardPills()` when the card path appears in `OFFLINE_CARD_REQUIREMENTS`. Do not add this manually in HTML. If the app is not offline-capable, the top-right is left blank.
-
-## Offline Behavior
-
-- **Guaranteed offline after install**: Pages/assets explicitly listed in `sw.js` `ASSETS_TO_CACHE`
-- **May work offline after first online visit**: Other same-origin GET resources (runtime cache)
-- **Requires network**: Any `*.supabase.co` API calls
-
 ## External Services
 
 ### Supabase
-Used for leaderboards in the dodge game. API calls go to `*.supabase.co` and are excluded from caching.
+Used for leaderboards in the dodge game. API calls go to `*.supabase.co`.
 
 ## Notes for AI Assistants
 
 1. **No build step**: Edit files directly, no npm/webpack/etc.
 2. **Self-contained pages**: Each HTML file is a complete application
-3. **Always bump `BUILD_ID` in `sw.js` after code changes**: Any time you modify a file that is listed in `ASSETS_TO_CACHE`, bump the `BUILD_ID` timestamp as your **final step** before finishing. This is easy to forget — do not skip it
-4. **CDN URL exactness**: Keep CDN script/style URLs in HTML exactly aligned with `ASSETS_TO_CACHE`
-5. **Theme awareness**: Always use CSS variables, not hardcoded colors
-6. **Mobile-first**: Consider touch interactions and responsive design
-7. **Offline-first**: Ensure new features work without network
-8. **CDN dependencies**: External libraries are loaded from CDNs, not bundled
-9. **Keep it simple**: Avoid adding frameworks or build complexity
-10. **No absolute paths in output**: For security, never show the full absolute file path when summarizing code changes. Use repo-relative paths instead.
+3. **Theme awareness**: Always use CSS variables, not hardcoded colors
+4. **Mobile-first**: Consider touch interactions and responsive design
+5. **CDN dependencies**: External libraries are loaded from CDNs, not bundled
+6. **Keep it simple**: Avoid adding frameworks or build complexity
+7. **No absolute paths in output**: For security, never show the full absolute file path when summarizing code changes. Use repo-relative paths instead.

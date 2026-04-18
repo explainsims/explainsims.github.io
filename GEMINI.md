@@ -1,12 +1,11 @@
 # ExplAIn Sims Project Context
 
 ## Project Overview
-ExplAIn Sims is a collection of browser-based physics tools, simulations, and educational mini-apps. It is designed to be accessible (no installation), interactive, and offline-friendly. The project prioritizes simplicity and resilience for classroom environments where devices may be locked down or internet access is unreliable.
+ExplAIn Sims is a collection of browser-based physics tools, simulations, and educational mini-apps. It is designed to be accessible (no installation) and interactive. The project prioritizes simplicity and resilience for classroom environments where devices may be locked down.
 
 ### Core Technologies
 - **Frontend:** HTML5, CSS3 (Vanilla), Vanilla JavaScript.
 - **Architecture:** Static site hosted on GitHub Pages. No framework, no bundler, no build step.
-- **Offline Support:** Service Worker (`sw.js`) with manual cache management.
 - **Key Libraries:**
   - **Visualization:** Plotly.js, Three.js, Chart.js.
   - **Math/Physics:** Math.js, MathJax (LaTeX rendering), MediaPipe (Hand Landmarker for interactive sims).
@@ -18,14 +17,12 @@ ExplAIn Sims is a collection of browser-based physics tools, simulations, and ed
 - `/tools/`: Productivity apps.
 - `/appcm/`: AP Physics C Mechanics simulations.
 - `/teachers/`: Utility apps for educators.
-- `/assets/`: Shared assets, icons, and `sw-register.js`.
-- `sw.js`: Service Worker for offline caching and PWA functionality.
+- `/assets/`: Shared assets and icons.
 
 ## Development Guidelines & Conventions
 
-### 1. File Modification & Caching
-- **Service Worker:** When modifying any file listed in the `ASSETS_TO_CACHE` array in `sw.js`, you **MUST** bump the `BUILD_ID` constant at the top of `sw.js` as your **final step** before finishing. This is easy to forget — do not skip it. Without this, returning users will continue to be served the old cached version.
-- **Self-Contained Pages:** Each HTML entry point should be as independent as possible. Shared logic should be placed in subdirectories or `assets/`.
+### 1. Self-Contained Pages
+Each HTML entry point should be as independent as possible. Shared logic should be placed in subdirectories or `assets/`.
 
 ### 2. UI/UX Principles
 - **Classroom Ready:** Interfaces must be mobile-friendly and touch-friendly.
@@ -43,24 +40,18 @@ ExplAIn Sims is a collection of browser-based physics tools, simulations, and ed
 
 ### Adding a New App
 1. For a published page: create the HTML/JS/CSS in the appropriate directory (`appcm/`, `panphy/`, `teachers/`, etc.).
-2. Add `<script src="/assets/sw-register.js" defer></script>` in `<head>`.
-3. Add the shared footer just before `</body>`: `<div id="site-footer"></div>` + `<script src="/assets/footer.js"></script>`. Never write an inline `<footer>` element or page-specific `footer { }` CSS.
-4. Add the new entry point to the grid in the relevant gallery page.
-5. Add the new app and its dependencies to the `ASSETS_TO_CACHE` array in `sw.js`.
-6. Update `OFFLINE_CARD_REQUIREMENTS` in the relevant gallery page to enable the "Offline Ready" pill.
-7. Add the page URL to `sitemap.xml`.
-8. Bump `BUILD_ID` in `sw.js`.
+2. Add the shared footer just before `</body>`: `<div id="site-footer"></div>` + `<script src="/assets/footer.js"></script>`. Never write an inline `<footer>` element or page-specific `footer { }` CSS.
+3. Add the new entry point to the grid in the relevant gallery page.
+4. Add the page URL to `sitemap.xml`.
 
 ### Running the Project
 Since there is no build step, you can serve the project using any local HTTP server:
 - `python3 -m http.server 8000`
 - `npx serve .`
-- Or simply open `index.html` in a browser (though some features like Service Workers and certain API calls may require a local server).
+- Or simply open `index.html` in a browser (though some features may require a local server).
 
 ## Interaction Context
 When assisting with this project:
-- Always consider the offline-first requirement.
 - Prioritize Vanilla JS solutions.
-- Always bump `BUILD_ID` in `sw.js` as your final step after modifying any cached asset.
-- New pages not yet ready to publish should be kept off the navigation (no link from a gallery page, no `sw-register.js`, not in `ASSETS_TO_CACHE`) until explicitly promoted to production.
+- New pages not yet ready to publish should be kept off the navigation (no link from a gallery page) until explicitly promoted to production.
 - For security, never show the full absolute file path when summarizing code changes. Use repo-relative paths instead.
