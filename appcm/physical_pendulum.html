@@ -142,12 +142,6 @@
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
-        .offline-font {
-            --font-sans: 'Inter', sans-serif;
-            --font-display: 'Space Grotesk', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-        }
-
         body {
             font-family: var(--font-sans);
             background-color: var(--bg-color);
@@ -929,14 +923,6 @@
                 updateButtonEmoji('light');
             }
         });
-
-        // Offline font fallback
-        function updateOfflineFontState() {
-            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-        }
-        window.addEventListener('online', updateOfflineFontState);
-        window.addEventListener('offline', updateOfflineFontState);
-        updateOfflineFontState();
 
         // ===== Physics Constants =====
         const ROD_LENGTH = 1.0;   // metres

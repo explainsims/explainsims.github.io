@@ -358,10 +358,6 @@
             }
         }
 
-        .offline-font {
-            --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
-        }
-
         /* Fullscreen styles */
         .fullscreen-active .logo-container,
         .fullscreen-active footer,
@@ -1155,15 +1151,6 @@
 
         setResetBtn.addEventListener('click', unlockAudio, { once: true });
         toggleBtn.addEventListener('click', unlockAudio, { once: true });
-
-        /* ------------ Offline font handling ------------ */
-        function updateOfflineFontState() {
-            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-        }
-
-        window.addEventListener('online', updateOfflineFontState);
-        window.addEventListener('offline', updateOfflineFontState);
-        updateOfflineFontState();
 
         /* ------------ Page visibility handling ------------ */
         document.addEventListener('visibilitychange', () => {

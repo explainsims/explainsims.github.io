@@ -111,12 +111,6 @@
             box-sizing: border-box;
         }
 
-        .offline-font {
-            --font-sans: system-ui, -apple-system, sans-serif;
-            --font-display: system-ui, -apple-system, sans-serif;
-            --font-mono: 'Courier New', monospace;
-        }
-
         html {
             scroll-behavior: smooth;
         }
@@ -1140,16 +1134,7 @@
             }
         })();
     </script>
-    <script>
-        function updateOfflineFontState() {
-            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-        }
-
-        window.addEventListener('online', updateOfflineFontState);
-        window.addEventListener('offline', updateOfflineFontState);
-        updateOfflineFontState();
-    </script>
-    <script>
+        <script>
         // Card scroll reveal with IntersectionObserver
         (function () {
             var cards = document.querySelectorAll('.card');

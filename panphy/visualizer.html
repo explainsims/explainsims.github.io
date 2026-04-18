@@ -64,12 +64,6 @@
 			user-select: none
 		}
 
-		.offline-font {
-			--font-sans: 'Inter', sans-serif;
-			--font-display: 'Space Grotesk', sans-serif;
-			--font-mono: 'JetBrains Mono', monospace;
-		}
-
 		/* Top bar */
 		.topbar {
 			background: var(--nav-bg);
@@ -2541,17 +2535,7 @@
 			})();
 		})();
 	</script>
-	<script>
-		function updateOfflineFontState() {
-			document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-		}
-
-		window.addEventListener('online', updateOfflineFontState);
-		window.addEventListener('offline', updateOfflineFontState);
-		updateOfflineFontState();
-	</script>
-
-	<script>
+		<script>
 		// Gradient text: skip on Brave iOS where background-clip:text is broken
 		(function() {
 			if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;

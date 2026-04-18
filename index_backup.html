@@ -103,12 +103,6 @@
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
         }
 
-        .offline-font {
-            --font-sans: 'Inter', 'Poppins', sans-serif;
-            --font-display: 'Poppins', 'Inter', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-        }
-
         body {
             font-family: var(--font-sans);
             margin: 0;
@@ -1186,16 +1180,6 @@
             }
         })();
     </script>
-    <script>
-        function updateOfflineFontState() {
-            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-        }
-
-        window.addEventListener('online', updateOfflineFontState);
-        window.addEventListener('offline', updateOfflineFontState);
-        updateOfflineFontState();
-    </script>
-
-</body>
+    </body>
 
 </html>
