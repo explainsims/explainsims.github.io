@@ -146,12 +146,6 @@
             background: rgba(190, 79, 42, 0.22);
         }
 
-        .offline-font {
-            --font-body: 'Trebuchet MS', sans-serif;
-            --font-display: 'Georgia', serif;
-            --font-mono: 'Courier New', monospace;
-        }
-
         a,
         button {
             -webkit-tap-highlight-color: transparent;
@@ -2115,16 +2109,6 @@
             }
         })();
     </script>
-    <script>
-        function updateOfflineFontState() {
-            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-        }
-
-        window.addEventListener('online', updateOfflineFontState);
-        window.addEventListener('offline', updateOfflineFontState);
-        updateOfflineFontState();
-    </script>
-
-</body>
+    </body>
 
 </html>

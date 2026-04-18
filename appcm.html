@@ -3,7 +3,6 @@
 
 <head>
     <link rel="manifest" href="/manifest.json">
-    <script src="/assets/sw-register.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#F4F4F8">
@@ -110,12 +109,6 @@
            ======================================== */
         * {
             box-sizing: border-box;
-        }
-
-        .offline-font {
-            --font-sans: system-ui, -apple-system, sans-serif;
-            --font-display: system-ui, -apple-system, sans-serif;
-            --font-mono: 'Courier New', monospace;
         }
 
         html {
@@ -425,13 +418,6 @@
             line-height: 1.65;
         }
 
-        /* Offline pill on cards */
-        @keyframes offlinePulse {
-            0% { box-shadow: 0 0 0 0 rgba(8, 145, 178, 0.45); }
-            70% { box-shadow: 0 0 0 8px rgba(8, 145, 178, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(8, 145, 178, 0); }
-        }
-
         .card-source-pill {
             display: inline-flex;
             align-items: center;
@@ -454,64 +440,6 @@
         [data-theme="dark"] .card-source-pill {
             background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
             color: var(--brand-primary);
-        }
-
-        .card-offline-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            position: absolute;
-            top: 0.65rem;
-            right: 1rem;
-            z-index: 2;
-            padding: 0.22rem 0.45rem;
-            border-radius: 6px;
-            border: 1px solid var(--nav-border);
-            background: var(--nav-bg);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            color: var(--text-secondary);
-            font-family: var(--font-mono);
-            font-size: 9px;
-            line-height: 1.1;
-            font-weight: 500;
-            letter-spacing: 0.04em;
-            white-space: nowrap;
-            text-transform: uppercase;
-        }
-
-        .card-offline-pill::before {
-            content: '';
-            width: 0.34rem;
-            height: 0.34rem;
-            border-radius: 50%;
-            background: var(--status-check);
-            box-shadow: 0 0 0 0 rgba(8, 145, 178, 0.45);
-        }
-
-        .card-offline-pill[data-state="checking"]::before {
-            background: var(--status-check);
-            animation: offlinePulse 1.4s ease-out infinite;
-        }
-
-        .card-offline-pill[data-state="ready"]::before {
-            background: var(--status-ready);
-            animation: none;
-            box-shadow: none;
-        }
-
-        .card-offline-pill[data-state="warning"]::before {
-            background: var(--status-warning);
-            animation: none;
-            box-shadow: none;
-        }
-
-        .card-offline-pill[data-state="ready"] {
-            color: var(--status-ready);
-        }
-
-        .card-offline-pill[data-state="warning"] {
-            color: var(--status-warning);
         }
 
         /* Card CTA link — editorial arrow style */
@@ -1319,169 +1247,6 @@
             }
         });
 
-        const OFFLINE_CARD_REQUIREMENTS = {
-            '/appcm/physical_pendulum.html': ['/appcm/physical_pendulum.html'],
-            '/appcm/elevator_physics.html': ['/appcm/elevator_physics.html'],
-            '/appcm/conical_pendulum.html': ['/appcm/conical_pendulum.html'],
-            '/appcm/gravitas.html': ['/appcm/gravitas.html'],
-            '/appcm/banked_track.html': ['/appcm/banked_track.html'],
-            '/appcm/cons_energy_systems.html': ['/appcm/cons_energy_systems.html'],
-            '/appcm/cons_spring_energy_systems.html': ['/appcm/cons_spring_energy_systems.html'],
-            '/appcm/power.html': ['/appcm/power.html'],
-            '/appcm/rotational_motion.html': ['/appcm/rotational_motion.html'],
-            '/appcm/rotational_atwood.html': ['/appcm/rotational_atwood.html'],
-            '/appcm/parallel_axis.html': ['/appcm/parallel_axis.html'],
-        };
-        const OFFLINE_APP_PATHS = Object.keys(OFFLINE_CARD_REQUIREMENTS);
-        const OFFLINE_REQUIRED_ASSETS = [...new Set(
-            OFFLINE_APP_PATHS.flatMap((path) => OFFLINE_CARD_REQUIREMENTS[path])
-        )];
-        const offlineCardPills = new Map();
-
-        let offlineReadyPollId = 0;
-        let offlineReadinessUpdateInFlight = false;
-
-        function setCardOfflineState(pill, state, label) {
-            if (!pill) return;
-            pill.dataset.state = state;
-            pill.textContent = label;
-        }
-
-        function normalizeCardPath(hrefValue) {
-            try {
-                const url = new URL(hrefValue, window.location.origin);
-                if (url.origin !== window.location.origin) return null;
-                return url.pathname;
-            } catch (error) {
-                return null;
-            }
-        }
-
-        function initOfflineCardPills() {
-            const cardLinks = document.querySelectorAll('.card a[href]');
-            cardLinks.forEach((link) => {
-                const cardPath = normalizeCardPath(link.getAttribute('href'));
-                if (!cardPath || !OFFLINE_CARD_REQUIREMENTS[cardPath]) return;
-
-                const card = link.closest('.card');
-                if (!card || offlineCardPills.has(cardPath)) return;
-
-                const pill = document.createElement('span');
-                pill.className = 'card-offline-pill';
-                setCardOfflineState(pill, 'checking', 'Caching...');
-                card.prepend(pill);
-                offlineCardPills.set(cardPath, pill);
-            });
-        }
-
-        async function getAssetCacheMap(assets) {
-            const cacheMap = new Map();
-            if (!('caches' in window)) {
-                return cacheMap;
-            }
-
-            const checks = await Promise.all(
-                assets.map(async (asset) => {
-                    try {
-                        const absoluteUrl = new URL(asset, window.location.origin).href;
-                        const match = await caches.match(absoluteUrl, { ignoreVary: true });
-                        return [asset, Boolean(match)];
-                    } catch (error) {
-                        return [asset, false];
-                    }
-                })
-            );
-
-            checks.forEach(([asset, isCached]) => {
-                cacheMap.set(asset, isCached);
-            });
-            return cacheMap;
-        }
-
-        function updateOfflineCardPills(cacheMap) {
-            let readyApps = 0;
-
-            OFFLINE_APP_PATHS.forEach((path) => {
-                const requirements = OFFLINE_CARD_REQUIREMENTS[path];
-                const ready = requirements.every((asset) => cacheMap.get(asset));
-                if (ready) {
-                    readyApps += 1;
-                }
-
-                const pill = offlineCardPills.get(path);
-                if (!pill) return;
-
-                if (ready) {
-                    setCardOfflineState(pill, 'ready', 'Offline ready');
-                    return;
-                }
-                setCardOfflineState(pill, 'checking', 'Caching...');
-            });
-
-            return {
-                readyApps,
-                totalApps: OFFLINE_APP_PATHS.length
-            };
-        }
-
-        async function updateOfflineReadiness() {
-            if (offlineReadinessUpdateInFlight) return;
-            offlineReadinessUpdateInFlight = true;
-
-            try {
-                if (!('serviceWorker' in navigator) || !('caches' in window)) {
-                    offlineCardPills.forEach((pill) => {
-                        setCardOfflineState(pill, 'checking', 'Caching...');
-                    });
-                    if (offlineReadyPollId) {
-                        clearInterval(offlineReadyPollId);
-                        offlineReadyPollId = 0;
-                    }
-                    return;
-                }
-
-                const cacheMap = await getAssetCacheMap(OFFLINE_REQUIRED_ASSETS);
-                const summary = updateOfflineCardPills(cacheMap);
-
-                if (summary.readyApps === summary.totalApps) {
-                    if (offlineReadyPollId) {
-                        clearInterval(offlineReadyPollId);
-                        offlineReadyPollId = 0;
-                    }
-                    return;
-                }
-
-                if (!navigator.onLine) {
-                    return;
-                }
-
-            } catch (error) {
-                offlineCardPills.forEach((pill) => {
-                    if (pill.dataset.state !== 'ready') {
-                        setCardOfflineState(pill, 'checking', 'Caching...');
-                    }
-                });
-            } finally {
-                offlineReadinessUpdateInFlight = false;
-            }
-        }
-
-        function startOfflineReadinessMonitor() {
-            initOfflineCardPills();
-            updateOfflineReadiness();
-            if (!offlineReadyPollId) {
-                offlineReadyPollId = setInterval(updateOfflineReadiness, 3000);
-            }
-            window.addEventListener('online', updateOfflineReadiness);
-            window.addEventListener('offline', updateOfflineReadiness);
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') {
-                    updateOfflineReadiness();
-                }
-            });
-        }
-
-        startOfflineReadinessMonitor();
     </script>
     <script>
         // AP PCM unit search — filter cards and hide/show empty unit blocks
@@ -1544,16 +1309,7 @@
             }
         })();
     </script>
-    <script>
-        function updateOfflineFontState() {
-            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-        }
-
-        window.addEventListener('online', updateOfflineFontState);
-        window.addEventListener('offline', updateOfflineFontState);
-        updateOfflineFontState();
-    </script>
-    <script>
+        <script>
         // Card scroll reveal with IntersectionObserver
         (function () {
             var cards = document.querySelectorAll('.card');

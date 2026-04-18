@@ -3,7 +3,6 @@
 
 <head>
     <link rel="manifest" href="/manifest.json">
-    <script src="/assets/sw-register.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#f8f9fa">
@@ -102,12 +101,6 @@
         * {
             box-sizing: border-box;
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .offline-font {
-            --font-sans: 'Inter', 'Poppins', sans-serif;
-            --font-display: 'Poppins', 'Inter', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
         }
 
         body {
@@ -1187,16 +1180,6 @@
             }
         })();
     </script>
-    <script>
-        function updateOfflineFontState() {
-            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-        }
-
-        window.addEventListener('online', updateOfflineFontState);
-        window.addEventListener('offline', updateOfflineFontState);
-        updateOfflineFontState();
-    </script>
-
-</body>
+    </body>
 
 </html>

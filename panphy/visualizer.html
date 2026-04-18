@@ -9,7 +9,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<title>Camera Visualizer</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
-    <script src="/assets/sw-register.js" defer></script>
 <style>
 		@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -63,12 +62,6 @@
 			flex-direction: column;
 			-webkit-user-select: none;
 			user-select: none
-		}
-
-		.offline-font {
-			--font-sans: 'Inter', sans-serif;
-			--font-display: 'Space Grotesk', sans-serif;
-			--font-mono: 'JetBrains Mono', monospace;
 		}
 
 		/* Top bar */
@@ -2542,17 +2535,7 @@
 			})();
 		})();
 	</script>
-	<script>
-		function updateOfflineFontState() {
-			document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-		}
-
-		window.addEventListener('online', updateOfflineFontState);
-		window.addEventListener('offline', updateOfflineFontState);
-		updateOfflineFontState();
-	</script>
-
-	<script>
+		<script>
 		// Gradient text: skip on Brave iOS where background-clip:text is broken
 		(function() {
 			if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;

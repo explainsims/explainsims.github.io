@@ -20,7 +20,6 @@
     </script>
     <title>Banked Track Physics Simulator</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
-    <script src="/assets/sw-register.js" defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -80,8 +79,6 @@
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html.offline-font { --font-sans: system-ui, sans-serif; --font-display: system-ui, sans-serif; --font-mono: 'Courier New', monospace; }
-
         body {
             font-family: var(--font-sans);
             background-color: var(--bg-color);
@@ -664,13 +661,6 @@
             updateAppChromeTheme(next); updateButtonEmoji(next);
             updateAll();
         });
-
-        function updateOfflineFontState() {
-            document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-        }
-        window.addEventListener('online', updateOfflineFontState);
-        window.addEventListener('offline', updateOfflineFontState);
-        updateOfflineFontState();
 
         // ─── Initial render ───────────────────────────────────────────────────────
         // Start at ideal speed

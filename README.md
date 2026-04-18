@@ -13,9 +13,8 @@ Why settle for static textbooks when you can simulate? This project was born to 
 * **Browser-First:** No downloads, no installs. If you have a web browser, you’re ready.
 * **Active Engagement:** Every tool is built for hands-on experimentation, not just observation.
 * **Classroom Ready:** Purpose-built for curriculum revision, practical demonstrations, and lab work.
-* **Always Available:** Once you've visited a tool, it caches to your device. You can keep experimenting even when the Wi-Fi cuts out.
 
-> **Pro-Tip:** While most of the library is offline-capable, a few select features require an active internet connection and may require you to use your own API keys.
+> **Pro-Tip:** A few select features require an active internet connection and may require you to use your own API keys.
 
 ---
 
@@ -36,7 +35,6 @@ We believe that educational tech shouldn't be bloated. ExplAIn Sims is built on 
 
 * **Core:** HTML5, CSS3, and Vanilla JavaScript.
 * **Architecture:** No heavy frameworks, no complex bundlers, and no build steps.
-* **Persistence:** Service Workers handle the heavy lifting for offline caching.
 * **Infrastructure:** Hosted via GitHub Pages.
 
 ---
@@ -52,7 +50,6 @@ Have an idea for a new sim or a way to make an existing tool smoother? We love c
 
 #### **Dev Notes**
 * This is a **static site**. Modifications happen directly within the repository.
-* **Crucial:** If you update pre-cached files, remember to increment the `BUILD_ID` in `sw.js` to trigger a refresh for our users.
 
 ---
 

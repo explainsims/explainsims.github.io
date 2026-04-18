@@ -1,6 +1,6 @@
 # ADAPT.md — Porting Google Cloud Run / AI Studio Simulations to ExplAIn Sims
 
-This guide documents the complete process of adapting a simulation originally built with a modern framework (React, Vite, Tailwind, etc.) for Google Cloud Run or Google AI Studio into a self-contained, offline-capable page for the ExplAIn Sims GitHub Pages site. It was written during the adaptation of **Physical Pendulum Explorer** and is designed to be reused for every future simulation you port.
+This guide documents the complete process of adapting a simulation originally built with a modern framework (React, Vite, Tailwind, etc.) for Google Cloud Run or Google AI Studio into a self-contained page for the ExplAIn Sims GitHub Pages site. It was written during the adaptation of **Physical Pendulum Explorer** and is designed to be reused for every future simulation you port.
 
 ---
 
@@ -25,13 +25,12 @@ This guide documents the complete process of adapting a simulation originally bu
 
 ### What ExplAIn Sims expects
 
-ExplAIn Sims is a **static PWA** deployed on GitHub Pages with:
+ExplAIn Sims is a **static site** deployed on GitHub Pages with:
 
 - **No build system** — no Vite, Webpack, npm, TypeScript compiler
 - **No frameworks** — no React, Vue, Svelte, Angular
 - **Vanilla JavaScript only** — plain JS, HTML5, CSS3
 - **Single-file simulations** — each simulation is one `.html` file (except complex ones like Collision Lab which use a modular structure)
-- **Offline-first** — every published page works offline via a Service Worker
 - **Consistent design** — shared CSS variable theming, banner header, responsive layout
 
 ### What your Cloud Run simulation typically has
@@ -60,7 +59,6 @@ Read these files before beginning any adaptation:
 |------|---------|
 | `CLAUDE.md` | Full AI assistant guide with all conventions, patterns, and rules |
 | `README.md` | Project philosophy and overview |
-| `sw.js` | Service Worker — you will edit this |
 | `index.html` | Landing page — `FEATURED_POOL` powers the Featured section |
 | `appcm.html` (AP PCM) | Gallery page — add a card to the correct AP PCM unit here |
 | `sitemap.xml` | Sitemap — you will add the new URL |
@@ -217,7 +215,6 @@ Use this skeleton as your starting point:
 
     <title>Your Simulation Title</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
-    <script src="/assets/sw-register.js" defer></script>
 
     <style>
         /* Full CSS here — see Section 6 for the design system */
@@ -319,14 +316,6 @@ themeButton.addEventListener('click', function() {
         updateButtonEmoji('light');
     }
 });
-
-// Offline font fallback
-function updateOfflineFontState() {
-    document.documentElement.classList.toggle('offline-font', !navigator.onLine);
-}
-window.addEventListener('online', updateOfflineFontState);
-window.addEventListener('offline', updateOfflineFontState);
-updateOfflineFontState();
 ```
 
 ### Canvas animation pattern
@@ -582,43 +571,7 @@ var FEATURED_POOL = {
 };
 ```
 
-### 7c. Add to `OFFLINE_CARD_REQUIREMENTS` in the gallery page
-
-Find the `OFFLINE_CARD_REQUIREMENTS` object in the `<script>` section at the bottom of the relevant gallery page (e.g. **`/appcm.html`** for AP PCM sims — not `index.html`). Add an entry:
-
-```javascript
-'/appcm/your_simulation.html': ['/appcm/your_simulation.html'],
-```
-
-If your simulation uses external CDN libraries, list them too:
-
-```javascript
-'/appcm/your_simulation.html': [
-    '/appcm/your_simulation.html',
-    'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js'
-],
-```
-
-### 7d. Add to `ASSETS_TO_CACHE` in `sw.js`
-
-Open `sw.js` and add the page path to the `ASSETS_TO_CACHE` array in the Simulations section:
-
-```javascript
-// Simulations
-'/appcm/your_simulation.html',
-```
-
-If the simulation has external CDN dependencies, add those URLs too (they must match exactly what's in the HTML `<script src="...">`).
-
-**Then bump the `BUILD_ID`:**
-
-```javascript
-const BUILD_ID = '2026-03-18T15:00:00Z';  // Update to current timestamp
-```
-
-The `BUILD_ID` format is ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. Always update this when you change any cached asset.
-
-### 7e. Add to `sitemap.xml`
+### 7c. Add to `sitemap.xml`
 
 ```xml
 <url>
@@ -645,14 +598,11 @@ Then check:
 4. **Controls work** — Sliders, buttons, toggles, drag interactions
 5. **Responsive** — Resize browser window, check mobile layout
 6. **Landing page** — Card appears in Simulations section at `http://localhost:8000/`
-7. **Offline** — After first load, go offline (DevTools > Network > Offline) and reload
 
 ### Common issues
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| Page doesn't load offline | Missing from `ASSETS_TO_CACHE` or `BUILD_ID` not bumped | Add to `sw.js` and bump `BUILD_ID` |
-| Offline pill missing on gallery page | Not added to `OFFLINE_CARD_REQUIREMENTS` in gallery page | Add entry to `/appcm.html` (or relevant gallery page) |
 | Back button missing | New sim created before March 2026 convention or forgotten | Add chevron-left `history.back()` button after the home icon |
 | Canvas is blank in dark mode | Hardcoded colours instead of CSS variables | Use `getCSSVar()` for all canvas colours |
 | Slider doesn't update canvas | Event listener missing or wrong | Use `'input'` event, not `'change'` |
@@ -689,7 +639,6 @@ Use this checklist for every simulation you adapt:
 - [ ] Responsive layout (mobile + desktop)
 - [ ] Touch-friendly controls (44px+ targets)
 - [ ] `prefers-reduced-motion` respected
-- [ ] Offline font fallback
 - [ ] Brave iOS gradient text fix
 
 ### Site Integration
@@ -698,9 +647,6 @@ Use this checklist for every simulation you adapt:
 - [ ] For AP PCM sims: card added to the correct unit block (`unit1`–`unit7`) inside `/appcm.html`
 - [ ] For other tabs: card added to the relevant gallery page (`/tools.html`, `/teachers.html`, etc.)
 - [ ] Entry added to `FEATURED_POOL` in `index.html` (appropriate category key — don't add empty arrays)
-- [ ] Added to `OFFLINE_CARD_REQUIREMENTS` in the relevant gallery page
-- [ ] Added to `ASSETS_TO_CACHE` in `sw.js`
-- [ ] `BUILD_ID` bumped in `sw.js`
 - [ ] URL added to `sitemap.xml`
 
 ### Testing
@@ -708,10 +654,8 @@ Use this checklist for every simulation you adapt:
 - [ ] Theme toggle works (both light and dark)
 - [ ] All controls function properly
 - [ ] Responsive layout at all breakpoints
-- [ ] Works offline after first visit
 - [ ] Back button navigates to the previous gallery page
 - [ ] Card appears on gallery page and may appear in Featured section on home page
-- [ ] Offline pill shows "Offline ready" on the gallery page
 
 ---
 
@@ -920,7 +864,6 @@ Define these for your simulation's unique visual elements. Example from Physical
 |------|-------|-------|
 | CSS with variables (light + dark) | ~350 | Replaces Tailwind |
 | Theme toggle boilerplate | 40 | Standard ExplAIn Sims pattern |
-| Offline font fallback | 6 | Standard pattern |
 | Banner header HTML | 12 | Standard pattern |
 | Footer HTML | 4 | Standard pattern |
 | Canvas resize logic | 12 | DPR-aware responsive |
@@ -932,5 +875,4 @@ Define these for your simulation's unique visual elements. Example from Physical
 - **Source**: 500 lines of React/TSX + 8 config files + Docker infrastructure
 - **Output**: One self-contained HTML file (~750 lines including CSS + educational content)
 - **External dependencies**: Zero (pure vanilla JS + Canvas 2D)
-- **Offline**: Works fully offline after first visit
 - **Theme**: Full light/dark support matching site design system
