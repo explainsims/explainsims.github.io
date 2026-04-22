@@ -33,7 +33,7 @@
 │   # Each tab has its own directory. Future non-AP PCM simulations
 │   # go in the directory named after their tab.
 │
-├── teachers/           # Teacher utilities
+├── fun/                # Games and other fun apps
 
 
 ```
@@ -205,7 +205,7 @@ Then open `http://localhost:8000` in a browser.
 ## Common Tasks
 
 ### Adding a New Tool/Page
-1. If it will be published, create/move it in the appropriate public directory (`appcm/` for AP PCM sims, `tools/`, `teachers/`, or a future tab directory)
+1. If it will be published, create/move it in the appropriate public directory (`appcm/` for AP PCM sims, `tools/`, `fun/`, or a future tab directory)
 2. Use the standard theming CSS variables
 3. Add the shared footer (see Shared Footer below) just before `</body>`
 4. Add link to the relevant gallery page in the appropriate section, with the correct `card-source-pill` (tab name)
@@ -552,7 +552,7 @@ Exception: individual tool/sim apps that display a bounded reading surface (long
 
 ### Card Pills (tab-page cards only)
 
-Cards on the tab pages (appcm.html, tools.html, teachers.html, etc.) have two pill positions:
+Cards on the tab pages (appcm.html, tools.html, fun.html, etc.) have two pill positions:
 
 **Source pill** (top-left) — uses the tab name, soft background with no border:
 ```css
@@ -574,7 +574,7 @@ Cards on the tab pages (appcm.html, tools.html, teachers.html, etc.) have two pi
 Usage: `<span class="card-source-pill">Tools</span>` — the text is always the **tab name**, not the content type:
 - `tools.html` cards → `"Tools"`
 - `appcm.html` cards → `"AP PCM"`
-- `teachers.html` cards → `"Teachers"`
+- `fun.html` cards → `"Fun"`
 - `panphy.html` cards → `"PanPhy"`
 
 Every card on every tab page must have this pill. Do **not** use the old `.card-type-pill` class.

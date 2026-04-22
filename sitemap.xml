@@ -10,7 +10,7 @@
     <loc>https://explainsims.github.io/appcm.html</loc>
   </url>
   <url>
-    <loc>https://explainsims.github.io/teachers.html</loc>
+    <loc>https://explainsims.github.io/fun.html</loc>
   </url>
   <url>
     <loc>https://explainsims.github.io/api.html</loc>
@@ -73,19 +73,19 @@
     <loc>https://explainsims.github.io/panphy/visualizer.html</loc>
   </url>
   <url>
-    <loc>https://explainsims.github.io/teachers/cmdterm_wordle.html</loc>
+    <loc>https://explainsims.github.io/fun/cmdterm_wordle.html</loc>
   </url>
   <url>
-    <loc>https://explainsims.github.io/teachers/jeopardy.html</loc>
-  </url>
-  <url>
-    <loc>https://explainsims.github.io/teachers/multi-doc.html</loc>
+    <loc>https://explainsims.github.io/fun/jeopardy.html</loc>
   </url>
   <url>
     <loc>https://explainsims.github.io/tools/chatbot_to_docs.html</loc>
   </url>
   <url>
     <loc>https://explainsims.github.io/tools/pdf_splitter.html</loc>
+  </url>
+  <url>
+    <loc>https://explainsims.github.io/tools/multi-doc.html</loc>
   </url>
   <url>
     <loc>https://explainsims.github.io/privacy.html</loc>
