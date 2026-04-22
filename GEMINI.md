@@ -16,7 +16,7 @@ ExplAIn Sims is a collection of browser-based physics tools, simulations, and ed
 - `/index.html`: Main landing page and portal.
 - `/tools/`: Productivity apps.
 - `/appcm/`: AP Physics C Mechanics simulations.
-- `/teachers/`: Utility apps for educators.
+- `/fun/`: Games and other fun apps.
 - `/assets/`: Shared assets and icons.
 
 ## Development Guidelines & Conventions
@@ -39,7 +39,7 @@ Each HTML entry point should be as independent as possible. Shared logic should 
 ## Common Tasks
 
 ### Adding a New App
-1. For a published page: create the HTML/JS/CSS in the appropriate directory (`appcm/`, `panphy/`, `teachers/`, etc.).
+1. For a published page: create the HTML/JS/CSS in the appropriate directory (`appcm/`, `panphy/`, `fun/`, etc.).
 2. Add the shared footer just before `</body>`: `<div id="site-footer"></div>` + `<script src="/assets/footer.js"></script>`. Never write an inline `<footer>` element or page-specific `footer { }` CSS.
 3. Add the new entry point to the grid in the relevant gallery page.
 4. Add the page URL to `sitemap.xml`.

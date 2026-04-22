@@ -52,7 +52,7 @@ If you promote an unlisted page to production:
 ├── manifest.json           # PWA config
 ├── appcm.html              # AP Physics C: Mechanics gallery page
 ├── tools.html              # Tools gallery page
-├── teachers.html           # Teachers gallery page
+├── fun.html                # Fun gallery page (games and other fun apps)
 ├── panphy.html             # PanPhy tools gallery page
 ├── api.html                # API gallery page
 ├── assets/                 # Icons, logos
@@ -66,7 +66,7 @@ If you promote an unlisted page to production:
 │   ├── lorentz.html
 │   ├── timer.html
 │   └── visualizer.html
-└── teachers/               # Teacher utilities
+└── fun/                    # Games and other fun apps
     └── *.html              # cmdterm_wordle, jeopardy
 ```
 

@@ -514,7 +514,7 @@ Each tab has its own directory. Put the HTML file in the directory that matches 
 |-----|-----------|
 | AP PCM (AP Physics C: Mechanics) | `appcm/` |
 | Tools | `tools/` |
-| Teachers | `teachers/` |
+| Fun | `fun/` |
 | API | `api/` |
 | PanPhy | `panphy/` |
 | Other future tabs | named after the tab once finalized |
@@ -527,7 +527,7 @@ appcm/your_simulation.html
 
 ### 7b. Add a tile card to the gallery page
 
-> **Site structure note (updated March 2026):** The site is now multi-page. Each category has its own gallery page — `/appcm.html` (now called **AP PCM**), `/tools.html`, `/teachers.html`, `/API.html`, `/panphy.html`. Cards are added to the relevant gallery page, **not** `index.html` directly. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool.
+> **Site structure note (updated April 2026):** The site is now multi-page. Each category has its own gallery page — `/appcm.html` (now called **AP PCM**), `/tools.html`, `/fun.html`, `/API.html`, `/panphy.html`. Cards are added to the relevant gallery page, **not** `index.html` directly. The main `index.html` Featured section is populated automatically via JavaScript from a hard-coded pool.
 >
 > **AP PCM structure:** `/appcm.html` is organised into 7 AP Physics C: Mechanics units. When adding a simulation, the user will specify which unit it belongs to. Each unit is a `.unit-block` div with `id="unitN"` and a `.grid` inside it.
 
@@ -557,7 +557,7 @@ The units and their IDs are:
 - `unit6` — Energy and Momentum of Rotating Systems
 - `unit7` — Oscillations
 
-**7b-ii — For tools / teachers / fun / panphy.** Add a card inside the `.grid` div in the relevant gallery page section.
+**7b-ii — For tools / fun / panphy.** Add a card inside the `.grid` div in the relevant gallery page section.
 
 **7b-iii — FEATURED_POOL in `index.html`.** Open `index.html` and find the `FEATURED_POOL` object. Currently only `sims` (AP PCM) is populated. Add to the appropriate category array. If a category has no apps yet, do **not** add an empty array — it would crash the Featured section:
 
@@ -567,7 +567,7 @@ var FEATURED_POOL = {
         // Add AP PCM sims here
         { t: 'Your Simulation Title', d: 'One-sentence description.', h: '/appcm/your_simulation.html', c: 'Launch Sim' }
     ]
-    // Only add other category keys (tools, fun, panphy, teachers) once they have apps
+    // Only add other category keys (tools, fun, panphy) once they have apps
 };
 ```
 
@@ -645,7 +645,7 @@ Use this checklist for every simulation you adapt:
 - [ ] File placed in correct directory
 - [ ] Back button (`history.back()`) added to the right of the home icon in the banner
 - [ ] For AP PCM sims: card added to the correct unit block (`unit1`–`unit7`) inside `/appcm.html`
-- [ ] For other tabs: card added to the relevant gallery page (`/tools.html`, `/teachers.html`, etc.)
+- [ ] For other tabs: card added to the relevant gallery page (`/tools.html`, `/fun.html`, etc.)
 - [ ] Entry added to `FEATURED_POOL` in `index.html` (appropriate category key — don't add empty arrays)
 - [ ] URL added to `sitemap.xml`
 
