@@ -442,6 +442,20 @@
             color: var(--brand-primary);
         }
 
+        /* Inline text link inside card paragraphs */
+        .card p a {
+            display: inline;
+            align-self: auto;
+            gap: 0;
+            border-bottom: 1px solid currentColor;
+            font-family: var(--font-sans);
+            font-size: inherit;
+            font-weight: 500;
+            letter-spacing: 0;
+        }
+        .card p a::after { content: ''; }
+        .card p a:hover { border-bottom-color: var(--brand-primary); }
+
         /* Card CTA link — editorial arrow style */
         .card a {
             display: inline-flex;
@@ -673,6 +687,12 @@
                 <h3>Docs Tab Builder</h3>
                 <p>Upload multiple files (.txt, .md, .docx, .pdf) and combine them into a single Google Doc with each file in its own tab.</p>
                 <a href="/tools/multi-doc.html">Open</a>
+            </div>
+            <div class="card">
+                <span class="card-source-pill">Tools</span>
+                <h3>Open CSV in Google Sheets</h3>
+                <p>A Mac Quick Action that lets you right-click any CSV file in Finder and open it directly in Google Sheets — no manual import steps. Includes a README with one-time setup instructions.<br><br>Bonus: <a href="https://apps.apple.com/us/app/mud-mark-up-or-down/id6759427937?mt=12" target="_blank" rel="noopener noreferrer">Mud</a> is a free markdown (MD) reader!</p>
+                <a href="/tools/open_in_google_sheets_mvp.zip" download>Download</a>
             </div>
         </div>
     </div>
