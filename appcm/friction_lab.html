@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('friction_lab-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>Friction Lab — ExplAIn Sims</title>
+    <meta name="description" content="An interactive inclined-plane experiment to determine the coefficient of kinetic friction.">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+
+            --brand-primary: #6c5ce7;
+            --brand-secondary: #5a4fcf;
+            --brand-accent: #00cec9;
+
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 0 1px rgba(0,0,0,0.1);
+
+            --nav-bg: rgba(255, 255, 255, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.10);
+
+            --section-bg: #EEEEF3;
+            --divider-color: #E5E7EB;
+
+            --status-ready: #059669;
+            --status-error: #DC2626;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+
+            --brand-primary: #a29bfe;
+            --brand-secondary: #8b85fc;
+            --brand-accent: #81ecec;
+
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 1px rgba(255,255,255,0.04);
+
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.08);
+
+            --section-bg: #16161E;
+            --divider-color: #2A2A36;
+
+            --status-ready: #34D399;
+            --status-error: #F87171;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100dvh;
+            font-family: var(--font-sans);
+            background: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Banner */
+        .banner {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; height: 52px;
+            flex-shrink: 0;
+        }
+        .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+        .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+        .banner-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+        .banner-title.gradient-text {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .banner-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-button {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; padding: 6px; border-radius: 8px;
+            transition: background 0.15s; line-height: 1;
+        }
+        #theme-button:hover { background: var(--card-border); }
+
+        /* Help panel */
+        .help-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.25); z-index: 199;
+        }
+        .help-backdrop.open { display: block; }
+        .help-panel {
+            position: fixed; top: 0; right: 0;
+            width: 320px; height: 100dvh;
+            background: var(--card-bg); border-left: 1px solid var(--card-border);
+            box-shadow: -6px 0 24px rgba(0,0,0,0.18); z-index: 200;
+            display: flex; flex-direction: column;
+            transform: translateX(100%); transition: transform 0.25s ease;
+        }
+        .help-panel.open { transform: translateX(0); }
+        .help-panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; border-bottom: 1px solid var(--card-border);
+            font-weight: 700; font-size: 0.88rem; flex-shrink: 0;
+        }
+        .help-close {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; line-height: 1; padding: 4px 6px;
+            border-radius: 6px; color: var(--text-secondary); transition: background 0.15s;
+        }
+        .help-close:hover { background: var(--section-bg); color: var(--text-main); }
+        .help-panel-body { padding: 16px; overflow-y: auto; flex: 1; font-size: 0.82rem; line-height: 1.65; }
+        .help-section { margin-bottom: 20px; }
+        .help-section h3 {
+            font-size: 0.73rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--brand-primary); margin-bottom: 6px;
+        }
+        .help-section p { color: var(--text-main); margin-bottom: 5px; }
+        .help-section p:last-child { margin-bottom: 0; }
+        .help-divider { height: 1px; background: var(--card-border); margin-bottom: 20px; }
+        @media (max-width: 480px) { .help-panel { width: 90vw; } }
+
+        .btn-help {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            color: #fff; display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 13px; border: none; border-radius: 9px; cursor: pointer;
+            font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
+            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3); transition: filter 0.15s; white-space: nowrap;
+        }
+        .btn-help:hover { filter: brightness(1.1); }
+        [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
+
+        /* Embedded app frame */
+        .app-frame {
+            flex: 1;
+            width: 100%;
+            border: 0;
+            display: block;
+            background: var(--bg-color);
+        }
+    </style>
+</head>
+<body>
+    <header class="banner">
+        <div class="banner-logo">
+            <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+            <button onclick="history.back()" title="Go back" aria-label="Go back"
+                style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+                onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="banner-title">Friction Lab</div>
+        <div class="banner-actions">
+            <button class="btn-help" id="help-btn" aria-label="Help" title="Show help">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Help
+            </button>
+            <div class="theme-toggle">
+                <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes">☀️</button>
+            </div>
+        </div>
+    </header>
+
+    <iframe class="app-frame"
+        src="https://lennoxmeldrum.github.io/friction-lab/"
+        title="Friction Lab"
+        allow="clipboard-write; fullscreen"
+        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+
+    <div class="help-backdrop" id="help-backdrop"></div>
+    <aside class="help-panel" id="help-panel" aria-label="Help">
+        <div class="help-panel-header">
+            <span>Friction Lab Guide</span>
+            <button class="help-close" id="help-close" aria-label="Close help">&#x2715;</button>
+        </div>
+        <div class="help-panel-body">
+            <div class="help-section">
+                <h3>What is this?</h3>
+                <p>An inclined-plane experiment to determine the coefficient of kinetic friction (μₖ) between two surfaces. Pick a block material and a ramp material, set the angle, then run trials to time the slide and back-calculate μₖ.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Setup</h3>
+                <p><strong>Object Material</strong> &amp; <strong>Ramp Material</strong> — choose the two surfaces in contact. The true μₖ depends on both.</p>
+                <p><strong>Angle</strong> — the incline angle in degrees. Below the friction angle (μₖ = tan θ) the block won't slide.</p>
+                <p><strong>Distance</strong> — the slide distance in metres. Used in the kinematics equation to extract acceleration.</p>
+                <p><strong>Mass</strong> — included as a distractor. μₖ from kinematics is mass-independent on a uniform incline; verify this for yourself.</p>
+                <p><strong>Colour</strong> — cosmetic, for distinguishing blocks across runs.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Run a trial</h3>
+                <p>Press <strong>Run</strong>. The block animates down the ramp (or stays put if the angle is below the friction angle), and a row is added to the data table with the time, computed μₖ, and the temperature/pressure distractors.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Physics reference</h3>
+                <p>Use the theory panel to review the free-body diagram, Newton's 2nd law along the incline, and the formula μₖ = tan θ − a/(g cos θ).</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Verify the coefficient</h3>
+                <p>Repeat trials with different angles, distances, and masses for the same material pair. Average your computed μₖ values and compare against the true coefficient revealed in the analysis panel.</p>
+            </div>
+        </div>
+    </aside>
+
+    <div id="site-footer"></div>
+    <script src="/assets/footer.js"></script>
+
+    <script>
+        // --- Help panel ---
+        (function() {
+            var panel = document.getElementById('help-panel');
+            var backdrop = document.getElementById('help-backdrop');
+            function openHelp() { panel.classList.add('open'); backdrop.classList.add('open'); }
+            function closeHelp() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
+            document.getElementById('help-btn').addEventListener('click', openHelp);
+            document.getElementById('help-close').addEventListener('click', closeHelp);
+            backdrop.addEventListener('click', closeHelp);
+            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeHelp(); });
+        })();
+    </script>
+
+    <script>
+        // --- Theme toggle ---
+        const themeButton = document.getElementById('theme-button');
+        const DARK_KEY = 'friction_lab-dark';
+        const LIGHT_KEY = 'friction_lab-light';
+
+        function updateAppChromeTheme(theme) {
+            const tc = document.querySelector('meta[name="theme-color"]');
+            const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            const dark = theme === 'dark';
+            if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+        }
+        function updateButtonEmoji(theme) {
+            themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}️';
+        }
+        const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', initTheme);
+        updateAppChromeTheme(initTheme);
+        updateButtonEmoji(initTheme);
+        window.addEventListener('pageshow', function () {
+            updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+        });
+        themeButton.addEventListener('click', function () {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') {
+                localStorage.setItem(DARK_KEY, 'true');
+                localStorage.removeItem(LIGHT_KEY);
+            } else {
+                localStorage.setItem(LIGHT_KEY, 'true');
+                localStorage.removeItem(DARK_KEY);
+            }
+            updateAppChromeTheme(next);
+            updateButtonEmoji(next);
+        });
+    </script>
+
+    <!-- Brave iOS gradient text fix -->
+    <script>
+    (function () {
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+        document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+    })();
+    </script>
+</body>
+</html>
