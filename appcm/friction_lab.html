@@ -81,16 +81,9 @@
         html, body {
             margin: 0;
             padding: 0;
-            height: 100dvh;
             font-family: var(--font-sans);
             background: var(--bg-color);
             color: var(--text-main);
-            overflow: hidden;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
         }
 
         /* Banner */
@@ -102,7 +95,6 @@
             -webkit-backdrop-filter: blur(12px);
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 16px; height: 52px;
-            flex-shrink: 0;
         }
         .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
         .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
@@ -172,12 +164,14 @@
         .btn-help:hover { filter: brightness(1.1); }
         [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
 
-        /* Embedded app frame */
+        /* Embedded app frame — exactly one viewport tall (minus banner) so
+           the footer sits at the natural bottom of the document and the page
+           scrolls naturally. */
         .app-frame {
-            flex: 1;
-            width: 100%;
-            border: 0;
             display: block;
+            width: 100%;
+            height: calc(100dvh - 52px);
+            border: 0;
             background: var(--bg-color);
         }
     </style>
@@ -207,7 +201,7 @@
         </div>
     </header>
 
-    <iframe class="app-frame"
+    <iframe class="app-frame" id="app-frame"
         src="https://lennoxmeldrum.github.io/friction-lab/"
         title="Friction Lab"
         allow="clipboard-write; fullscreen"
@@ -269,8 +263,10 @@
     </script>
 
     <script>
-        // --- Theme toggle ---
+        // --- Theme toggle (also forwarded to the embedded app via postMessage) ---
         const themeButton = document.getElementById('theme-button');
+        const appFrame = document.getElementById('app-frame');
+        const APP_ORIGIN = 'https://lennoxmeldrum.github.io';
         const DARK_KEY = 'friction_lab-dark';
         const LIGHT_KEY = 'friction_lab-light';
 
@@ -284,10 +280,35 @@
         function updateButtonEmoji(theme) {
             themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}️';
         }
+        function setIframeSrcTheme(theme) {
+            // Encode initial theme in iframe src so the embedded app picks it up
+            // before its first paint (avoids a flash of light theme).
+            try {
+                const url = new URL(appFrame.src, location.href);
+                url.searchParams.set('theme', theme);
+                if (appFrame.src !== url.toString()) appFrame.src = url.toString();
+            } catch (e) { /* ignore */ }
+        }
+        function postThemeToIframe(theme) {
+            try {
+                appFrame.contentWindow && appFrame.contentWindow.postMessage(
+                    { type: 'theme', theme: theme }, APP_ORIGIN
+                );
+            } catch (e) { /* ignore */ }
+        }
+
         const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', initTheme);
         updateAppChromeTheme(initTheme);
         updateButtonEmoji(initTheme);
+        setIframeSrcTheme(initTheme);
+
+        // Re-send theme once the iframe has loaded (covers the runtime listener path).
+        appFrame.addEventListener('load', function () {
+            const t = document.documentElement.getAttribute('data-theme');
+            postThemeToIframe(t);
+        });
+
         window.addEventListener('pageshow', function () {
             updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
         });
@@ -304,6 +325,7 @@
             }
             updateAppChromeTheme(next);
             updateButtonEmoji(next);
+            postThemeToIframe(next);
         });
     </script>
 
