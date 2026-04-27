@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -8,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <script>
     (function() {
-      if (localStorage.getItem('friction_lab-dark')) {
+      if (localStorage.getItem('friction-lab-dark')) {
         document.documentElement.setAttribute('data-theme', 'dark');
         var tc = document.querySelector('meta[name="theme-color"]');
         var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
@@ -17,7 +18,7 @@
       }
     })();
     </script>
-    <title>Friction Lab — ExplAIn Sims</title>
+    <title>Friction Lab</title>
     <meta name="description" content="An interactive inclined-plane experiment to determine the coefficient of kinetic friction.">
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
@@ -34,22 +35,33 @@
             --text-main: #1A1A2E;
             --text-secondary: #6B7280;
 
-            --brand-primary: #6c5ce7;
-            --brand-secondary: #5a4fcf;
-            --brand-accent: #00cec9;
+            --brand-primary: #0891B2;
+            --brand-secondary: #0E7490;
+            --brand-accent: #F59E0B;
 
             --card-bg: #FFFFFF;
             --card-border: #E5E7EB;
-            --card-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 0 1px rgba(0,0,0,0.1);
+            --card-shadow: 0 4px 16px rgba(8,145,178,0.06);
 
-            --nav-bg: rgba(255, 255, 255, 0.92);
-            --nav-border: rgba(0, 0, 0, 0.10);
+            --canvas-bg: #FFFFFF;
+            --slider-track: #E5E7EB;
+            --slider-thumb: #0891B2;
 
-            --section-bg: #EEEEF3;
+            --nav-bg: rgba(255,255,255,0.92);
+            --nav-border: rgba(0,0,0,0.10);
+
+            --section-bg: #F0F0F5;
             --divider-color: #E5E7EB;
+
+            --ramp-fill: #E2E8F0;
+            --ramp-stroke: #94A3B8;
+            --ground-color: #CBD5E1;
+            --label-color: #64748B;
+            --block-stroke: #1E293B;
 
             --status-ready: #059669;
             --status-error: #DC2626;
+            --status-warning: #F59E0B;
         }
 
         [data-theme="dark"] {
@@ -58,32 +70,45 @@
             --text-main: #F0F0F5;
             --text-secondary: #9CA3AF;
 
-            --brand-primary: #a29bfe;
-            --brand-secondary: #8b85fc;
-            --brand-accent: #81ecec;
+            --brand-primary: #22D3EE;
+            --brand-secondary: #06B6D4;
+            --brand-accent: #FBBF24;
 
             --card-bg: #1E1E28;
             --card-border: #2A2A36;
-            --card-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 1px rgba(255,255,255,0.04);
+            --card-shadow: 0 4px 16px rgba(0,0,0,0.3);
 
-            --nav-bg: rgba(17, 17, 24, 0.92);
-            --nav-border: rgba(255, 255, 255, 0.08);
+            --canvas-bg: #16161E;
+            --slider-track: #2A2A36;
+            --slider-thumb: #22D3EE;
+
+            --nav-bg: rgba(17,17,24,0.92);
+            --nav-border: rgba(255,255,255,0.08);
 
             --section-bg: #16161E;
             --divider-color: #2A2A36;
 
+            --ramp-fill: #334155;
+            --ramp-stroke: #64748B;
+            --ground-color: #475569;
+            --label-color: #94A3B8;
+            --block-stroke: #CBD5E1;
+
             --status-ready: #34D399;
             --status-error: #F87171;
+            --status-warning: #FBBF24;
         }
 
-        * { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html, body {
-            margin: 0;
-            padding: 0;
+        body {
             font-family: var(--font-sans);
-            background: var(--bg-color);
+            background-color: var(--bg-color);
             color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-text-size-adjust: 100%;
         }
 
         /* Banner */
@@ -117,7 +142,7 @@
         }
         #theme-button:hover { background: var(--card-border); }
 
-        /* Help panel */
+        /* Help button + panel */
         .help-backdrop {
             display: none; position: fixed; inset: 0;
             background: rgba(0,0,0,0.25); z-index: 199;
@@ -159,26 +184,343 @@
             color: #fff; display: inline-flex; align-items: center; gap: 5px;
             padding: 6px 13px; border: none; border-radius: 9px; cursor: pointer;
             font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
-            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3); transition: filter 0.15s; white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(8,145,178,0.30); transition: filter 0.15s; white-space: nowrap;
         }
         .btn-help:hover { filter: brightness(1.1); }
-        [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
+        [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(34,211,238,0.25); }
 
-        /* Embedded app frame. The embedded app posts its content height to
-           us via postMessage and we set the iframe height to match, so the
-           outer page does the scrolling and the footer sits naturally below
-           the app. The min-height keeps the layout sensible before the first
-           message arrives (or if it never arrives). */
-        .app-frame {
-            display: block;
+        /* Main layout */
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
             width: 100%;
-            min-height: calc(100dvh - 52px);
-            height: calc(100dvh - 52px);
-            border: 0;
-            background: var(--bg-color);
+            padding: 24px 16px;
         }
+
+        .sim-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 960px) {
+            .sim-grid { grid-template-columns: 5fr 7fr; align-items: start; }
+        }
+
+        .col { display: flex; flex-direction: column; gap: 20px; }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px;
+            background: var(--brand-primary); color: #fff;
+            border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Visualization */
+        .vis-card {
+            background: var(--canvas-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+        }
+        .vis-card svg { width: 100%; max-width: 360px; height: auto; display: block; }
+
+        /* Controls form */
+        .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .field { display: flex; flex-direction: column; gap: 4px; }
+        .field-label {
+            display: flex; justify-content: space-between; align-items: baseline;
+            font-size: 0.82rem; font-weight: 600; color: var(--text-main);
+        }
+        .field-label .hint { font-weight: 400; font-size: 0.72rem; color: var(--text-secondary); }
+        .field-label .value { font-family: var(--font-mono); color: var(--brand-primary); font-size: 0.78rem; }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.88rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(8,145,178,0.15);
+        }
+        [data-theme="dark"] select:focus, [data-theme="dark"] input[type="number"]:focus {
+            box-shadow: 0 0 0 3px rgba(34,211,238,0.15);
+        }
+        select:disabled, input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        input[type="range"] {
+            width: 100%; height: 6px; appearance: none; -webkit-appearance: none;
+            background: var(--slider-track); border-radius: 3px; cursor: pointer; outline: none;
+            margin-top: 4px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            background: var(--slider-thumb); border-radius: 50%; cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: none;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; background: var(--slider-thumb);
+            border-radius: 50%; cursor: pointer; border: none;
+        }
+        input[type="range"]:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .divider {
+            height: 1px;
+            background: var(--divider-color);
+            margin: 14px 0;
+        }
+
+        .btn-run {
+            width: 100%;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            background: var(--brand-primary);
+            color: #fff;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: filter 0.15s, transform 0.05s;
+            box-shadow: 0 2px 8px rgba(8,145,178,0.25);
+            margin-top: 14px;
+        }
+        .btn-run:hover { filter: brightness(1.08); }
+        .btn-run:active { transform: translateY(1px); }
+        .btn-run:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+
+        .hint-text { font-size: 0.72rem; color: var(--text-secondary); text-align: center; margin-top: 8px; }
+
+        /* Theory accordion */
+        .theory-toggle {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; text-align: left;
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            transition: background 0.15s;
+        }
+        .theory-toggle:hover { background: var(--section-bg); }
+        .theory-toggle.open { border-radius: 14px 14px 0 0; border-bottom: none; }
+        .theory-toggle .label {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 0.92rem;
+        }
+        .theory-toggle .icon-book { color: var(--brand-primary); }
+        .theory-toggle .chev { color: var(--text-secondary); transition: transform 0.2s; }
+        .theory-toggle.open .chev { transform: rotate(180deg); }
+
+        .theory-body {
+            display: none;
+            background: var(--section-bg);
+            border: 1px solid var(--card-border);
+            border-top: none;
+            border-radius: 0 0 14px 14px;
+            padding: 16px;
+            font-size: 0.86rem;
+            line-height: 1.65;
+            color: var(--text-main);
+        }
+        .theory-body.open { display: block; }
+        .theory-body h4 {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+        .theory-body p { margin-bottom: 8px; color: var(--text-secondary); }
+        .theory-body ul { padding-left: 20px; margin: 6px 0 8px 0; color: var(--text-secondary); }
+        .theory-body li { margin-bottom: 3px; }
+        .theory-body .eq {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-main);
+            overflow-x: auto;
+        }
+        .theory-section + .theory-section { margin-top: 14px; }
+        .theory-body .mono { font-family: var(--font-mono); }
+        .theory-body .small { font-size: 0.74rem; color: var(--text-secondary); margin-top: 4px; }
+
+        /* Data table */
+        .data-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+        .data-header {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--divider-color);
+            background: var(--section-bg);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .data-header h3 { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
+        .data-pill {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--card-border);
+        }
+        .data-empty {
+            padding: 24px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+        .data-scroll { max-height: 280px; overflow: auto; }
+        .data-scroll table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+        .data-scroll thead {
+            position: sticky; top: 0; background: var(--section-bg); z-index: 1;
+            box-shadow: 0 1px 0 var(--divider-color);
+        }
+        .data-scroll th {
+            text-align: left; padding: 8px 10px;
+            font-size: 0.7rem; font-weight: 700;
+            color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .data-scroll td {
+            padding: 8px 10px;
+            border-top: 1px solid var(--divider-color);
+            color: var(--text-main);
+        }
+        .data-scroll td.mono { font-family: var(--font-mono); }
+        .data-scroll tr:hover td { background: var(--section-bg); }
+        .data-scroll .no-slide { color: var(--status-error); font-size: 0.72rem; font-weight: 700; }
+
+        /* Analysis */
+        .analysis-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+        .analysis-header {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--divider-color);
+            background: var(--section-bg);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .analysis-header h3 { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
+        .analysis-header .icon-calc { color: var(--brand-primary); }
+        .analysis-body { padding: 14px; font-size: 0.86rem; }
+        .analysis-empty { color: var(--text-secondary); text-align: center; padding: 24px 16px; }
+
+        .analysis-empty.warn {
+            background: color-mix(in srgb, var(--status-warning) 12%, transparent);
+            border-radius: 0;
+        }
+        .analysis-empty.warn h4 { color: var(--status-warning); font-weight: 700; margin-bottom: 6px; }
+        .analysis-empty.warn p { color: var(--text-main); font-size: 0.82rem; }
+
+        .input-row { display: flex; gap: 8px; margin-top: 8px; }
+        .input-row input { flex: 1; }
+        .input-row button {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            background: var(--text-main);
+            color: var(--card-bg);
+            font-weight: 700;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            transition: filter 0.15s;
+        }
+        .input-row button:hover { filter: brightness(1.15); }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            font-size: 0.83rem;
+        }
+        .feedback.error {
+            background: color-mix(in srgb, var(--status-error) 10%, transparent);
+            border-left-color: var(--status-error);
+            color: var(--status-error);
+        }
+        .feedback.success {
+            background: color-mix(in srgb, var(--status-ready) 12%, transparent);
+            border-left-color: var(--status-ready);
+            color: var(--status-ready);
+        }
+
+        .solution {
+            margin-top: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            line-height: 1.55;
+            color: var(--text-main);
+            overflow-x: auto;
+        }
+        .solution h4 { font-family: var(--font-sans); font-size: 0.85rem; color: var(--brand-primary); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--divider-color); }
+        .solution .step-label { font-family: var(--font-sans); font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+        .solution .answer { padding-top: 8px; margin-top: 8px; border-top: 1px solid var(--divider-color); font-weight: 700; color: var(--status-ready); font-family: var(--font-sans); }
+        .solution .footnote { font-family: var(--font-sans); font-size: 0.7rem; color: var(--text-secondary); margin-top: 8px; font-style: italic; }
+        .solution .step + .step { margin-top: 8px; }
+
+        .btn-secondary {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--section-bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-secondary:hover { background: var(--card-border); }
     </style>
 </head>
+
 <body>
     <header class="banner">
         <div class="banner-logo">
@@ -204,11 +546,143 @@
         </div>
     </header>
 
-    <iframe class="app-frame" id="app-frame"
-        src="https://lennoxmeldrum.github.io/friction-lab/"
-        title="Friction Lab"
-        allow="clipboard-write; fullscreen"
-        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    <main class="main-content">
+        <div class="sim-grid">
+            <div class="col">
+                <section>
+                    <div class="section-title"><span class="step-num">1</span> Setup &amp; Execute</div>
+                    <div class="vis-card">
+                        <svg viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg" aria-label="Inclined plane visualization">
+                            <line id="vis-ground" x1="0" y1="250" x2="320" y2="250" stroke="var(--ground-color)" stroke-width="4" />
+                            <polygon id="vis-ramp" fill="var(--ramp-fill)" stroke="var(--ramp-stroke)" stroke-width="2" />
+                            <text id="vis-angle-label" fontSize="12" fill="var(--label-color)" font-family="var(--font-mono)"></text>
+                            <g id="vis-block-group">
+                                <rect id="vis-block" y="-28" width="28" height="28" fill="#ef4444" stroke="var(--block-stroke)" stroke-width="1.5" rx="2" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="card" style="margin-top:14px;">
+                        <div class="controls-grid">
+                            <div class="field">
+                                <label class="field-label" for="ctl-object">Object Material</label>
+                                <select id="ctl-object"></select>
+                            </div>
+                            <div class="field">
+                                <label class="field-label" for="ctl-ramp">Ramp Material</label>
+                                <select id="ctl-ramp"></select>
+                            </div>
+                        </div>
+                        <div class="controls-grid" style="margin-top:14px;">
+                            <div class="field">
+                                <label class="field-label" for="ctl-color">
+                                    <span>Color</span><span class="hint">(visual only)</span>
+                                </label>
+                                <select id="ctl-color"></select>
+                            </div>
+                            <div class="field">
+                                <label class="field-label" for="ctl-mass">
+                                    <span>Mass (kg)</span><span class="value" id="ctl-mass-val">5.0</span>
+                                </label>
+                                <input id="ctl-mass" type="range" min="0.1" max="20" step="0.1" value="5.0">
+                            </div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div class="field">
+                            <label class="field-label" for="ctl-angle">
+                                <span>Ramp Angle (θ)</span><span class="value" id="ctl-angle-val">30°</span>
+                            </label>
+                            <input id="ctl-angle" type="range" min="5" max="80" step="1" value="30">
+                        </div>
+
+                        <div class="field" style="margin-top:14px;">
+                            <label class="field-label" for="ctl-distance">
+                                <span>Sliding Distance (Δx)</span><span class="value" id="ctl-distance-val">2.0 m</span>
+                            </label>
+                            <input id="ctl-distance" type="range" min="1" max="10" step="0.5" value="2.0">
+                        </div>
+
+                        <button id="btn-run" class="btn-run">Run Experiment</button>
+                        <p class="hint-text">Hint: Ensure the angle is steep enough to overcome static friction.</p>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col">
+                <section>
+                    <div class="section-title"><span class="step-num">2</span> Physics Reference</div>
+                    <button class="theory-toggle" id="theory-toggle" aria-expanded="false">
+                        <span class="label">
+                            <svg class="icon-book" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                            Physics Theory Reference
+                        </span>
+                        <svg class="chev" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="theory-body" id="theory-body">
+                        <div class="theory-section">
+                            <h4>1. Kinematics of Constant Acceleration</h4>
+                            <p>When an object slides from rest (<span class="mono">v₀ = 0</span>), the distance traveled <span class="mono">d</span> is related to acceleration <span class="mono">a</span> and time <span class="mono">t</span> by:</p>
+                            <div class="eq">d = ½ a t²  ⇒  a = 2d / t²</div>
+                        </div>
+                        <div class="theory-section">
+                            <h4>2. Newton's Second Law &amp; Friction</h4>
+                            <p>Forces acting along the ramp: gravity (pulling down) and kinetic friction (resisting motion). Net force is <span class="mono">F_net = m·a</span>.</p>
+                            <ul>
+                                <li>Gravity component along ramp: <span class="mono">F_g = mg sin(θ)</span></li>
+                                <li>Normal force: <span class="mono">N = mg cos(θ)</span></li>
+                                <li>Kinetic friction: <span class="mono">f_k = μ_k N = μ_k mg cos(θ)</span></li>
+                            </ul>
+                            <div class="eq">mg sin(θ) − μ_k mg cos(θ) = ma</div>
+                            <p>Notice mass (<span class="mono">m</span>) appears in every term and cancels — mass does not affect the acceleration of the sliding object.</p>
+                        </div>
+                        <div class="theory-section">
+                            <h4>3. Solving for the Coefficient (μ_k)</h4>
+                            <p>Dividing by mass and isolating <span class="mono">μ_k</span>:</p>
+                            <div class="eq">μ_k = (g·sin(θ) − a) / (g·cos(θ))</div>
+                            <p class="small">Use standard gravity g = 9.81 m/s².</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="section-title"><span class="step-num">3</span> Collected Data</div>
+                    <div class="card data-card" id="data-card">
+                        <div class="data-empty" id="data-empty">No experimental data yet. Configure parameters and run the experiment.</div>
+                        <div id="data-table-wrap" style="display:none;">
+                            <div class="data-header">
+                                <h3>Experimental Data</h3>
+                                <span class="data-pill" id="data-pill">0 trials</span>
+                            </div>
+                            <div class="data-scroll">
+                                <table>
+                                    <thead>
+                                        <tr><th>Run</th><th>θ (°)</th><th>Dist (m)</th><th>Mass (kg)</th><th>Time (s)</th></tr>
+                                    </thead>
+                                    <tbody id="data-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="section-title"><span class="step-num">4</span> Verify Coefficient</div>
+                    <div class="card analysis-card" id="analysis-card">
+                        <div class="analysis-empty" id="analysis-empty">Run an experiment to unlock the analysis module.</div>
+                        <div id="analysis-active" style="display:none;">
+                            <div class="analysis-header">
+                                <svg class="icon-calc" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="16" y1="18" x2="16.01" y2="18"/></svg>
+                                <h3 id="analysis-header-text">Determine Coefficient</h3>
+                            </div>
+                            <div class="analysis-body" id="analysis-body"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
 
     <div class="help-backdrop" id="help-backdrop"></div>
     <aside class="help-panel" id="help-panel" aria-label="Help">
@@ -225,25 +699,25 @@
             <div class="help-section">
                 <h3>Setup</h3>
                 <p><strong>Object Material</strong> &amp; <strong>Ramp Material</strong> — choose the two surfaces in contact. The true μₖ depends on both.</p>
-                <p><strong>Angle</strong> — the incline angle in degrees. Below the friction angle (μₖ = tan θ) the block won't slide.</p>
-                <p><strong>Distance</strong> — the slide distance in metres. Used in the kinematics equation to extract acceleration.</p>
+                <p><strong>Angle</strong> — the incline angle in degrees. Below the friction angle (tan θ &lt; μₛ) the block won't slide.</p>
+                <p><strong>Distance</strong> — the slide distance in metres, used in the kinematics equation to extract acceleration.</p>
                 <p><strong>Mass</strong> — included as a distractor. μₖ from kinematics is mass-independent on a uniform incline; verify this for yourself.</p>
-                <p><strong>Colour</strong> — cosmetic, for distinguishing blocks across runs.</p>
+                <p><strong>Color</strong> — cosmetic, for distinguishing blocks across runs.</p>
             </div>
             <div class="help-divider"></div>
             <div class="help-section">
                 <h3>Run a trial</h3>
-                <p>Press <strong>Run</strong>. The block animates down the ramp (or stays put if the angle is below the friction angle), and a row is added to the data table with the time, computed μₖ, and the temperature/pressure distractors.</p>
+                <p>Press <strong>Run</strong>. The block animates down the ramp (or jiggles in place if the angle is below the friction angle), and a row is added to the data table with the time and computed μₖ.</p>
             </div>
             <div class="help-divider"></div>
             <div class="help-section">
                 <h3>Physics reference</h3>
-                <p>Use the theory panel to review the free-body diagram, Newton's 2nd law along the incline, and the formula μₖ = tan θ − a/(g cos θ).</p>
+                <p>Open the theory panel to review the free-body diagram, Newton's 2nd law along the incline, and the formula μₖ = (g·sin θ − a) / (g·cos θ).</p>
             </div>
             <div class="help-divider"></div>
             <div class="help-section">
                 <h3>Verify the coefficient</h3>
-                <p>Repeat trials with different angles, distances, and masses for the same material pair. Average your computed μₖ values and compare against the true coefficient revealed in the analysis panel.</p>
+                <p>Use the data from a successful slide to calculate μₖ yourself. After three attempts the step-by-step solution is revealed. Repeat trials and compare your value to the true coefficient.</p>
             </div>
         </div>
     </aside>
@@ -252,94 +726,444 @@
     <script src="/assets/footer.js"></script>
 
     <script>
-        // --- Help panel ---
-        (function() {
-            var panel = document.getElementById('help-panel');
-            var backdrop = document.getElementById('help-backdrop');
-            function openHelp() { panel.classList.add('open'); backdrop.classList.add('open'); }
-            function closeHelp() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
-            document.getElementById('help-btn').addEventListener('click', openHelp);
-            document.getElementById('help-close').addEventListener('click', closeHelp);
-            backdrop.addEventListener('click', closeHelp);
-            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeHelp(); });
-        })();
+    // ---------------------------------------------------------------------
+    // Friction Lab — vanilla JS port of the React Friction Lab app.
+    // Determines the kinetic friction coefficient via an inclined-plane
+    // experiment. Mass is included intentionally as a distractor.
+    // ---------------------------------------------------------------------
+
+    const G = 9.81;
+
+    const OBJECT_MATERIALS = ['Wood', 'Steel', 'Rubber', 'Ice'];
+    const RAMP_MATERIALS   = ['Wood', 'Steel', 'Concrete', 'Ice'];
+
+    const FRICTION_COEFFICIENTS = {
+        Wood:   { Wood:{mus:0.45,muk:0.30}, Steel:{mus:0.30,muk:0.20}, Concrete:{mus:0.65,muk:0.50}, Ice:{mus:0.10,muk:0.05} },
+        Steel:  { Wood:{mus:0.30,muk:0.20}, Steel:{mus:0.60,muk:0.45}, Concrete:{mus:0.55,muk:0.45}, Ice:{mus:0.05,muk:0.02} },
+        Rubber: { Wood:{mus:0.80,muk:0.65}, Steel:{mus:0.90,muk:0.70}, Concrete:{mus:1.00,muk:0.85}, Ice:{mus:0.20,muk:0.15} },
+        Ice:    { Wood:{mus:0.10,muk:0.05}, Steel:{mus:0.05,muk:0.02}, Concrete:{mus:0.10,muk:0.05}, Ice:{mus:0.05,muk:0.02} }
+    };
+
+    const COLORS = [
+        { name:'Red',    hex:'#ef4444' },
+        { name:'Blue',   hex:'#3b82f6' },
+        { name:'Green',  hex:'#22c55e' },
+        { name:'Yellow', hex:'#eab308' },
+        { name:'Purple', hex:'#a855f7' }
+    ];
+
+    // --- App state ---
+    const state = {
+        objectMat: 'Wood',
+        rampMat:   'Steel',
+        angle:     30,
+        distance:  2.0,
+        mass:      5.0,
+        colorName: 'Red',
+        results:   [],
+        latestId:  null,
+        isRunning: false
+    };
+
+    // Analysis sub-state, reset whenever a new latest result arrives
+    let analysisState = { guess: '', attempts: 0, status: 'idle', feedback: '', showSolution: false };
+
+    function calculateExperiment(objectMat, rampMat, angleDeg, distance) {
+        const angleRad = angleDeg * Math.PI / 180;
+        const { mus, muk } = FRICTION_COEFFICIENTS[objectMat][rampMat];
+        const forceDown   = Math.sin(angleRad);
+        const maxFriction = mus * Math.cos(angleRad);
+        const didSlide    = forceDown > maxFriction;
+
+        if (!didSlide) return { didSlide:false, time:null, calculatedMuk:null, noiseFactor:0, trueMuk:muk };
+
+        const a = G * (Math.sin(angleRad) - muk * Math.cos(angleRad));
+        if (a <= 0) return { didSlide:false, time:null, calculatedMuk:null, noiseFactor:0, trueMuk:muk };
+
+        const trueTime  = Math.sqrt((2 * distance) / a);
+        const noiseFactor = 1 + (Math.random() - 0.5) * 0.04;
+        const noisyTime = trueTime * noiseFactor;
+        const aExp      = (2 * distance) / (noisyTime * noisyTime);
+        const calculatedMuk = (Math.sin(angleRad) - (aExp / G)) / Math.cos(angleRad);
+
+        return { didSlide:true, time:noisyTime, calculatedMuk, noiseFactor, trueMuk:muk };
+    }
+
+    // --- Visualization ---
+    const VIS_R = 240;
+    const VIS_BOX = 28;
+    const VIS_W = 320;
+    const VIS_H = 260;
+    const VIS_START_X = 20;
+    const VIS_GROUND_Y = VIS_H - 10;
+
+    function colorHex(name) {
+        const c = COLORS.find(x => x.name === name);
+        return c ? c.hex : '#ef4444';
+    }
+
+    function renderRamp() {
+        const angleRad = state.angle * Math.PI / 180;
+        const W = VIS_R * Math.cos(angleRad);
+        const H = VIS_R * Math.sin(angleRad);
+        const startY = VIS_GROUND_Y - H;
+
+        document.getElementById('vis-ramp').setAttribute('points',
+            `${VIS_START_X},${startY} ${VIS_START_X + W},${VIS_GROUND_Y} ${VIS_START_X},${VIS_GROUND_Y}`);
+
+        const label = document.getElementById('vis-angle-label');
+        label.setAttribute('x', VIS_START_X + W - 30);
+        label.setAttribute('y', VIS_GROUND_Y - 5);
+        label.textContent = state.angle + '°';
+
+        // Reset block to start of ramp
+        const group = document.getElementById('vis-block-group');
+        group.setAttribute('transform', `translate(${VIS_START_X}, ${startY}) rotate(${state.angle})`);
+        document.getElementById('vis-block').setAttribute('x', 0);
+        document.getElementById('vis-block').setAttribute('fill', colorHex(state.colorName));
+    }
+
+    let animFrame = null;
+    function animateBlock(durationSec, didSlide) {
+        if (animFrame) cancelAnimationFrame(animFrame);
+        const block = document.getElementById('vis-block');
+        const startTime = performance.now();
+        const totalDistance = VIS_R - VIS_BOX;
+        block.setAttribute('x', 0);
+
+        function step(now) {
+            const elapsed = (now - startTime) / 1000;
+            const progress = Math.min(elapsed / durationSec, 1);
+            if (didSlide) {
+                // Ease-in (acceleration from rest)
+                const eased = progress * progress;
+                block.setAttribute('x', eased * totalDistance);
+            } else {
+                // Jiggle in place: damped sinusoid
+                const x = Math.sin(progress * Math.PI * 4) * 3 * (1 - progress);
+                block.setAttribute('x', x);
+            }
+            if (progress < 1) {
+                animFrame = requestAnimationFrame(step);
+            } else {
+                if (!didSlide) block.setAttribute('x', 0);
+                animFrame = null;
+            }
+        }
+        animFrame = requestAnimationFrame(step);
+    }
+
+    // --- Controls render + bind ---
+    function fillSelect(id, items, selected) {
+        const el = document.getElementById(id);
+        el.innerHTML = '';
+        items.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v; opt.textContent = v;
+            if (v === selected) opt.selected = true;
+            el.appendChild(opt);
+        });
+    }
+    function renderControls() {
+        document.getElementById('ctl-mass-val').textContent = state.mass.toFixed(1);
+        document.getElementById('ctl-angle-val').textContent = state.angle + '°';
+        document.getElementById('ctl-distance-val').textContent = state.distance.toFixed(1) + ' m';
+        document.getElementById('ctl-mass').value = state.mass;
+        document.getElementById('ctl-angle').value = state.angle;
+        document.getElementById('ctl-distance').value = state.distance;
+
+        document.getElementById('btn-run').disabled = state.isRunning;
+        const inputs = ['ctl-object','ctl-ramp','ctl-color','ctl-mass','ctl-angle','ctl-distance'];
+        inputs.forEach(id => document.getElementById(id).disabled = state.isRunning);
+    }
+
+    function bindControls() {
+        fillSelect('ctl-object', OBJECT_MATERIALS, state.objectMat);
+        fillSelect('ctl-ramp',   RAMP_MATERIALS,   state.rampMat);
+        fillSelect('ctl-color',  COLORS.map(c => c.name), state.colorName);
+
+        document.getElementById('ctl-object').addEventListener('change', e => { state.objectMat = e.target.value; });
+        document.getElementById('ctl-ramp').addEventListener('change',   e => { state.rampMat = e.target.value; });
+        document.getElementById('ctl-color').addEventListener('change',  e => {
+            state.colorName = e.target.value;
+            document.getElementById('vis-block').setAttribute('fill', colorHex(state.colorName));
+        });
+        document.getElementById('ctl-mass').addEventListener('input', e => {
+            state.mass = parseFloat(e.target.value);
+            document.getElementById('ctl-mass-val').textContent = state.mass.toFixed(1);
+        });
+        document.getElementById('ctl-angle').addEventListener('input', e => {
+            state.angle = parseInt(e.target.value, 10);
+            document.getElementById('ctl-angle-val').textContent = state.angle + '°';
+            renderRamp();
+        });
+        document.getElementById('ctl-distance').addEventListener('input', e => {
+            state.distance = parseFloat(e.target.value);
+            document.getElementById('ctl-distance-val').textContent = state.distance.toFixed(1) + ' m';
+        });
+        document.getElementById('btn-run').addEventListener('click', runExperiment);
+    }
+
+    // --- Data table render ---
+    function renderDataTable() {
+        const empty = document.getElementById('data-empty');
+        const wrap  = document.getElementById('data-table-wrap');
+        const tbody = document.getElementById('data-tbody');
+        const pill  = document.getElementById('data-pill');
+
+        if (state.results.length === 0) {
+            empty.style.display = '';
+            wrap.style.display  = 'none';
+            return;
+        }
+        empty.style.display = 'none';
+        wrap.style.display  = '';
+        pill.textContent = state.results.length + ' trial' + (state.results.length === 1 ? '' : 's');
+
+        // Newest first
+        const rows = state.results.slice().reverse().map(r => {
+            const time = r.time !== null ? r.time.toFixed(3) : '<span class="no-slide">NO SLIDE</span>';
+            return `<tr>
+                <td class="mono" style="color:var(--text-secondary)">#${r.num}</td>
+                <td>${r.params.angle}°</td>
+                <td>${r.params.distance.toFixed(1)}</td>
+                <td>${r.params.mass.toFixed(1)}</td>
+                <td class="mono">${time}</td>
+            </tr>`;
+        });
+        tbody.innerHTML = rows.join('');
+    }
+
+    // --- Analysis render ---
+    function getLatest() {
+        return state.results.length === 0 ? null : state.results[state.results.length - 1];
+    }
+
+    function renderAnalysis() {
+        const latest = getLatest();
+        const emptyEl = document.getElementById('analysis-empty');
+        const activeEl = document.getElementById('analysis-active');
+
+        if (!latest) {
+            emptyEl.style.display = '';
+            emptyEl.className = 'analysis-empty';
+            emptyEl.textContent = 'Run an experiment to unlock the analysis module.';
+            activeEl.style.display = 'none';
+            return;
+        }
+
+        if (!latest.didSlide || latest.calculatedMuk === null || latest.time === null) {
+            emptyEl.style.display = '';
+            emptyEl.className = 'analysis-empty warn';
+            emptyEl.innerHTML = '<h4>Analysis module unavailable</h4>' +
+                '<p>The object did not slide. To determine the kinetic friction coefficient, collect data from a successful slide. Try increasing the ramp angle or changing materials.</p>';
+            activeEl.style.display = 'none';
+            return;
+        }
+
+        emptyEl.style.display = 'none';
+        activeEl.style.display = '';
+        document.getElementById('analysis-header-text').textContent = `Determine Coefficient (Run #${latest.num})`;
+
+        const body = document.getElementById('analysis-body');
+        if (analysisState.showSolution) {
+            body.innerHTML = renderSolutionHTML(latest);
+            const closeBtn = document.getElementById('analysis-close-solution');
+            if (closeBtn) closeBtn.addEventListener('click', () => {
+                analysisState = { guess:'', attempts:0, status:'idle', feedback:'', showSolution:false };
+                renderAnalysis();
+            });
+        } else {
+            body.innerHTML = renderQuestionHTML(latest);
+            document.getElementById('analysis-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter') checkAnalysisGuess();
+            });
+            document.getElementById('analysis-input').addEventListener('input', e => {
+                analysisState.guess = e.target.value;
+            });
+            document.getElementById('analysis-verify').addEventListener('click', checkAnalysisGuess);
+        }
+    }
+
+    function renderQuestionHTML(latest) {
+        const fb = analysisState.status !== 'idle'
+            ? `<div class="feedback ${analysisState.status === 'error' ? 'error' : 'success'}">${analysisState.feedback}</div>`
+            : '';
+        return `
+            <p style="color:var(--text-secondary)">Using the data from <strong style="color:var(--text-main)">Run #${latest.num}</strong>, calculate the coefficient of kinetic friction (<span class="mono">μ_k</span>).</p>
+            <label style="display:block;font-size:0.7rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-top:10px;margin-bottom:4px;" for="analysis-input">Your Calculation for μ_k</label>
+            <div class="input-row">
+                <input id="analysis-input" type="number" step="0.01" placeholder="e.g. 0.25" value="${escapeAttr(analysisState.guess)}">
+                <button id="analysis-verify">Verify</button>
+            </div>
+            ${fb}
+        `;
+    }
+
+    function renderSolutionHTML(latest) {
+        const a = (2 * latest.params.distance) / (latest.time * latest.time);
+        const errPct = latest.noiseFactor !== 0 ? (Math.abs(latest.noiseFactor - 1) * 100) : 0;
+        const intro = analysisState.status === 'success'
+            ? '<div class="feedback success" style="text-align:center;margin-top:0;margin-bottom:10px;">Excellent work! Your calculation was correct.</div>'
+            : '<div class="feedback" style="background:var(--section-bg);border-left-color:var(--card-border);color:var(--text-main);text-align:center;margin-top:0;margin-bottom:10px;">Friction equations can be tricky. Here is the step-by-step calculation.</div>';
+        return `
+            ${intro}
+            <div class="solution">
+                <h4>Analysis Steps</h4>
+                <div class="step">
+                    <div class="step-label">1) Experimental inputs</div>
+                    θ = ${latest.params.angle}°<br>
+                    d = ${latest.params.distance.toFixed(2)} m<br>
+                    t = ${latest.time.toFixed(3)} s
+                </div>
+                <div class="step">
+                    <div class="step-label">2) Find acceleration (d = ½at²)</div>
+                    a = (2 × ${latest.params.distance.toFixed(2)}) / (${latest.time.toFixed(3)})²<br>
+                    <strong>a ≈ ${a.toFixed(3)} m/s²</strong>
+                </div>
+                <div class="step">
+                    <div class="step-label">3) Newton's equations to isolate μ_k</div>
+                    μ_k = (g·sin(θ) − a) / (g·cos(θ))<br>
+                    μ_k = (9.81 × sin(${latest.params.angle}°) − ${a.toFixed(3)}) / (9.81 × cos(${latest.params.angle}°))
+                </div>
+                <div class="answer">μ_k ≈ ${latest.calculatedMuk.toFixed(3)}</div>
+                <div class="footnote">True theoretical coefficient: ${latest.trueMuk}. Experimental noise (${errPct.toFixed(1)}%) was added to simulate real-world variance.</div>
+            </div>
+            <button id="analysis-close-solution" class="btn-secondary">Hide Solution and Try Again</button>
+        `;
+    }
+
+    function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
+
+    function checkAnalysisGuess() {
+        const latest = getLatest();
+        if (!latest || latest.calculatedMuk === null) return;
+        const val = parseFloat(analysisState.guess);
+        if (isNaN(val)) {
+            analysisState.status = 'error';
+            analysisState.feedback = 'Please enter a valid number.';
+            renderAnalysis();
+            return;
+        }
+        analysisState.attempts += 1;
+        const tolerance = 0.05;
+        const diff = Math.abs(val - latest.calculatedMuk);
+        if (diff <= tolerance) {
+            analysisState.status = 'success';
+            analysisState.feedback = 'Correct! You accurately determined the kinetic friction coefficient based on the experimental data.';
+            analysisState.showSolution = true;
+        } else {
+            analysisState.status = 'error';
+            if (analysisState.attempts === 1) {
+                analysisState.feedback = "Not quite. Calculate acceleration first using d = ½at² — and remember that mass is a distractor.";
+            } else if (analysisState.attempts === 2) {
+                analysisState.feedback = "Still off. Use g = 9.81 m/s² and double-check your trig (your calculator should be in DEGREES).";
+            } else {
+                analysisState.feedback = "Let's review the complete solution together.";
+                analysisState.showSolution = true;
+            }
+        }
+        renderAnalysis();
+    }
+
+    // --- Run experiment ---
+    function runExperiment() {
+        if (state.isRunning) return;
+        state.isRunning = true;
+        renderControls();
+
+        const result = calculateExperiment(state.objectMat, state.rampMat, state.angle, state.distance);
+        const animTime = result.didSlide && result.time !== null ? Math.min(result.time, 2) : 0.5;
+
+        animateBlock(animTime, result.didSlide);
+
+        const id = Math.random().toString(36).slice(2, 8);
+        const newResult = {
+            id,
+            num: state.results.length + 1,
+            params: { objectMat: state.objectMat, rampMat: state.rampMat, angle: state.angle, distance: state.distance, mass: state.mass, colorName: state.colorName },
+            didSlide: result.didSlide,
+            time: result.time,
+            calculatedMuk: result.calculatedMuk,
+            trueMuk: result.trueMuk,
+            noiseFactor: result.noiseFactor,
+            temperature: 20 + Math.floor(Math.random() * 5),
+            pressure:    101.3 + (Math.random() - 0.5)
+        };
+
+        setTimeout(() => {
+            state.results.push(newResult);
+            state.latestId = id;
+            state.isRunning = false;
+            // Reset analysis sub-state for the new run
+            analysisState = { guess:'', attempts:0, status:'idle', feedback:'', showSolution:false };
+            renderControls();
+            renderDataTable();
+            renderAnalysis();
+        }, animTime * 1000);
+    }
+
+    // --- Theory accordion ---
+    (function setupTheory() {
+        const toggle = document.getElementById('theory-toggle');
+        const body = document.getElementById('theory-body');
+        toggle.addEventListener('click', () => {
+            const open = toggle.classList.toggle('open');
+            body.classList.toggle('open', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    })();
+
+    // --- Help panel ---
+    (function setupHelp() {
+        const panel = document.getElementById('help-panel');
+        const backdrop = document.getElementById('help-backdrop');
+        function openHelp()  { panel.classList.add('open'); backdrop.classList.add('open'); }
+        function closeHelp() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
+        document.getElementById('help-btn').addEventListener('click', openHelp);
+        document.getElementById('help-close').addEventListener('click', closeHelp);
+        backdrop.addEventListener('click', closeHelp);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp(); });
+    })();
     </script>
 
     <script>
-        // --- Theme toggle (also forwarded to the embedded app via postMessage) ---
-        const themeButton = document.getElementById('theme-button');
-        const appFrame = document.getElementById('app-frame');
-        const APP_ORIGIN = 'https://lennoxmeldrum.github.io';
-        const DARK_KEY = 'friction_lab-dark';
-        const LIGHT_KEY = 'friction_lab-light';
+    // --- Theme toggle ---
+    const themeButton = document.getElementById('theme-button');
+    const DARK_KEY  = 'friction-lab-dark';
+    const LIGHT_KEY = 'friction-lab-light';
 
-        function updateAppChromeTheme(theme) {
-            const tc = document.querySelector('meta[name="theme-color"]');
-            const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-            const dark = theme === 'dark';
-            if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
-            if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+    function updateAppChromeTheme(theme) {
+        const tc = document.querySelector('meta[name="theme-color"]');
+        const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        const dark = theme === 'dark';
+        if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+        if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+    }
+    function updateButtonEmoji(theme) {
+        themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}️';
+    }
+    const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', initTheme);
+    updateAppChromeTheme(initTheme);
+    updateButtonEmoji(initTheme);
+    window.addEventListener('pageshow', function () {
+        updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+    });
+    themeButton.addEventListener('click', function () {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        if (next === 'dark') {
+            localStorage.setItem(DARK_KEY, 'true');
+            localStorage.removeItem(LIGHT_KEY);
+        } else {
+            localStorage.setItem(LIGHT_KEY, 'true');
+            localStorage.removeItem(DARK_KEY);
         }
-        function updateButtonEmoji(theme) {
-            themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}️';
-        }
-        function setIframeSrcTheme(theme) {
-            // Encode initial theme in iframe src so the embedded app picks it up
-            // before its first paint (avoids a flash of light theme).
-            try {
-                const url = new URL(appFrame.src, location.href);
-                url.searchParams.set('theme', theme);
-                if (appFrame.src !== url.toString()) appFrame.src = url.toString();
-            } catch (e) { /* ignore */ }
-        }
-        function postThemeToIframe(theme) {
-            try {
-                appFrame.contentWindow && appFrame.contentWindow.postMessage(
-                    { type: 'theme', theme: theme }, APP_ORIGIN
-                );
-            } catch (e) { /* ignore */ }
-        }
-
-        const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', initTheme);
-        updateAppChromeTheme(initTheme);
-        updateButtonEmoji(initTheme);
-        setIframeSrcTheme(initTheme);
-
-        // Re-send theme once the iframe has loaded (covers the runtime listener path).
-        appFrame.addEventListener('load', function () {
-            const t = document.documentElement.getAttribute('data-theme');
-            postThemeToIframe(t);
-        });
-
-        // Auto-size the iframe to its content so the outer page does one
-        // continuous scroll (banner → app → footer) instead of nested scrolls.
-        window.addEventListener('message', function (event) {
-            if (event.origin !== APP_ORIGIN) return;
-            const data = event.data;
-            if (data && data.type === 'resize' && typeof data.height === 'number') {
-                appFrame.style.height = data.height + 'px';
-            }
-        });
-
-        window.addEventListener('pageshow', function () {
-            updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
-        });
-        themeButton.addEventListener('click', function () {
-            const current = document.documentElement.getAttribute('data-theme');
-            const next = current === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', next);
-            if (next === 'dark') {
-                localStorage.setItem(DARK_KEY, 'true');
-                localStorage.removeItem(LIGHT_KEY);
-            } else {
-                localStorage.setItem(LIGHT_KEY, 'true');
-                localStorage.removeItem(DARK_KEY);
-            }
-            updateAppChromeTheme(next);
-            updateButtonEmoji(next);
-            postThemeToIframe(next);
-        });
+        updateAppChromeTheme(next);
+        updateButtonEmoji(next);
+    });
     </script>
 
     <!-- Brave iOS gradient text fix -->
@@ -349,5 +1173,15 @@
         document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
     })();
     </script>
+
+    <script>
+    // --- Initial render ---
+    bindControls();
+    renderRamp();
+    renderControls();
+    renderDataTable();
+    renderAnalysis();
+    </script>
+
 </body>
 </html>
