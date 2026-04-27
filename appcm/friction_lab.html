@@ -164,12 +164,15 @@
         .btn-help:hover { filter: brightness(1.1); }
         [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
 
-        /* Embedded app frame — exactly one viewport tall (minus banner) so
-           the footer sits at the natural bottom of the document and the page
-           scrolls naturally. */
+        /* Embedded app frame. The embedded app posts its content height to
+           us via postMessage and we set the iframe height to match, so the
+           outer page does the scrolling and the footer sits naturally below
+           the app. The min-height keeps the layout sensible before the first
+           message arrives (or if it never arrives). */
         .app-frame {
             display: block;
             width: 100%;
+            min-height: calc(100dvh - 52px);
             height: calc(100dvh - 52px);
             border: 0;
             background: var(--bg-color);
@@ -307,6 +310,16 @@
         appFrame.addEventListener('load', function () {
             const t = document.documentElement.getAttribute('data-theme');
             postThemeToIframe(t);
+        });
+
+        // Auto-size the iframe to its content so the outer page does one
+        // continuous scroll (banner → app → footer) instead of nested scrolls.
+        window.addEventListener('message', function (event) {
+            if (event.origin !== APP_ORIGIN) return;
+            const data = event.data;
+            if (data && data.type === 'resize' && typeof data.height === 'number') {
+                appFrame.style.height = data.height + 'px';
+            }
         });
 
         window.addEventListener('pageshow', function () {
