@@ -801,11 +801,11 @@ async function createGoogleDoc() {
 
                 // Get the copy's tabs
                 setStatus('Preparing tabs...', '');
-                var copyDocRes = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=false', {
+                var copyDocRes = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
                     headers: { 'Authorization': 'Bearer ' + accessToken }
                 });
                 var copyDoc = await copyDocRes.json();
-                var copyTabs = copyDoc.tabs || [];
+                var copyTabs = (copyDoc.tabs || []).filter(function(t) { return t && t.tabProperties; });
 
                 // Find the desired tab (match by tab ID from original doc)
                 var desiredTabId = tabs[baseGdocIdx].gdocTabId;
@@ -825,6 +825,9 @@ async function createGoogleDoc() {
                     }
                 }
                 if (!foundTab) foundTab = copyTabs[0];
+                if (!foundTab) {
+                    throw new Error('Copied document has no accessible tabs');
+                }
                 baseTabId = foundTab.tabProperties.tabId;
 
                 // Delete all tabs except the desired one
@@ -1276,88 +1279,154 @@ function addGdocTab(docId, docTitle, sourceTab, lists) {
 
 // ── Structured content extraction (Google Docs API → local) ──
 function extractStructuredContent(bodyContent, lists) {
-    var fullText = '';
-    var paraStyleReqs = [];
-    var textStyleReqs = [];
-    var listReqs = [];
-    var pos = 1;
+    var state = { fullText: '', paraStyleReqs: [], textStyleReqs: [], listReqs: [], pos: 1 };
+    walkBodyContent(state, bodyContent, lists);
+    return {
+        text: state.fullText,
+        paraStyleReqs: state.paraStyleReqs,
+        textStyleReqs: state.textStyleReqs,
+        listReqs: state.listReqs
+    };
+}
 
+function walkBodyContent(state, bodyContent, lists) {
     for (var i = 0; i < bodyContent.length; i++) {
         var el = bodyContent[i];
         if (el.sectionBreak) continue;
-
         if (el.paragraph) {
-            var para = el.paragraph;
-            var paraStart = pos;
-            var paraText = '';
-            var paraEls = para.elements || [];
-
-            for (var j = 0; j < paraEls.length; j++) {
-                var pEl = paraEls[j];
-                if (pEl.textRun) {
-                    var runText = pEl.textRun.content || '';
-                    var runStart = pos + paraText.length;
-                    var ts = pEl.textRun.textStyle || {};
-                    if (ts.bold || ts.italic || ts.underline) {
-                        textStyleReqs.push({ s: runStart, e: runStart + runText.length, ts: ts });
-                    }
-                    paraText += runText;
-                }
-                // inlineObjectElement, pageBreak, etc. → skip
-            }
-
-            fullText += paraText;
-            var paraEnd = pos + paraText.length;
-
-            var ns = (para.paragraphStyle || {}).namedStyleType || 'NORMAL_TEXT';
-            if (ns !== 'NORMAL_TEXT') {
-                paraStyleReqs.push({ s: paraStart, e: paraEnd, type: ns });
-            }
-
-            if (para.bullet) {
-                var ordered = false;
-                var listId = para.bullet.listId;
-                if (lists && lists[listId]) {
-                    var level = para.bullet.nestingLevel || 0;
-                    var nestingLevels = ((lists[listId].listProperties || {}).nestingLevels) || [];
-                    var nl = nestingLevels[level] || {};
-                    ordered = /DECIMAL|ALPHA|ROMAN/.test(nl.glyphType || '');
-                }
-                listReqs.push({ s: paraStart, e: paraEnd, ordered: ordered });
-            }
-
-            pos = paraEnd;
+            walkParagraph(state, el.paragraph, lists);
         } else if (el.table) {
-            var tableRows = el.table.tableRows || [];
-            for (var ri = 0; ri < tableRows.length; ri++) {
-                var cells = tableRows[ri].tableCells || [];
-                var cellTexts = [];
-                for (var ci = 0; ci < cells.length; ci++) {
-                    var cellContent = cells[ci].content || [];
-                    var cellText = '';
-                    for (var ki = 0; ki < cellContent.length; ki++) {
-                        var cellEl = cellContent[ki];
-                        if (cellEl.paragraph) {
-                            var cellParaEls = cellEl.paragraph.elements || [];
-                            for (var mi = 0; mi < cellParaEls.length; mi++) {
-                                if (cellParaEls[mi].textRun) {
-                                    cellText += (cellParaEls[mi].textRun.content || '').replace(/\n$/, '');
-                                }
-                            }
-                        }
-                    }
-                    cellTexts.push(cellText);
-                }
-                var rowText = cellTexts.join('\t') + '\n';
-                fullText += rowText;
-                pos += rowText.length;
-            }
-            fullText += '\n';
-            pos += 1;
+            walkTable(state, el.table, lists);
         }
     }
+}
 
-    return { text: fullText, paraStyleReqs: paraStyleReqs, textStyleReqs: textStyleReqs, listReqs: listReqs };
+function walkParagraph(state, para, lists) {
+    var paraStart = state.pos;
+    var paraEls = para.elements || [];
+    for (var j = 0; j < paraEls.length; j++) {
+        var pEl = paraEls[j];
+        if (pEl.textRun) {
+            appendTextRun(state, pEl.textRun.content || '', pEl.textRun.textStyle || {});
+        }
+        // inlineObjectElement, pageBreak, etc. → skip
+    }
+    var paraEnd = state.pos;
+    if (paraEnd <= paraStart) return;
+
+    var ps = para.paragraphStyle || {};
+    if (Object.keys(ps).length > 0) {
+        state.paraStyleReqs.push({ s: paraStart, e: paraEnd, ps: ps });
+    }
+    if (para.bullet) {
+        var ordered = false;
+        var listId = para.bullet.listId;
+        if (lists && lists[listId]) {
+            var level = para.bullet.nestingLevel || 0;
+            var nestingLevels = ((lists[listId].listProperties || {}).nestingLevels) || [];
+            var nl = nestingLevels[level] || {};
+            ordered = /DECIMAL|ALPHA|ROMAN/.test(nl.glyphType || '');
+        }
+        state.listReqs.push({ s: paraStart, e: paraEnd, ordered: ordered });
+    }
+}
+
+function walkTable(state, table, lists) {
+    var tableRows = table.tableRows || [];
+    for (var ri = 0; ri < tableRows.length; ri++) {
+        var cells = tableRows[ri].tableCells || [];
+        for (var ci = 0; ci < cells.length; ci++) {
+            var cellContent = cells[ci].content || [];
+            for (var ki = 0; ki < cellContent.length; ki++) {
+                var cellEl = cellContent[ki];
+                if (cellEl.paragraph) {
+                    var cellParaEls = cellEl.paragraph.elements || [];
+                    for (var mi = 0; mi < cellParaEls.length; mi++) {
+                        if (cellParaEls[mi].textRun) {
+                            appendTextRun(
+                                state,
+                                (cellParaEls[mi].textRun.content || '').replace(/\n$/, ''),
+                                cellParaEls[mi].textRun.textStyle || {}
+                            );
+                        }
+                    }
+                }
+            }
+            var sep = (ci === cells.length - 1) ? '\n' : '\t';
+            state.fullText += sep;
+            state.pos += sep.length;
+        }
+    }
+    state.fullText += '\n';
+    state.pos += 1;
+}
+
+function appendTextRun(state, runText, textStyle) {
+    if (!runText) return;
+    if (textStyle && Object.keys(textStyle).length > 0) {
+        state.textStyleReqs.push({ s: state.pos, e: state.pos + runText.length, ts: textStyle });
+    }
+    state.fullText += runText;
+    state.pos += runText.length;
+}
+
+// ── Style → batchUpdate request builders ──
+function buildTextStyleRequest(range, sourceStyle) {
+    if (!sourceStyle) return null;
+    var style = {};
+    var fields = [];
+    function copy(field) {
+        if (sourceStyle[field] !== undefined) { style[field] = sourceStyle[field]; fields.push(field); }
+    }
+    if (sourceStyle.bold)          { style.bold = true;          fields.push('bold'); }
+    if (sourceStyle.italic)        { style.italic = true;        fields.push('italic'); }
+    if (sourceStyle.underline)     { style.underline = true;     fields.push('underline'); }
+    if (sourceStyle.strikethrough) { style.strikethrough = true; fields.push('strikethrough'); }
+    if (sourceStyle.smallCaps)     { style.smallCaps = true;     fields.push('smallCaps'); }
+    copy('fontSize');
+    copy('weightedFontFamily');
+    copy('foregroundColor');
+    copy('backgroundColor');
+    copy('link');
+    if (sourceStyle.baselineOffset && sourceStyle.baselineOffset !== 'NONE') {
+        style.baselineOffset = sourceStyle.baselineOffset;
+        fields.push('baselineOffset');
+    }
+    if (fields.length === 0) return null;
+    return { updateTextStyle: { range: range, textStyle: style, fields: fields.join(',') } };
+}
+
+function buildParagraphStyleRequest(range, sourceStyle) {
+    if (!sourceStyle) return null;
+    var style = {};
+    var fields = [];
+    function copy(field) {
+        if (sourceStyle[field] !== undefined) { style[field] = sourceStyle[field]; fields.push(field); }
+    }
+    if (sourceStyle.namedStyleType && sourceStyle.namedStyleType !== 'NORMAL_TEXT') {
+        style.namedStyleType = sourceStyle.namedStyleType;
+        fields.push('namedStyleType');
+    }
+    if (sourceStyle.alignment && sourceStyle.alignment !== 'ALIGNMENT_UNSPECIFIED' && sourceStyle.alignment !== 'START') {
+        style.alignment = sourceStyle.alignment;
+        fields.push('alignment');
+    }
+    if (sourceStyle.direction && sourceStyle.direction !== 'LEFT_TO_RIGHT') {
+        style.direction = sourceStyle.direction;
+        fields.push('direction');
+    }
+    copy('lineSpacing');
+    copy('spaceAbove');
+    copy('spaceBelow');
+    copy('indentFirstLine');
+    copy('indentStart');
+    copy('indentEnd');
+    copy('spacingMode');
+    copy('keepLinesTogether');
+    copy('keepWithNext');
+    copy('avoidWidowAndOrphan');
+    if (fields.length === 0) return null;
+    return { updateParagraphStyle: { range: range, paragraphStyle: style, fields: fields.join(',') } };
 }
 
 // ── Structured content insertion ──
@@ -1368,31 +1437,26 @@ async function insertStructuredContentIntoDoc(docId, structured, tabId) {
     if (tabId) loc.tabId = tabId;
     await batchUpdateDoc(docId, [{ insertText: { text: text, location: loc } }]);
 
+    function rangeOf(r) {
+        var range = { startIndex: r.s, endIndex: r.e };
+        if (tabId) range.tabId = tabId;
+        return range;
+    }
+
     var fmtReqs = [];
     for (var i = 0; i < structured.paraStyleReqs.length; i++) {
         var r = structured.paraStyleReqs[i];
-        var range = { startIndex: r.s, endIndex: r.e };
-        if (tabId) range.tabId = tabId;
-        fmtReqs.push({ updateParagraphStyle: { range: range, paragraphStyle: { namedStyleType: r.type }, fields: 'namedStyleType' } });
+        var req = buildParagraphStyleRequest(rangeOf(r), r.ps);
+        if (req) fmtReqs.push(req);
     }
     for (var i = 0; i < structured.textStyleReqs.length; i++) {
         var r = structured.textStyleReqs[i];
-        var range = { startIndex: r.s, endIndex: r.e };
-        if (tabId) range.tabId = tabId;
-        var style = {};
-        var fields = [];
-        if (r.ts.bold) { style.bold = true; fields.push('bold'); }
-        if (r.ts.italic) { style.italic = true; fields.push('italic'); }
-        if (r.ts.underline) { style.underline = true; fields.push('underline'); }
-        if (fields.length > 0) {
-            fmtReqs.push({ updateTextStyle: { range: range, textStyle: style, fields: fields.join(',') } });
-        }
+        var req = buildTextStyleRequest(rangeOf(r), r.ts);
+        if (req) fmtReqs.push(req);
     }
     for (var i = 0; i < structured.listReqs.length; i++) {
         var r = structured.listReqs[i];
-        var range = { startIndex: r.s, endIndex: r.e };
-        if (tabId) range.tabId = tabId;
-        fmtReqs.push({ createParagraphBullets: { range: range, bulletPreset: r.ordered ? 'NUMBERED_DECIMAL_ALPHA_ROMAN' : 'BULLET_DISC_CIRCLE_SQUARE' } });
+        fmtReqs.push({ createParagraphBullets: { range: rangeOf(r), bulletPreset: r.ordered ? 'NUMBERED_DECIMAL_ALPHA_ROMAN' : 'BULLET_DISC_CIRCLE_SQUARE' } });
     }
     if (fmtReqs.length > 0) {
         await batchUpdateDoc(docId, fmtReqs);
