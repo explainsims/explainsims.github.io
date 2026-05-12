@@ -801,11 +801,11 @@ async function createGoogleDoc() {
 
                 // Get the copy's tabs
                 setStatus('Preparing tabs...', '');
-                var copyDocRes = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=false', {
+                var copyDocRes = await fetch('https://docs.googleapis.com/v1/documents/' + docId + '?includeTabsContent=true', {
                     headers: { 'Authorization': 'Bearer ' + accessToken }
                 });
                 var copyDoc = await copyDocRes.json();
-                var copyTabs = copyDoc.tabs || [];
+                var copyTabs = (copyDoc.tabs || []).filter(function(t) { return t && t.tabProperties; });
 
                 // Find the desired tab (match by tab ID from original doc)
                 var desiredTabId = tabs[baseGdocIdx].gdocTabId;
@@ -825,6 +825,9 @@ async function createGoogleDoc() {
                     }
                 }
                 if (!foundTab) foundTab = copyTabs[0];
+                if (!foundTab) {
+                    throw new Error('Copied document has no accessible tabs');
+                }
                 baseTabId = foundTab.tabProperties.tabId;
 
                 // Delete all tabs except the desired one
