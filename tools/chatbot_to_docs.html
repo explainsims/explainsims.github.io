@@ -632,7 +632,7 @@
         <div class="help-panel-body">
             <div class="help-section">
                 <h3>Citations</h3>
-                <p><strong>Remove citations</strong> strips inline reference markers that chatbots add when they search the web — e.g. <em>[1]</em>, <em>【1†source】</em>, <em>[cite:…]</em> — and removes trailing reference lists (Sources, References, etc.).</p>
+                <p><strong>Remove citations</strong> strips inline reference markers that chatbots add when they search the web — e.g. <em>[1]</em>, <em>([Source][1])</em>, <em>([Source](https://…))</em>, <em>【1†source】</em>, <em>[cite:…]</em> — and removes trailing reference lists and link definitions (Sources, References, <em>[1]: https://…</em>, etc.).</p>
             </div>
             <div class="help-divider"></div>
             <div class="help-section">
@@ -679,6 +679,17 @@
         text = text.replace(/\[cite:\s*\d+(?:,\s*\d+)*\]/g, '');
         // Claude [cite:...] with text content
         text = text.replace(/\[cite:[^\]]*\]/g, '');
+        // ChatGPT reference-style web citations: ([Source][1]) or ([A][1], [B][2])
+        // Must run before the bare [N] cleanup, otherwise the [N] is stripped
+        // separately and leaves an orphan "([Source])" behind.
+        text = text.replace(/[ \t]*\(\[[^\]]+\]\[\d+\](?:\s*[,;]\s*\[[^\]]+\]\[\d+\])*\)/g, '');
+        // ChatGPT inline-link web citations wrapped in parens: ([Source](url))
+        // Restricted to http(s) URLs so legitimate parenthetical markdown links
+        // pointing at relative paths or anchors are preserved.
+        text = text.replace(/[ \t]*\(\[[^\]]+\]\(https?:\/\/[^)\s]+\)(?:\s*[,;]\s*\[[^\]]+\]\(https?:\/\/[^)\s]+\))*\)/g, '');
+        // Trailing reference link definitions: [1]: https://example.com "title"
+        // Run before bare [N] cleanup so the regex anchor still matches the [N].
+        text = text.replace(/^[ \t]*\[\d+\]:[ \t]+\S.*$/gm, '');
         // Bracket references: [1], [2], [1, 2, 3]
         text = text.replace(/\[\d+(?:,\s*\d+)*\]/g, '');
         // (Source: ...) — Gemini
