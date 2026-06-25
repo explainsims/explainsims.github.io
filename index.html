@@ -662,7 +662,6 @@
             var sitProgress = 0;   // 0 = running/standing, 1 = fully sitting
             var frame = 0;
             var hasPointerInteraction = false;
-            var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             var STOP_DIST = 38;
             var MAX_SPEED = 6;
             var lastScrollY = window.scrollY || window.pageYOffset || 0;
@@ -933,7 +932,7 @@
                 requestAnimationFrame(loop);
                 ctx.clearRect(0, 0, w, h);
 
-                if (!reducedMotion) {
+                {
                     frame++;
                     var dx   = mouseX - catX;
                     var dy   = mouseY - catY;
