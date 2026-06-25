@@ -1,0 +1,15 @@
+# Dependabot configuration
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# NOTE: This site loads its third-party libraries (Plotly, Math.js, MathJax,
+# DOMPurify, etc.) as hardcoded CDN <script> URLs in HTML, which Dependabot
+# cannot see or update. The only ecosystem it can manage here is GitHub
+# Actions used by the deploy workflow (.github/workflows/static.yml).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
