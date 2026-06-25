@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('pdf-to-markdown-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>PDF to Markdown — ExplAIn Sims</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --font-sans: 'Inter', sans-serif;
+        --font-display: 'Space Grotesk', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --bg-color: #F4F4F8; --bg-pattern: #EAEAEF;
+        --text-main: #1A1A2E; --text-secondary: #6B7280;
+        --brand-primary: #6c5ce7; --brand-secondary: #5a4fcf; --brand-accent: #00cec9;
+        --card-bg: #FFFFFF; --card-border: #E5E7EB;
+        --card-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 0 1px rgba(0,0,0,0.1);
+        --nav-bg: rgba(255, 255, 255, 0.92); --nav-border: rgba(0, 0, 0, 0.10);
+        --section-bg: #EEEEF3; --divider-color: #E5E7EB;
+        --status-ready: #059669; --status-error: #DC2626;
+    }
+    [data-theme="dark"] {
+        --bg-color: #111118; --bg-pattern: #1E1E28;
+        --text-main: #F0F0F5; --text-secondary: #9CA3AF;
+        --brand-primary: #a29bfe; --brand-secondary: #8b85fc; --brand-accent: #81ecec;
+        --card-bg: #1E1E28; --card-border: #2A2A36;
+        --card-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 1px rgba(255,255,255,0.04);
+        --nav-bg: rgba(17, 17, 24, 0.92); --nav-border: rgba(255, 255, 255, 0.08);
+        --section-bg: #16161E; --divider-color: #2A2A36;
+        --status-ready: #34D399; --status-error: #F87171;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; font-family: var(--font-sans);
+        background: var(--bg-color); color: var(--text-main);
+        line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column;
+        transition: background-color 0.4s ease, color 0.4s ease;
+    }
+    /* Banner */
+    .banner {
+        position: sticky; top: 0; z-index: 100;
+        background: var(--nav-bg); border-bottom: 1px solid var(--nav-border);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 16px; height: 52px;
+    }
+    .banner-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; }
+    .banner-logo img { width: 28px; height: 28px; border-radius: 6px; }
+    .banner-title {
+        font-family: var(--font-display); font-size: clamp(1.1rem, 3vw, 1.4rem);
+        font-weight: 700; color: var(--text-main); letter-spacing: -0.01em;
+    }
+    .banner-title.gradient-text {
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .banner-actions { display: flex; align-items: center; gap: 8px; }
+    #theme-button {
+        background: none; border: none; cursor: pointer; font-size: 1.2rem;
+        padding: 6px; border-radius: 8px; transition: background 0.15s; line-height: 1;
+    }
+    #theme-button:hover { background: var(--card-border); }
+    .btn-help {
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+        color: #fff; display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 13px; border: none; border-radius: 9px; cursor: pointer;
+        font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
+        box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3); transition: filter 0.15s; white-space: nowrap;
+    }
+    .btn-help:hover { filter: brightness(1.1); }
+    [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
+    /* Page layout */
+    .page-container { margin: 0; padding: 28px clamp(16px, 3vw, 40px) 32px; flex: 1; width: 100%; }
+    .page-header { margin-bottom: 22px; }
+    .page-header h1 {
+        font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 2rem);
+        margin: 0 0 6px; letter-spacing: -0.02em;
+    }
+    .page-header p { color: var(--text-secondary); margin: 0; font-size: 0.95rem; }
+    .layout { display: grid; grid-template-columns: minmax(300px, 380px) 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+    .panel {
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 14px; box-shadow: var(--card-shadow); padding: 18px;
+    }
+    .panel h2 {
+        font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase;
+        letter-spacing: 0.08em; color: var(--brand-primary); margin: 0 0 12px;
+    }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; }
+    .field .hint { font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.5; }
+    select, input[type="text"], input[type="password"], textarea {
+        width: 100%; padding: 9px 11px; border-radius: 9px;
+        border: 1px solid var(--card-border); background: var(--bg-color);
+        color: var(--text-main); font-family: var(--font-sans); font-size: 0.85rem;
+    }
+    textarea { font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.6; resize: vertical; }
+    select:focus, input:focus, textarea:focus { outline: 2px solid var(--brand-primary); outline-offset: -1px; }
+    /* Dropzone */
+    .dropzone {
+        border: 2px dashed var(--card-border); border-radius: 12px; padding: 26px 16px;
+        text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+        background: var(--section-bg);
+    }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--brand-primary); background: color-mix(in srgb, var(--brand-primary) 6%, var(--section-bg)); }
+    .dropzone svg { width: 30px; height: 30px; color: var(--brand-primary); margin-bottom: 6px; }
+    .dropzone p { margin: 4px 0 0; font-size: 0.85rem; }
+    .dropzone .sub { font-size: 0.72rem; color: var(--text-secondary); }
+    .file-chip {
+        display: none; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 11px;
+        background: var(--section-bg); border-radius: 9px; font-size: 0.8rem;
+    }
+    .file-chip.show { display: flex; }
+    .file-chip .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-chip .meta { color: var(--text-secondary); margin-left: auto; white-space: nowrap; }
+    /* Mode toggle */
+    .mode-toggle { display: flex; gap: 6px; background: var(--section-bg); padding: 4px; border-radius: 10px; }
+    .mode-toggle button {
+        flex: 1; padding: 8px; border: none; border-radius: 7px; cursor: pointer;
+        font-family: var(--font-sans); font-size: 0.8rem; font-weight: 600;
+        background: transparent; color: var(--text-secondary); transition: all 0.15s;
+    }
+    .mode-toggle button.active { background: var(--card-bg); color: var(--brand-primary); box-shadow: var(--card-shadow); }
+    .ai-only { display: none; }
+    body.ai-mode .ai-only { display: block; }
+    .btn-primary {
+        width: 100%; padding: 12px; border: none; border-radius: 10px; cursor: pointer;
+        font-family: var(--font-sans); font-size: 0.92rem; font-weight: 700; color: #fff;
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+        box-shadow: 0 2px 10px rgba(108, 92, 231, 0.3); transition: filter 0.15s; margin-top: 4px;
+    }
+    .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+        padding: 9px 14px; border: 1px solid var(--card-border); border-radius: 9px; cursor: pointer;
+        font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
+        background: var(--card-bg); color: var(--text-main); transition: background 0.15s;
+    }
+    .btn-secondary:hover:not(:disabled) { background: var(--section-bg); }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* Progress + status */
+    .progress-wrap { margin-top: 14px; display: none; }
+    .progress-wrap.show { display: block; }
+    .progress-bar { height: 8px; background: var(--section-bg); border-radius: 6px; overflow: hidden; }
+    .progress-bar > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent)); transition: width 0.3s; }
+    .progress-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 6px; }
+    .status { font-size: 0.78rem; margin-top: 10px; padding: 9px 11px; border-radius: 8px; display: none; }
+    .status.show { display: block; }
+    .status.error { background: color-mix(in srgb, var(--status-error) 12%, transparent); color: var(--status-error); }
+    .status.ok { background: color-mix(in srgb, var(--status-ready) 14%, transparent); color: var(--status-ready); }
+    /* Output */
+    .output-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .output-head h2 { margin: 0; }
+    .output-actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+    #md-output { min-height: 420px; height: 60vh; }
+    .empty-state { color: var(--text-secondary); font-size: 0.85rem; text-align: center; padding: 60px 20px; }
+    /* Help panel */
+    .help-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 199; }
+    .help-backdrop.open { display: block; }
+    .help-panel {
+        position: fixed; top: 0; right: 0; width: 340px; height: 100dvh;
+        background: var(--card-bg); border-left: 1px solid var(--card-border);
+        box-shadow: -6px 0 24px rgba(0,0,0,0.18); z-index: 200;
+        display: flex; flex-direction: column;
+        transform: translateX(100%); transition: transform 0.25s ease;
+    }
+    .help-panel.open { transform: translateX(0); }
+    .help-panel-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 16px; border-bottom: 1px solid var(--card-border);
+        font-weight: 700; font-size: 0.88rem; flex-shrink: 0;
+    }
+    .help-close {
+        background: none; border: none; cursor: pointer; font-size: 1.2rem; line-height: 1;
+        padding: 4px 6px; border-radius: 6px; color: var(--text-secondary); transition: background 0.15s;
+    }
+    .help-close:hover { background: var(--section-bg); color: var(--text-main); }
+    .help-panel-body { padding: 16px; overflow-y: auto; flex: 1; font-size: 0.82rem; line-height: 1.65; }
+    .help-section { margin-bottom: 20px; }
+    .help-section h3 {
+        font-size: 0.73rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.08em; color: var(--brand-primary); margin-bottom: 6px;
+    }
+    .help-section p { color: var(--text-main); margin-bottom: 5px; }
+    .help-section p:last-child { margin-bottom: 0; }
+    .help-divider { height: 1px; background: var(--card-border); margin-bottom: 20px; }
+    @media (max-width: 480px) { .help-panel { width: 90vw; } }
+    </style>
+</head>
+<body>
+<header class="banner">
+    <div class="banner-logo">
+        <a href="/" title="Home"><img src="/assets/favicon.png" alt="Home"></a>
+        <button onclick="history.back()" title="Go back" aria-label="Go back"
+            style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;color:inherit;border-radius:6px;opacity:0.65;"
+            onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+    </div>
+    <div class="banner-title">PDF to Markdown</div>
+    <div class="banner-actions">
+        <button class="btn-help" id="help-btn" aria-label="Help" title="Show help">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Help
+        </button>
+        <div class="theme-toggle">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme" title="Toggle between light and dark themes">☀️</button>
+        </div>
+    </div>
+</header>
+
+<div class="page-container">
+    <div class="page-header">
+        <h1>PDF to Markdown</h1>
+        <p>Convert a PDF into clean, token-efficient Markdown. Fast local text extraction for digital PDFs, or AI vision mode for scans, handwriting, graphs, and tables — output bundles the Markdown plus extracted figures as a ZIP.</p>
+    </div>
+    <div class="layout">
+        <div class="panel" id="controls">
+            <h2>1 · Upload</h2>
+            <div class="dropzone" id="dropzone">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <p>Drop a PDF here or click to browse</p>
+                <p class="sub">Processed entirely in your browser</p>
+            </div>
+            <input type="file" id="file-input" accept="application/pdf" hidden>
+            <div class="file-chip" id="file-chip">
+                <span class="name" id="file-name"></span>
+                <span class="meta" id="file-meta"></span>
+            </div>
+
+            <h2 style="margin-top:20px;">2 · Mode</h2>
+            <div class="mode-toggle">
+                <button id="mode-local" class="active" type="button">Fast (local)</button>
+                <button id="mode-ai" type="button">Smart (AI)</button>
+            </div>
+            <p class="hint" id="mode-hint" style="margin-top:8px;">Local text extraction — instant, free, private. Best for digital PDFs that already contain selectable text. No images, handwriting, or scans.</p>
+
+            <div class="ai-only">
+                <div class="field" style="margin-top:14px;">
+                    <label for="provider">AI provider</label>
+                    <select id="provider">
+                        <option value="anthropic">Anthropic (Claude)</option>
+                        <option value="openai">OpenAI (GPT)</option>
+                        <option value="gemini">Google (Gemini)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="model">Model</label>
+                    <select id="model"></select>
+                </div>
+                <div class="field">
+                    <label for="api-key">API key <span id="key-provider-label"></span></label>
+                    <input type="password" id="api-key" placeholder="Paste your API key" autocomplete="off">
+                    <p class="hint">Stored only in this browser (localStorage) and sent directly to the provider. Never uploaded to ExplAIn Sims. <a href="#" id="clear-key">Clear saved key</a></p>
+                </div>
+                <div class="field">
+                    <label for="render-scale">Page render quality</label>
+                    <select id="render-scale">
+                        <option value="1.5">Standard (faster, cheaper)</option>
+                        <option value="2" selected>High (recommended)</option>
+                        <option value="2.5">Maximum (best for fine handwriting)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="convert-btn" disabled style="margin-top:16px;">Convert</button>
+            <div class="progress-wrap" id="progress-wrap">
+                <div class="progress-bar"><div id="progress-fill"></div></div>
+                <div class="progress-label" id="progress-label"></div>
+            </div>
+            <div class="status" id="status"></div>
+        </div>
+
+        <div class="panel">
+            <div class="output-head">
+                <h2>Markdown output</h2>
+                <div class="output-actions">
+                    <button class="btn-secondary" id="copy-btn" disabled>Copy</button>
+                    <button class="btn-secondary" id="download-md-btn" disabled>Download .md</button>
+                    <button class="btn-secondary" id="download-zip-btn" disabled>Download ZIP</button>
+                </div>
+            </div>
+            <textarea id="md-output" placeholder="Your Markdown will appear here." spellcheck="false"></textarea>
+            <p class="hint" id="zip-note" style="margin-top:8px; display:none;">The ZIP contains <code>document.md</code> plus a <code>figures/</code> folder of extracted images, referenced by relative links so the Markdown renders correctly.</p>
+        </div>
+    </div>
+</div>
+
+<div class="help-backdrop" id="help-backdrop"></div>
+<aside class="help-panel" id="help-panel" aria-label="Help">
+    <div class="help-panel-header">
+        <span>PDF to Markdown Guide</span>
+        <button class="help-close" id="help-close" aria-label="Close help">&#x2715;</button>
+    </div>
+    <div class="help-panel-body">
+        <div class="help-section">
+            <h3>What it does</h3>
+            <p>Turns a PDF into Markdown. Markdown is far more token-efficient than a PDF when you feed it to an AI assistant later, and it is easy to edit and paste anywhere.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Fast (local) mode</h3>
+            <p>Extracts the text layer from the PDF entirely in your browser — instant, free, and completely private. Use it for "digital" PDFs (exported from Word, Google Docs, LaTeX, etc.) that already have selectable text.</p>
+            <p>It cannot read scans, handwriting, graphs, or images, and it does not reconstruct complex tables. For those, use Smart mode.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Smart (AI) mode</h3>
+            <p>Renders each page to an image and sends it to a vision model, which reads the page the way a person would. This handles scans, handwriting, graphs, and tables.</p>
+            <p>It ignores any low-quality OCR layer a scanner added and reads the page visually instead. Handwriting is transcribed exactly as written; unreadable parts are flagged as <code>[illegible]</code>.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Provider &amp; API key</h3>
+            <p>Smart mode needs your own API key from Anthropic, OpenAI, or Google. Pick a provider, choose a model, and paste the key. The key is stored only in this browser and sent straight to the provider — it never touches our servers.</p>
+            <p>Larger models cost more but read difficult pages more accurately. Start with a mid-tier model and move up if results disappoint.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Page render quality</h3>
+            <p>Higher quality sends a sharper image to the model — better for fine handwriting or dense tables, but uses more tokens (higher cost) and is slower. Standard is fine for clean typed scans.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Figures, graphs &amp; tables</h3>
+            <p>In Smart mode, tables are transcribed as Markdown tables where possible. Photos, graphs, and diagrams are cropped out of the page, saved as images, and referenced in the Markdown at the right spot with a short caption.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Downloads</h3>
+            <p><strong>Download .md</strong> gives a single Markdown file. If figures were extracted, use <strong>Download ZIP</strong> — it bundles <code>document.md</code> with a <code>figures/</code> folder so the image links resolve.</p>
+        </div>
+        <div class="help-divider"></div>
+        <div class="help-section">
+            <h3>Privacy &amp; cost</h3>
+            <p>Local mode never leaves your device. Smart mode sends page images directly to your chosen AI provider under your own account — you are billed by them. Big PDFs mean many pages and higher cost, so check the page count first.</p>
+        </div>
+    </div>
+</aside>
+
+<div id="site-footer"></div>
+<script src="/assets/footer.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+(function () {
+    'use strict';
+
+    var MODELS = {
+        anthropic: [
+            { id: 'claude-opus-4-8', name: 'Claude Opus 4.8 (most capable)' },
+            { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6 (balanced)' },
+            { id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5 (fastest, cheapest)' }
+        ],
+        openai: [
+            { id: 'gpt-4o', name: 'GPT-4o (balanced)' },
+            { id: 'gpt-4o-mini', name: 'GPT-4o mini (fastest, cheapest)' },
+            { id: 'gpt-4.1', name: 'GPT-4.1' }
+        ],
+        gemini: [
+            { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro (most capable)' },
+            { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash (balanced)' },
+            { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash (fastest)' }
+        ]
+    };
+    var KEY_LABEL = { anthropic: 'console.anthropic.com', openai: 'platform.openai.com', gemini: 'aistudio.google.com' };
+
+    // State
+    var state = { pdfDoc: null, fileName: '', mode: 'local', busy: false, lastMd: '', figures: [] };
+
+    // DOM
+    var $ = function (id) { return document.getElementById(id); };
+    var dropzone = $('dropzone'), fileInput = $('file-input'), fileChip = $('file-chip');
+    var modeLocalBtn = $('mode-local'), modeAiBtn = $('mode-ai'), modeHint = $('mode-hint');
+    var providerSel = $('provider'), modelSel = $('model'), keyInput = $('api-key');
+    var convertBtn = $('convert-btn'), mdOutput = $('md-output');
+    var progressWrap = $('progress-wrap'), progressFill = $('progress-fill'), progressLabel = $('progress-label');
+    var statusEl = $('status');
+    var copyBtn = $('copy-btn'), dlMdBtn = $('download-md-btn'), dlZipBtn = $('download-zip-btn'), zipNote = $('zip-note');
+
+    // --- Help panel ---
+    (function () {
+        var panel = $('help-panel'), backdrop = $('help-backdrop');
+        function openHelp() { panel.classList.add('open'); backdrop.classList.add('open'); }
+        function closeHelp() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
+        $('help-btn').addEventListener('click', openHelp);
+        $('help-close').addEventListener('click', closeHelp);
+        backdrop.addEventListener('click', closeHelp);
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeHelp(); });
+    })();
+
+    // --- Status / progress helpers ---
+    function setStatus(msg, kind) {
+        statusEl.textContent = msg;
+        statusEl.className = 'status show ' + (kind || '');
+        if (!msg) statusEl.className = 'status';
+    }
+    function setProgress(done, total, label) {
+        progressWrap.classList.add('show');
+        progressFill.style.width = total ? Math.round((done / total) * 100) + '%' : '0%';
+        progressLabel.textContent = label || (done + ' / ' + total);
+    }
+    function hideProgress() { progressWrap.classList.remove('show'); progressFill.style.width = '0%'; }
+
+    // --- Provider / model / key ---
+    function populateModels() {
+        var p = providerSel.value;
+        modelSel.innerHTML = '';
+        MODELS[p].forEach(function (m) {
+            var o = document.createElement('option');
+            o.value = m.id; o.textContent = m.name;
+            modelSel.appendChild(o);
+        });
+        var savedModel = localStorage.getItem('pdf2md-model-' + p);
+        if (savedModel) modelSel.value = savedModel;
+        $('key-provider-label').textContent = '(' + KEY_LABEL[p] + ')';
+        keyInput.value = localStorage.getItem('pdf2md-key-' + p) || '';
+    }
+    providerSel.addEventListener('change', function () {
+        localStorage.setItem('pdf2md-provider', providerSel.value);
+        populateModels();
+    });
+    modelSel.addEventListener('change', function () {
+        localStorage.setItem('pdf2md-model-' + providerSel.value, modelSel.value);
+    });
+    keyInput.addEventListener('change', function () {
+        localStorage.setItem('pdf2md-key-' + providerSel.value, keyInput.value.trim());
+    });
+    $('clear-key').addEventListener('click', function (e) {
+        e.preventDefault();
+        localStorage.removeItem('pdf2md-key-' + providerSel.value);
+        keyInput.value = '';
+        setStatus('Saved key cleared for this provider.', 'ok');
+    });
+    var savedProvider = localStorage.getItem('pdf2md-provider');
+    if (savedProvider && MODELS[savedProvider]) providerSel.value = savedProvider;
+    populateModels();
+
+    // --- Mode toggle ---
+    function setMode(mode) {
+        state.mode = mode;
+        modeLocalBtn.classList.toggle('active', mode === 'local');
+        modeAiBtn.classList.toggle('active', mode === 'ai');
+        document.body.classList.toggle('ai-mode', mode === 'ai');
+        modeHint.textContent = mode === 'local'
+            ? 'Local text extraction — instant, free, private. Best for digital PDFs that already contain selectable text. No images, handwriting, or scans.'
+            : 'AI vision — reads each page like a person. Handles scans, handwriting, graphs, and tables. Requires your own API key; you are billed by the provider.';
+    }
+    modeLocalBtn.addEventListener('click', function () { setMode('local'); });
+    modeAiBtn.addEventListener('click', function () { setMode('ai'); });
+
+    // --- File loading ---
+    function humanSize(b) { return b < 1048576 ? (b / 1024).toFixed(0) + ' KB' : (b / 1048576).toFixed(1) + ' MB'; }
+    function loadFile(file) {
+        if (!file || file.type !== 'application/pdf') { setStatus('Please choose a PDF file.', 'error'); return; }
+        state.fileName = file.name.replace(/\.pdf$/i, '');
+        var reader = new FileReader();
+        reader.onload = function () {
+            var data = new Uint8Array(reader.result);
+            pdfjsLib.getDocument({ data: data }).promise.then(function (pdf) {
+                state.pdfDoc = pdf;
+                fileChip.classList.add('show');
+                $('file-name').textContent = file.name;
+                $('file-meta').textContent = pdf.numPages + (pdf.numPages === 1 ? ' page · ' : ' pages · ') + humanSize(file.size);
+                convertBtn.disabled = false;
+                setStatus('', '');
+            }).catch(function (err) {
+                setStatus('Could not read this PDF: ' + err.message, 'error');
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    dropzone.addEventListener('click', function () { fileInput.click(); });
+    fileInput.addEventListener('change', function () { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+    ['dragover', 'dragenter'].forEach(function (ev) {
+        dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+        dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.remove('dragover'); });
+    });
+    dropzone.addEventListener('drop', function (e) {
+        if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+    });
+
+    // --- Local text extraction ---
+    function extractTextPage(page) {
+        return page.getTextContent().then(function (tc) {
+            var lines = [], cur = null, lastY = null;
+            tc.items.forEach(function (it) {
+                if (!it.str) return;
+                var y = it.transform[5];
+                if (lastY === null || Math.abs(y - lastY) > 3) {
+                    if (cur !== null) lines.push(cur.trim());
+                    cur = it.str; lastY = y;
+                } else {
+                    cur += (it.str.match(/^\s|\s$/) ? '' : ' ') + it.str;
+                }
+            });
+            if (cur !== null) lines.push(cur.trim());
+            return lines.filter(function (l) { return l.length; }).join('\n\n');
+        });
+    }
+
+    // --- Render a page to a canvas image ---
+    function renderPage(page, scale) {
+        var viewport = page.getViewport({ scale: scale });
+        var canvas = document.createElement('canvas');
+        canvas.width = viewport.width; canvas.height = viewport.height;
+        var ctx = canvas.getContext('2d');
+        return page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function () { return canvas; });
+    }
+
+    // --- Lenient JSON extraction from a model reply ---
+    function parseModelJson(text) {
+        if (!text) return null;
+        var t = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+        try { return JSON.parse(t); } catch (e) {}
+        var first = t.indexOf('{'), last = t.lastIndexOf('}');
+        if (first !== -1 && last > first) {
+            try { return JSON.parse(t.slice(first, last + 1)); } catch (e2) {}
+        }
+        return null;
+    }
+
+    var SYSTEM_PROMPT =
+        'You convert a single page of a PDF into clean GitHub-flavored Markdown. ' +
+        'Read the page VISUALLY from the image. IGNORE any embedded OCR/text layer — scanned PDFs often carry a poor machine-generated text layer; disregard it entirely and rely only on what you see. ' +
+        'Transcribe all text exactly as written. Do not summarize, paraphrase, translate, or correct. ' +
+        'If the page contains handwriting, transcribe it exactly; never fix spelling, grammar, or maths. Mark anything you cannot read as [illegible]. ' +
+        'Render tables as GitHub-flavored Markdown tables when feasible. Preserve headings, lists, bold/italics, and equations (use LaTeX with $...$ or $$...$$). ' +
+        'For every photo, chart, graph, diagram, or a table too complex to render as text: insert a placeholder on its own line written EXACTLY as [[FIGURE:N]] (N = 1, 2, 3 ... in reading order) at the correct position in the markdown, and describe it in the figures list. ' +
+        'Return ONLY a JSON object, no prose and no code fences, shaped exactly: ' +
+        '{"markdown": "<the page as markdown with [[FIGURE:N]] placeholders>", "figures": [{"ref": N, "type": "photo|chart|diagram|table", "caption": "<short caption>", "bbox": [x0, y0, x1, y1]}]}. ' +
+        'bbox values are normalized 0..1 relative to the page image, origin at the top-left, [x0,y0]=top-left corner, [x1,y1]=bottom-right corner of the figure. If there are no figures, return "figures": [].';
+    var USER_TEXT = 'Convert this page to Markdown following the system instructions. Return only the JSON object.';
+
+    // --- Provider adapters: (base64Png, model, key) -> Promise<rawText> ---
+    function callAnthropic(b64, model, key) {
+        return fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                'x-api-key': key,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+            },
+            body: JSON.stringify({
+                model: model, max_tokens: 8000, system: SYSTEM_PROMPT,
+                messages: [{ role: 'user', content: [
+                    { type: 'image', source: { type: 'base64', media_type: 'image/png', data: b64 } },
+                    { type: 'text', text: USER_TEXT }
+                ] }]
+            })
+        }).then(handleHttp).then(function (d) {
+            return (d.content || []).filter(function (b) { return b.type === 'text'; }).map(function (b) { return b.text; }).join('');
+        });
+    }
+    function callOpenAI(b64, model, key) {
+        return fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'authorization': 'Bearer ' + key },
+            body: JSON.stringify({
+                model: model, max_tokens: 8000, response_format: { type: 'json_object' },
+                messages: [
+                    { role: 'system', content: SYSTEM_PROMPT },
+                    { role: 'user', content: [
+                        { type: 'text', text: USER_TEXT },
+                        { type: 'image_url', image_url: { url: 'data:image/png;base64,' + b64 } }
+                    ] }
+                ]
+            })
+        }).then(handleHttp).then(function (d) { return d.choices[0].message.content; });
+    }
+    function callGemini(b64, model, key) {
+        var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(key);
+        return fetch(url, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+                systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                contents: [{ role: 'user', parts: [
+                    { text: USER_TEXT },
+                    { inline_data: { mime_type: 'image/png', data: b64 } }
+                ] }],
+                generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 8192 }
+            })
+        }).then(handleHttp).then(function (d) {
+            var c = d.candidates && d.candidates[0];
+            if (!c || !c.content || !c.content.parts) return '';
+            return c.content.parts.map(function (p) { return p.text || ''; }).join('');
+        });
+    }
+    function handleHttp(resp) {
+        return resp.text().then(function (body) {
+            if (!resp.ok) {
+                var msg = body;
+                try { var j = JSON.parse(body); msg = (j.error && (j.error.message || j.error.type)) || body; } catch (e) {}
+                throw new Error('HTTP ' + resp.status + ': ' + msg);
+            }
+            return JSON.parse(body);
+        });
+    }
+    var ADAPTERS = { anthropic: callAnthropic, openai: callOpenAI, gemini: callGemini };
+
+    // --- Crop a figure region from a page canvas -> Promise<Blob> ---
+    function cropFigure(canvas, bbox) {
+        var x0 = Math.max(0, Math.min(1, bbox[0])), y0 = Math.max(0, Math.min(1, bbox[1]));
+        var x1 = Math.max(0, Math.min(1, bbox[2])), y1 = Math.max(0, Math.min(1, bbox[3]));
+        if (x1 <= x0 || y1 <= y0) return Promise.resolve(null);
+        var sx = Math.round(x0 * canvas.width), sy = Math.round(y0 * canvas.height);
+        var sw = Math.round((x1 - x0) * canvas.width), sh = Math.round((y1 - y0) * canvas.height);
+        if (sw < 4 || sh < 4) return Promise.resolve(null);
+        var c = document.createElement('canvas');
+        c.width = sw; c.height = sh;
+        c.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+        return new Promise(function (res) { c.toBlob(function (blob) { res(blob); }, 'image/png'); });
+    }
+    function canvasToB64(canvas) {
+        return canvas.toDataURL('image/png').split(',')[1];
+    }
+
+    // --- Convert orchestration ---
+    function setBusy(b) {
+        state.busy = b;
+        convertBtn.disabled = b || !state.pdfDoc;
+        convertBtn.textContent = b ? 'Converting…' : 'Convert';
+    }
+    function finishOutput(md, figures) {
+        state.lastMd = md; state.figures = figures || [];
+        mdOutput.value = md;
+        copyBtn.disabled = dlMdBtn.disabled = !md;
+        dlZipBtn.disabled = !md;
+        zipNote.style.display = state.figures.length ? 'block' : 'none';
+        setBusy(false);
+    }
+
+    function convertLocal() {
+        var pdf = state.pdfDoc, total = pdf.numPages, parts = [], n = 0;
+        setProgress(0, total, 'Extracting text…');
+        function step(i) {
+            if (i > total) {
+                hideProgress();
+                var md = parts.join('\n\n---\n\n').trim();
+                if (!md) { setStatus('No selectable text found. This looks like a scan — try Smart (AI) mode.', 'error'); setBusy(false); return; }
+                setStatus('Done — extracted text from ' + total + ' page' + (total > 1 ? 's' : '') + '.', 'ok');
+                finishOutput(md, []);
+                return;
+            }
+            pdf.getPage(i).then(extractTextPage).then(function (txt) {
+                if (txt) parts.push(txt);
+                setProgress(++n, total, 'Extracting page ' + i + ' / ' + total);
+                step(i + 1);
+            }).catch(function (err) { setStatus('Error on page ' + i + ': ' + err.message, 'error'); setBusy(false); });
+        }
+        step(1);
+    }
+
+    function convertAI() {
+        var provider = providerSel.value, model = modelSel.value, key = keyInput.value.trim();
+        if (!key) { setStatus('Enter your ' + provider + ' API key first.', 'error'); setBusy(false); return; }
+        var scale = parseFloat($('render-scale').value) || 2;
+        var adapter = ADAPTERS[provider];
+        var pdf = state.pdfDoc, total = pdf.numPages;
+        var pages = [], figures = [];
+        setProgress(0, total, 'Starting…');
+
+        function step(i) {
+            if (i > total) {
+                hideProgress();
+                var md = pages.join('\n\n---\n\n').trim();
+                setStatus('Done — ' + total + ' page' + (total > 1 ? 's' : '') + ' converted, ' + figures.length + ' figure' + (figures.length === 1 ? '' : 's') + ' extracted.', 'ok');
+                finishOutput(md, figures);
+                return;
+            }
+            setProgress(i - 1, total, 'Reading page ' + i + ' / ' + total + ' with ' + model + '…');
+            pdf.getPage(i).then(function (page) {
+                return renderPage(page, scale).then(function (canvas) {
+                    return adapter(canvasToB64(canvas), model, key).then(function (raw) {
+                        var parsed = parseModelJson(raw);
+                        if (!parsed || typeof parsed.markdown !== 'string') {
+                            pages.push('<!-- Page ' + i + ': could not parse model output -->\n\n' + (raw || '').trim());
+                            return step(i + 1);
+                        }
+                        var pageMd = parsed.markdown;
+                        var figs = Array.isArray(parsed.figures) ? parsed.figures : [];
+                        return cropAll(canvas, figs, i).then(function (saved) {
+                            saved.forEach(function (f) {
+                                figures.push(f);
+                                var imgMd = '![' + (f.caption || 'figure') + '](' + f.path + ')';
+                                pageMd = pageMd.split('[[FIGURE:' + f.ref + ']]').join(imgMd);
+                            });
+                            // Strip any unresolved placeholders
+                            pageMd = pageMd.replace(/\[\[FIGURE:\d+\]\]/g, '');
+                            pages.push(pageMd.trim());
+                            step(i + 1);
+                        });
+                    });
+                });
+            }).catch(function (err) {
+                hideProgress();
+                setStatus('Stopped on page ' + i + ': ' + err.message, 'error');
+                if (pages.length) finishOutput(pages.join('\n\n---\n\n').trim(), figures);
+                else setBusy(false);
+            });
+        }
+        step(1);
+    }
+
+    function cropAll(canvas, figs, pageNum) {
+        var out = [], idx = 0;
+        function next() {
+            if (idx >= figs.length) return Promise.resolve(out);
+            var f = figs[idx++];
+            if (!f || !Array.isArray(f.bbox)) return next();
+            return cropFigure(canvas, f.bbox).then(function (blob) {
+                if (blob) {
+                    out.push({ ref: f.ref, caption: f.caption || '', path: 'figures/page' + pageNum + '-fig' + f.ref + '.png', blob: blob });
+                }
+                return next();
+            });
+        }
+        return next();
+    }
+
+    convertBtn.addEventListener('click', function () {
+        if (!state.pdfDoc || state.busy) return;
+        setStatus('', ''); setBusy(true);
+        if (state.mode === 'ai') convertAI(); else convertLocal();
+    });
+
+    // --- Downloads ---
+    function triggerDownload(blob, name) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = name; document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+    copyBtn.addEventListener('click', function () {
+        navigator.clipboard.writeText(mdOutput.value).then(function () {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
+        });
+    });
+    dlMdBtn.addEventListener('click', function () {
+        triggerDownload(new Blob([mdOutput.value], { type: 'text/markdown' }), (state.fileName || 'document') + '.md');
+    });
+    dlZipBtn.addEventListener('click', function () {
+        var zip = new JSZip();
+        zip.file('document.md', mdOutput.value);
+        state.figures.forEach(function (f) { zip.file(f.path, f.blob); });
+        zip.generateAsync({ type: 'blob' }).then(function (blob) {
+            triggerDownload(blob, (state.fileName || 'document') + '.zip');
+        });
+    });
+
+    setMode('local');
+})();
+</script>
+<script>
+    // --- Theme toggle ---
+    const themeButton = document.getElementById('theme-button');
+    const DARK_KEY = 'pdf-to-markdown-dark';
+    const LIGHT_KEY = 'pdf-to-markdown-light';
+    function updateAppChromeTheme(theme) {
+        const tc = document.querySelector('meta[name="theme-color"]');
+        const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        const dark = theme === 'dark';
+        if (tc) tc.setAttribute('content', dark ? '#111118' : '#F4F4F8');
+        if (sb) sb.setAttribute('content', dark ? 'black-translucent' : 'default');
+    }
+    function updateButtonEmoji(theme) {
+        themeButton.textContent = theme === 'dark' ? '\u{1F319}' : '\u{2600}️';
+    }
+    const initTheme = localStorage.getItem(DARK_KEY) ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', initTheme);
+    updateAppChromeTheme(initTheme);
+    updateButtonEmoji(initTheme);
+    window.addEventListener('pageshow', function () {
+        updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+    });
+    themeButton.addEventListener('click', function () {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        if (next === 'dark') { localStorage.setItem(DARK_KEY, 'true'); localStorage.removeItem(LIGHT_KEY); }
+        else { localStorage.setItem(LIGHT_KEY, 'true'); localStorage.removeItem(DARK_KEY); }
+        updateAppChromeTheme(next);
+        updateButtonEmoji(next);
+    });
+</script>
+<!-- Brave iOS gradient text fix -->
+<script>
+(function () {
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.brave) return;
+    document.querySelectorAll('.banner-title').forEach(function (el) { el.classList.add('gradient-text'); });
+})();
+</script>
+</body>
+</html>
