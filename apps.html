@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#F4F4F8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script>
+    (function() {
+      if (localStorage.getItem('theme-dark')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var tc = document.querySelector('meta[name="theme-color"]');
+        var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (tc) tc.setAttribute('content', '#111118');
+        if (sb) sb.setAttribute('content', 'black-translucent');
+      }
+    })();
+    </script>
+    <title>My Apps — ExplAIn Sims</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description"
+        content="A private checklist of every app, repo and data store, for deciding what to keep.">
+    <meta property="og:title" content="My Apps — ExplAIn Sims">
+    <meta property="og:description"
+        content="A private checklist of every app, repo and data store, for deciding what to keep.">
+    <meta name="twitter:title" content="My Apps — ExplAIn Sims">
+    <meta name="twitter:description"
+        content="A private checklist of every app, repo and data store, for deciding what to keep.">
+
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        /* ========================================
+           CSS Variables
+           ======================================== */
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --bg-color: #F4F4F8;
+            --bg-pattern: #EAEAEF;
+            --text-main: #1A1A2E;
+            --text-secondary: #6B7280;
+
+            --brand-primary: #0891B2;
+            --brand-secondary: #0E7490;
+            --brand-accent: #F59E0B;
+
+            --nav-bg: rgba(244, 244, 248, 0.92);
+            --nav-border: rgba(0, 0, 0, 0.06);
+
+            --card-bg: #FFFFFF;
+            --card-border: transparent;
+            --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 0 1px rgba(0, 0, 0, 0.1);
+            --card-hover-shadow: 0 20px 60px rgba(0, 0, 0, 0.10);
+            --card-accent-border: #0891B2;
+
+            --btn-bg: #0891B2;
+            --btn-text: #FFFFFF;
+
+            --status-check: #0891B2;
+            --status-ready: #059669;
+            --status-warning: #F59E0B;
+            --status-error: #DC2626;
+
+            --section-num-color: rgba(8, 145, 178, 0.05);
+            --divider-color: #E5E7EB;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111118;
+            --bg-pattern: #1E1E28;
+            --text-main: #F0F0F5;
+            --text-secondary: #9CA3AF;
+
+            --brand-primary: #22D3EE;
+            --brand-secondary: #06B6D4;
+            --brand-accent: #FBBF24;
+
+            --nav-bg: rgba(17, 17, 24, 0.92);
+            --nav-border: rgba(255, 255, 255, 0.06);
+
+            --card-bg: #1E1E28;
+            --card-border: #2A2A36;
+            --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255, 255, 255, 0.04);
+            --card-hover-shadow: 0 20px 60px rgba(34, 211, 238, 0.07);
+            --card-accent-border: rgba(34, 211, 238, 0.65);
+
+            --btn-bg: #22D3EE;
+            --btn-text: #111118;
+
+            --status-check: #22D3EE;
+            --status-ready: #34D399;
+            --status-warning: #FBBF24;
+            --status-error: #F87171;
+
+            --section-num-color: rgba(34, 211, 238, 0.06);
+            --divider-color: #2A2A36;
+        }
+
+        /* ========================================
+           Reset & Base
+           ======================================== */
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.65;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* ========================================
+           Cat Chase Background
+           ======================================== */
+        .spacetime-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .spacetime-bg canvas {
+            display: block;
+        }
+
+        header, .section {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ========================================
+           Navigation
+           ======================================== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--nav-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            padding: 0 1rem;
+            padding-top: env(safe-area-inset-top, 0px);
+            height: calc(48px + env(safe-area-inset-top, 0px));
+            border-bottom: 1px solid var(--nav-border);
+            z-index: 1000;
+            animation: navFadeIn 0.5s ease-out both;
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        nav a {
+            position: relative;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin: 0;
+            padding: 0 1rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.25s ease;
+            height: 48px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1rem;
+            right: 1rem;
+            height: 2px;
+            background: var(--brand-primary);
+            border-radius: 1px 1px 0 0;
+            transform: scaleX(0);
+            transition: transform 0.25s ease;
+        }
+
+        nav a:hover {
+            color: var(--text-main);
+        }
+
+        nav a:hover::after {
+            transform: scaleX(1);
+        }
+
+        nav a,
+        .card a,
+        .theme-toggle button {
+            touch-action: manipulation;
+        }
+
+        .theme-toggle button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.15rem;
+            padding: 0.45rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 0.5rem;
+            color: var(--text-main);
+            min-width: 42px;
+            min-height: 42px;
+            line-height: 1;
+            transition: background-color 0.25s ease;
+        }
+
+        .theme-toggle button:hover {
+            background-color: rgba(8, 145, 178, 0.08);
+        }
+
+        [data-theme="dark"] .theme-toggle button:hover {
+            background-color: rgba(34, 211, 238, 0.10);
+        }
+
+        /* ========================================
+           Hero Header
+           ======================================== */
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 1.5rem 5rem;
+            text-align: center;
+            position: relative;
+            min-height: 60vh;
+        }
+
+        .logo {
+            height: 96px;
+            width: auto;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.12));
+            animation: heroFadeUp 0.8s ease-out both;
+            border-radius: 22%;
+        }
+
+        header h1 {
+            font-family: var(--font-display);
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.03em;
+            color: var(--text-main);
+            line-height: 1.1;
+            animation: heroFadeUp 0.8s ease-out 0.12s both;
+        }
+
+        .ai-highlight {
+            color: var(--brand-accent);
+            font-weight: 700;
+        }
+
+        [data-theme="dark"] .ai-highlight {
+            color: var(--brand-accent);
+        }
+
+        .site-subtitle {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin: 0.2rem 0 0;
+            animation: heroFadeUp 0.8s ease-out 0.18s both;
+        }
+
+        .hero-rule {
+            width: 48px;
+            height: 3px;
+            background: var(--brand-primary);
+            margin: 1.4rem auto;
+            border-radius: 1px;
+            animation: heroFadeUp 0.8s ease-out 0.24s both;
+            transition: background-color 0.4s ease;
+        }
+
+        header p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            margin: 0;
+            font-weight: 400;
+            animation: heroFadeUp 0.8s ease-out 0.32s both;
+        }
+
+        /* ========================================
+           Sections
+           ======================================== */
+        .section {
+            max-width: 1180px;
+            margin: 0 auto 6rem;
+            padding: 0 1.5rem;
+            scroll-margin-top: 80px;
+            position: relative;
+        }
+
+        .section[data-section]::before {
+            content: none;
+        }
+
+        .section h2 {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0 0 2.5rem 0;
+            color: var(--text-main);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* ========================================
+           Grid & Cards
+           ======================================== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: none;
+            border-radius: 14px;
+            padding: 2.8rem 1.8rem 1.6rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.6s ease-out,
+                        transform 0.6s ease-out,
+                        box-shadow 0.3s ease,
+                        background-color 0.4s ease;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--brand-primary);
+            transition: background-color 0.4s ease;
+        }
+
+        .card.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card:nth-child(1) { transition-delay: 0s, 0s, 0s, 0s; }
+        .card:nth-child(2) { transition-delay: 0.07s, 0.07s, 0s, 0s; }
+        .card:nth-child(3) { transition-delay: 0.14s, 0.14s, 0s, 0s; }
+        .card:nth-child(4) { transition-delay: 0.21s, 0.21s, 0s, 0s; }
+        .card:nth-child(5) { transition-delay: 0.28s, 0.28s, 0s, 0s; }
+        .card:nth-child(6) { transition-delay: 0.35s, 0.35s, 0s, 0s; }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .card.revealed:hover {
+            transform: translateY(-3px);
+        }
+
+        .card h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0 0 0.6rem 0;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+
+        .card p {
+            font-size: 0.92rem;
+            margin: 0 0 1.4rem 0;
+            color: var(--text-secondary);
+            flex-grow: 1;
+            line-height: 1.65;
+        }
+
+        .card-source-pill {
+            display: inline-flex;
+            align-items: center;
+            position: absolute;
+            top: 0.65rem;
+            left: 1rem;
+            z-index: 2;
+            padding: 0.22rem 0.45rem;
+            border-radius: 4px;
+            border: none;
+            background: rgba(8, 145, 178, 0.1);
+            color: #0E7490;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            line-height: 1.1;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        [data-theme="dark"] .card-source-pill {
+            background: rgba(34, 211, 238, 0.12);
+            color: #22D3EE;
+        }
+
+        /* Card CTA link — editorial arrow style */
+        .card a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--brand-primary);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            padding: 0;
+            align-self: flex-start;
+            border-bottom: 1.5px solid transparent;
+            transition: border-color 0.3s ease, gap 0.3s ease, color 0.3s ease;
+        }
+
+        .card a::after {
+            content: '→';
+            font-size: 1.1em;
+            transition: transform 0.3s ease;
+        }
+
+        .card a:hover {
+            border-bottom-color: var(--brand-primary);
+        }
+
+        .card a:hover::after {
+            transform: translateX(4px);
+        }
+
+
+
+        /* ========================================
+           Keyframes
+           ======================================== */
+        @keyframes heroFadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes navFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========================================
+           Responsive
+           ======================================== */
+        @media (max-width: 768px) {
+            header {
+                padding: 5.5rem 1.5rem 3rem;
+                min-height: 50vh;
+            }
+
+            header h1 {
+                font-size: 2.8rem;
+            }
+
+            nav {
+                justify-content: flex-start;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 0;
+                padding: 0 0.25rem;
+                padding-top: env(safe-area-inset-top, 0px);
+            }
+
+            nav a {
+                padding: 0 0.65rem;
+                font-size: 0.68rem;
+                white-space: nowrap;
+                letter-spacing: 0.03em;
+                flex-shrink: 0;
+            }
+
+            nav a::after {
+                left: 0.65rem;
+                right: 0.65rem;
+            }
+
+            .theme-toggle {
+                margin-left: auto;
+                flex-shrink: 0;
+            }
+
+            .theme-toggle button {
+                margin-left: 0;
+                padding: 0.35rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .section {
+                margin-bottom: 4rem;
+            }
+
+            .section[data-section]::before {
+                font-size: 4rem;
+                top: -1.2rem;
+            }
+
+            .section h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (pointer: coarse) {
+            nav a,
+            .card a,
+            .theme-toggle button {
+                min-height: 44px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .card {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .logo-link {
+            display: block;
+            text-decoration: none;
+            animation: heroFadeUp 0.8s ease-out both;
+        }
+        nav a[aria-current="page"] {
+            color: var(--text-main);
+        }
+        nav a[aria-current="page"]::after {
+            transform: scaleX(1);
+        }
+        .section-desc {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.85;
+            margin: -1.5rem 0 2.5rem 0;
+        }
+
+        /* Help panel */
+        .help-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.25); z-index: 1099;
+        }
+        .help-backdrop.open { display: block; }
+        .help-panel {
+            position: fixed; top: 0; right: 0;
+            width: 320px; height: 100dvh;
+            background: var(--card-bg); border-left: 1px solid var(--card-border);
+            box-shadow: -6px 0 24px rgba(0,0,0,0.18); z-index: 1100;
+            display: flex; flex-direction: column;
+            transform: translateX(100%); transition: transform 0.25s ease;
+        }
+        .help-panel.open { transform: translateX(0); }
+        .help-panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; border-bottom: 1px solid var(--card-border);
+            font-weight: 700; font-size: 0.88rem; flex-shrink: 0;
+        }
+        .help-close {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2rem; line-height: 1; padding: 4px 6px;
+            border-radius: 6px; color: var(--text-secondary); transition: background 0.15s;
+        }
+        .help-close:hover { background: var(--section-bg); color: var(--text-main); }
+        .help-panel-body { padding: 16px; overflow-y: auto; flex: 1; font-size: 0.82rem; line-height: 1.65; }
+        .help-section { margin-bottom: 20px; }
+        .help-section h3 {
+            font-size: 0.73rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--brand-primary); margin-bottom: 6px;
+        }
+        .help-section p { color: var(--text-main); margin-bottom: 5px; }
+        .help-section p:last-child { margin-bottom: 0; }
+        .help-divider { height: 1px; background: var(--card-border); margin-bottom: 20px; }
+        @media (max-width: 480px) { .help-panel { width: 90vw; } }
+
+        .btn-help {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            color: #fff; display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 13px; border: none; border-radius: 9px; cursor: pointer;
+            font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
+            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3); transition: filter 0.15s; white-space: nowrap;
+        }
+        .btn-help:hover { filter: brightness(1.1); }
+        .toolbar .btn-help { min-height: 40px; }
+        [data-theme="dark"] .btn-help { box-shadow: 0 2px 8px rgba(162, 155, 254, 0.25); }
+
+        /* ========================================
+           My Apps tracker
+           ======================================== */
+        .tracker {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 16px 48px;
+        }
+        .tracker-note {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--brand-primary);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        .toolbar {
+            position: sticky;
+            top: 56px;
+            z-index: 5;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+        }
+        .toolbar input[type="search"], .toolbar select {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            min-height: 40px;
+        }
+        .toolbar input[type="search"] { flex: 1 1 200px; min-width: 0; }
+        .toolbar select { flex: 0 1 220px; min-width: 0; }
+        .toolbar label.toggle {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;
+        }
+        .toolbar .spacer { flex: 1 1 auto; }
+        .tbtn {
+            font-family: var(--font-sans);
+            font-size: 0.82rem; font-weight: 600;
+            padding: 8px 12px; min-height: 40px;
+            border-radius: 8px; border: 1px solid var(--card-border);
+            background: var(--card-bg); color: var(--text-main); cursor: pointer;
+        }
+        .tbtn:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+        .tally {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin: 0 0 16px 2px;
+        }
+        .group-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            margin: 28px 0 10px;
+            display: flex; align-items: baseline; gap: 10px;
+        }
+        .group-title .count {
+            font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); font-weight: 500;
+        }
+        .app-row {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 12px 14px;
+            margin-bottom: 10px;
+        }
+        .app-row.is-done { opacity: 0.6; }
+        .app-head {
+            display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px;
+        }
+        .app-name {
+            font-family: var(--font-mono); font-weight: 600; font-size: 0.95rem;
+            color: var(--text-main); overflow-wrap: anywhere;
+        }
+        .pill {
+            font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em;
+            padding: 2px 8px; border-radius: 999px;
+            background: var(--section-bg); color: var(--text-secondary);
+            border: 1px solid var(--card-border); white-space: nowrap;
+        }
+        .pill.ai { color: var(--brand-primary); border-color: var(--brand-primary); }
+        .pill.public { color: var(--status-warning, #D97706); border-color: currentColor; }
+        .pill.imp { color: var(--status-ready); border-color: currentColor; }
+        .app-desc { font-size: 0.9rem; margin: 4px 0 2px; overflow-wrap: anywhere; }
+        .app-extra { font-size: 0.8rem; color: var(--text-secondary); margin: 2px 0; overflow-wrap: anywhere; }
+        .app-links { font-size: 0.8rem; margin: 4px 0 8px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+        .app-links a { color: var(--brand-primary); text-decoration: none; overflow-wrap: anywhere; }
+        .app-links a:hover { text-decoration: underline; }
+        .checks {
+            display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .check {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.8rem; padding: 6px 10px; min-height: 36px;
+            border: 1px solid var(--card-border); border-radius: 8px;
+            background: var(--section-bg); cursor: pointer; user-select: none;
+        }
+        .check:has(input:checked) {
+            border-color: var(--brand-primary);
+            background: color-mix(in srgb, var(--brand-primary) 12%, var(--card-bg));
+        }
+        .check input { accent-color: var(--brand-primary); margin: 0; width: 16px; height: 16px; }
+        .note-input {
+            width: 100%; margin-top: 8px;
+            font-family: var(--font-sans); font-size: 0.85rem;
+            padding: 8px 10px; border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--bg-color); color: var(--text-main);
+        }
+        .empty { color: var(--text-secondary); font-style: italic; padding: 20px 0; }
+        @media (max-width: 600px) {
+            .toolbar { position: static; }
+            .toolbar select, .toolbar input[type="search"] { flex: 1 1 100%; }
+            .toolbar .spacer { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="/tools.html">Tools</a>
+        <a href="/appcm.html">AP PCM</a>
+        <a href="/fun.html">Fun</a>
+        <a href="/api.html">API</a>
+        <a href="/panphy.html">PanPhy</a>
+        <a href="/apps.html" aria-current="page">My Apps</a>
+        <div class="theme-toggle">
+            <button id="theme-button" aria-label="Toggle Light/Dark Theme">☀️</button>
+        </div>
+    </nav>
+
+    <header>
+        <a href="/" class="logo-link">
+            <img src="/assets/ExplAIn%20Sims.png" class="logo" alt="ExplAIn Sims">
+        </a>
+        <h1>Expl<span class="ai-highlight">AI</span>n</h1>
+        <div class="site-subtitle">My Apps</div>
+        <div class="hero-rule"></div>
+        <p>Every app, site, repo and data store in one list, so you can decide what happens to each.</p>
+    </header>
+
+    <main class="tracker">
+        <div class="tracker-note">
+            This page is only a checklist. Ticking a box doesn't change, delete or move anything.
+            Your ticks and notes are saved in this browser only. Use <strong>Export</strong> to back them up
+            or move them to another device.
+        </div>
+
+        <div class="toolbar" role="search">
+            <input type="search" id="q" placeholder="Search name, description or repo…" aria-label="Search apps">
+            <select id="group-filter" aria-label="Filter by group"></select>
+            <select id="status-filter" aria-label="Filter by status">
+                <option value="all">All items</option>
+                <option value="undecided">No boxes ticked yet</option>
+                <option value="open">Not marked done</option>
+                <option value="done">Marked done</option>
+            </select>
+            <span class="spacer"></span>
+            <button type="button" id="help-btn" class="btn-help" aria-label="Help" title="Show help">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Help
+            </button>
+            <button class="tbtn" id="export-btn" type="button">Export</button>
+            <button class="tbtn" id="import-btn" type="button">Import</button>
+            <input type="file" id="import-file" accept="application/json" hidden>
+        </div>
+
+        <p class="tally" id="tally"></p>
+        <div id="list"></div>
+    </main>
+
+    <div class="help-backdrop" id="help-backdrop"></div>
+    <aside class="help-panel" id="help-panel" aria-label="Help">
+        <div class="help-panel-header">
+            <span>My Apps Guide</span>
+            <button class="help-close" id="help-close" aria-label="Close help">&#x2715;</button>
+        </div>
+        <div class="help-panel-body">
+            <div class="help-section">
+                <h3>What this is</h3>
+                <p>A list of everything found in your Google Cloud projects and GitHub accounts on 24 September 2026: Cloud Run apps, repos, explainsims.com pages, stored data and cloud projects.</p>
+                <p>Descriptions for private repos are best guesses from the app name.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Checkboxes</h3>
+                <p><strong>Keep</strong> — you still want it. <strong>Retire app</strong> — take the running app down. <strong>Delete data</strong> — remove its stored data.</p>
+                <p><strong>Archive repo</strong> / <strong>Make private</strong> — GitHub housekeeping. <strong>Move to ssis-apps</strong> — belongs with school apps. <strong>Needs work</strong> — something to fix. <strong>Done</strong> — decision carried out; the row fades.</p>
+                <p>Nothing happens when you tick a box. It's a record of your decisions only.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Pills</h3>
+                <p><strong>AI</strong> — the app calls a paid AI service. <strong>Public repo</strong> — anyone can read its code on GitHub. <strong>Important</strong> — you flagged it as important.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Search and filters</h3>
+                <p>Search matches names, descriptions and repo names. Filter by group, or show only items with no boxes ticked yet to see what's left to decide.</p>
+            </div>
+            <div class="help-divider"></div>
+            <div class="help-section">
+                <h3>Saving and backup</h3>
+                <p>Ticks and notes save automatically in this browser. <strong>Export</strong> downloads them as a file; <strong>Import</strong> loads that file on another browser or device. Clearing site data erases them, so export now and then.</p>
+            </div>
+        </div>
+    </aside>
+
+    <div id="site-footer"></div>
+    <script src="/assets/footer.js"></script>
+
+    <script>
+        // Inventory compiled 2026-09-24 from Google Cloud (Cloud Run, Firebase) and GitHub.
+        // Descriptions for private repos are best guesses from the app name.
+        // h = where it runs, u = URL, r = repo, v = repo visibility, ai = calls a paid AI API,
+        // x = extra note, imp = flagged as important
+        var RUN = function (n) { return 'https://' + n + '-145857450332.us-west1.run.app'; };
+        var APPS = [
+            // ---- AP Physics C: Mechanics ----
+            { g: 'AP PCM sims & tools', n: 'appcm-physical-pendulum', d: 'Physical pendulum: how pivot position changes the period.', h: 'Cloud Run', u: RUN('appcm-physical-pendulum'), r: 'lennoxmeldrum/appcm-physical-pendulum', v: 'public', ai: true, x: 'Static copy on explainsims.com (AP PCM tab). A second repo, physical-pendulum, is a duplicate.' },
+            { g: 'AP PCM sims & tools', n: 'appcm-oscillation-energy', d: 'Energy in simple harmonic motion — kinetic vs potential through an oscillation.', h: 'Cloud Run', u: RUN('appcm-oscillation-energy'), r: 'lennoxmeldrum/appcm-oscillation-energy', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-shm-and-circular-motion', d: 'Simple harmonic motion as the projection of uniform circular motion.', h: 'Cloud Run', u: RUN('appcm-shm-and-circular-motion'), r: 'lennoxmeldrum/appcm-shm-and-circular-motion', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-angular-momentum', d: 'Angular momentum and its conservation.', h: 'Cloud Run', u: RUN('appcm-angular-momentum'), r: 'lennoxmeldrum/appcm-angular-momentum', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-rolling-race', d: 'Rolling race — which shapes reach the bottom of a ramp first.', h: 'Cloud Run', u: RUN('appcm-rolling-race'), r: 'lennoxmeldrum/appcm-rolling-race', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-rolling-slipping', d: 'Rolling with and without slipping, and the role of friction.', h: 'Cloud Run', u: RUN('appcm-rolling-slipping'), r: 'lennoxmeldrum/appcm-rolling-slipping', v: 'private' },
+            { g: 'AP PCM sims & tools', n: 'appcm-torque-lug-nut', d: 'Torque with a wrench on a lug nut — force, lever arm and angle.', h: 'Cloud Run', u: RUN('appcm-torque-lug-nut'), r: 'lennoxmeldrum/appcm-torque-lug-nut', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-rotational-motion-simulator', d: 'Angular velocity and acceleration on a spinning disk.', h: 'Cloud Run', u: RUN('appcm-rotational-motion-simulator'), r: 'lennoxmeldrum/appcm-rotational-motion-simulator', v: 'private', x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'appcm-rotational-atwood', d: 'Atwood machine with a massive pulley.', h: 'Cloud Run', u: RUN('appcm-rotational-atwood'), r: 'lennoxmeldrum/appcm-rotational-atwood', v: 'private', x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'appcm-parallel-axis', d: 'Parallel-axis theorem and rotational inertia.', h: 'Cloud Run', u: RUN('appcm-parallel-axis'), r: 'lennoxmeldrum/appcm-parallel-axis', v: 'private', x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'appcm-power', d: 'Power as the rate of energy transfer (P = dW/dt, P = F·v).', h: 'Cloud Run', u: RUN('appcm-power'), r: 'lennoxmeldrum/appcm-power', v: 'private', ai: true, x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'appcm-unit4-linearmomentum', d: 'Unit 4 — linear momentum and impulse.', h: 'Cloud Run', u: RUN('appcm-unit4-linearmomentum'), r: 'lennoxmeldrum/appcm-unit4-linearmomentum', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-unit3-stapp01', d: 'Unit 3 (work, energy, power) app #1 of a 7-part set.', h: 'Cloud Run', u: RUN('appcm-unit3-stapp01'), r: 'lennoxmeldrum/appcm-unit3-stapp01', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-unit3-stapp02', d: 'Unit 3 app #2 of the set.', h: 'Cloud Run', u: RUN('appcm-unit3-stapp02'), r: 'lennoxmeldrum/appcm-unit3-stapp02', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-unit3-stapp03', d: 'Unit 3 app #3 of the set.', h: 'Cloud Run', u: RUN('appcm-unit3-stapp03'), r: 'lennoxmeldrum/appcm-unit3-stapp03', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-unit3-stapp04', d: 'Unit 3 app #4 of the set.', h: 'Cloud Run', u: RUN('appcm-unit3-stapp04'), r: 'lennoxmeldrum/appcm-unit3-stapp04', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-unit3-stapp05', d: 'Unit 3 app #5 of the set.', h: 'Cloud Run', u: RUN('appcm-unit3-stapp05'), r: 'lennoxmeldrum/appcm-unit3-stapp05', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-unit3-stapp06', d: 'Unit 3 app #6 of the set.', h: 'Cloud Run', u: RUN('appcm-unit3-stapp06'), r: 'lennoxmeldrum/appcm-unit3-stapp06', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-unit3-stapp07', d: 'Unit 3 app #7 of the set.', h: 'Cloud Run', u: RUN('appcm-unit3-stapp07'), r: 'lennoxmeldrum/appcm-unit3-stapp07', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'appcm-question-analyzer', d: 'Analyses AP PCM questions (e.g. topic and skill tagging).', h: 'Cloud Run', u: RUN('appcm-question-analyzer'), r: 'lennoxmeldrum/appcm-question-analyzer', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'banked-track', d: 'Circular motion on a banked curve — forces and ideal / min / max speeds.', h: 'Cloud Run', u: RUN('banked-track'), r: 'lennoxmeldrum/banked-track', v: 'private', ai: true, x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'conical-pendulum', d: 'Conical pendulum — tension, centripetal force, speed and period.', h: 'Cloud Run', u: RUN('conical-pendulum'), r: 'lennoxmeldrum/conical-pendulum', v: 'private', ai: true, x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'cons-energy-systems', d: 'Conservation of energy and how the choice of system changes the equation.', h: 'Cloud Run', u: RUN('cons-energy-systems'), r: 'lennoxmeldrum/cons-energy-systems', v: 'private', ai: true, x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'cons-spring-energy-systems', d: 'Spring–block on a ramp: kinetic, spring, gravitational and thermal energy.', h: 'Cloud Run', u: RUN('cons-spring-energy-systems'), r: 'lennoxmeldrum/cons-spirng-energy-systems', v: 'private', ai: true, x: 'Static copy on explainsims.com (AP PCM tab). Repo name has a typo ("spirng").' },
+            { g: 'AP PCM sims & tools', n: 'elevator-physics', d: 'Newton\'s 2nd law in an elevator — apparent weight and free-body diagrams.', h: 'Cloud Run', u: RUN('elevator-physics'), r: 'lennoxmeldrum/Elevator-physics', v: 'private', ai: true, x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'gravitas-a-gravitational-force-simulator', d: 'Gravitas — Newton\'s law of gravitation, shell theorem and field strength.', h: 'Cloud Run', u: RUN('gravitas-a-gravitational-force-simulator'), r: 'lennoxmeldrum/gravitas-a-gravitational-force-simulator', v: 'private', ai: true, x: 'Static copy on explainsims.com (AP PCM tab).' },
+            { g: 'AP PCM sims & tools', n: 'forces-potential-energy', d: 'Conservative forces and potential energy (F = −dU/dx).', h: 'Cloud Run', u: RUN('forces-potential-energy'), r: 'lennoxmeldrum/forces-potential-energy', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'kinetic-energy-explorer', d: 'Kinetic energy explorer.', h: 'Cloud Run', u: RUN('kinetic-energy-explorer'), r: 'lennoxmeldrum/Kinetic-Energy-Explorer', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'ski-jump-simulator', d: 'Ski jump — projectile motion and energy.', h: 'Cloud Run', u: RUN('ski-jump-simulator'), r: 'lennoxmeldrum/ski-jump-simulator', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'momentum-tracker', d: 'Momentum tracker (stores data in the "momentum-tracker" collection).', h: 'Cloud Run', u: RUN('momentum-tracker'), r: 'lennoxmeldrum/momentum-tracker', v: 'private' },
+            { g: 'AP PCM sims & tools', n: 'frq-friction-app', d: 'Friction FRQ practice app.', h: 'Cloud Run', u: RUN('frq-friction-app'), r: 'lennoxmeldrum/frq-friction-app', v: 'private' },
+            { g: 'AP PCM sims & tools', n: 'coffee-filter-terminal-velocity-lab', d: 'Coffee-filter terminal velocity lab (air resistance).', h: 'Cloud Run', u: RUN('coffee-filter-terminal-velocity-lab'), r: 'lennoxmeldrum/coffee-filter-terminal-velocity-lab', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'apc-worksheet-builder', d: 'Builds worksheets for AP Classroom Daily Videos (AP PCM) from the video and transcript.', h: 'Cloud Run', u: RUN('apc-worksheet-builder'), r: 'lennoxmeldrum/apc-worksheet-builder', v: 'private', ai: true, x: 'Uses OpenAI. Linked from the API tab. An older copy lives in the worksheet-builder-working repo.' },
+            { g: 'AP PCM sims & tools', n: 'ohm-s-law-interactive-dashboard', d: 'Ohm\'s law interactive dashboard.', h: 'Cloud Run', u: RUN('ohm-s-law-interactive-dashboard'), r: 'lennoxmeldrum/ohm-s-law-interactive-dashboard', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'resistor-rockstar', d: 'Resistor colour-code game.', h: 'Cloud Run', u: RUN('resistor-rockstar'), r: 'lennoxmeldrum/resistor-rockstar', v: 'private', ai: true },
+            { g: 'AP PCM sims & tools', n: 'equivalent-circuit-calculator', d: 'Series / parallel equivalent resistance calculator.', h: 'Cloud Run', u: RUN('equivalent-circuit-calculator'), r: 'lennoxmeldrum/equivalent-circuit-calculator', v: 'private', ai: true },
+
+            // ---- FRQ system ----
+            { g: 'FRQ generators & archive', n: 'appcm-infinite-frq-generator', d: 'AP Physics C: Mechanics — unlimited FRQs, upload a scanned answer, AI grading.', h: 'Cloud Run', u: RUN('appcm-infinite-frq-generator'), r: 'lennoxmeldrum/appcm-infinite-frq-generator', v: 'public', ai: true, x: 'Writes to the "frqs" data and the FRQ PDF archive.' },
+            { g: 'FRQ generators & archive', n: 'apbio-infinite-frq-generator', d: 'AP Biology — unlimited FRQs with per-part AI grading.', h: 'Cloud Run', u: RUN('apbio-infinite-frq-generator'), r: 'lennoxmeldrum/apbio-infinite-frq-generator', v: 'public', ai: true, x: 'Writes to the "frqs" data and the FRQ PDF archive.' },
+            { g: 'FRQ generators & archive', n: 'apchem-infinite-frq-generator', d: 'AP Chemistry — unlimited FRQs with AI grading.', h: 'Cloud Run', u: RUN('apchem-infinite-frq-generator'), r: 'lennoxmeldrum/apchem-infinite-frq-generator', v: 'public', ai: true, x: 'Writes to the "frqs" data and the FRQ PDF archive.' },
+            { g: 'FRQ generators & archive', n: 'appsych-infinite-frq-generator', d: 'AP Psychology — unlimited FRQs with AI grading.', h: 'Cloud Run', u: RUN('appsych-infinite-frq-generator'), r: 'lennoxmeldrum/appsych-infinite-frq-generator', v: 'private', ai: true },
+            { g: 'FRQ generators & archive', n: 'ap-frq-access', d: 'AP FRQ Archive — browse and download the PDFs the generators produced.', h: 'Cloud Run', u: RUN('ap-frq-access'), r: 'lennoxmeldrum/ap-frq-access', v: 'public', x: 'This repo also holds the Firestore and Storage rules for the shared project.' },
+            { g: 'FRQ generators & archive', n: 'rebuildallmanifests', d: 'Background function: rebuilds the FRQ archive index. No web page.', h: 'Cloud Run (function)', r: 'lennoxmeldrum/ap-frq-access', v: 'public' },
+            { g: 'FRQ generators & archive', n: 'rebuildmanifestonfrqwrite', d: 'Background function: updates the archive index when a new FRQ is saved. No web page.', h: 'Cloud Run (function)', r: 'lennoxmeldrum/ap-frq-access', v: 'public' },
+
+            // ---- Teaching & school tools ----
+            { g: 'Teaching & school tools', n: 'ap-review', d: 'AP Review — student-centred review app: diagnostics, drills, AI FRQ grading; students sign in with a PIN.', h: 'Cloud Run', u: RUN('ap-review'), r: 'explainsims/ap-review', v: 'private', ai: true, imp: true, x: 'Data: apr-students, apr-users.' },
+            { g: 'Teaching & school tools', n: 'ssis-lab-portfolio', d: 'Lab Portfolio — digital practical logbook for science teachers and students, with IB REP export.', h: 'Cloud Run', u: 'https://ssis-lab-portfolio-775923478261.us-west1.run.app', r: 'explainsims/lab-portfolio', v: 'public', ai: true, x: 'Separate Google Cloud project (ssis-lab-portfolio).' },
+            { g: 'Teaching & school tools', n: 'dictation-app', d: 'Dictation — transcribes your voice and polishes it into a formatted note.', h: 'Cloud Run', u: RUN('dictation-app'), r: 'lennoxmeldrum/dictation-app', v: 'public', ai: true, x: 'Linked from the API tab.' },
+            { g: 'Teaching & school tools', n: 'video-to-learning-app', d: 'Video-to-Learning — turns a YouTube video into an interactive learning app.', h: 'Cloud Run', u: RUN('video-to-learning-app'), r: 'lennoxmeldrum/video-to-learning-app', v: 'private', ai: true, x: 'Linked from the API tab.' },
+            { g: 'Teaching & school tools', n: 'video-analysis', d: 'Ultimate Video Analysis — frame-accurate video kinematics: calibrate, set axes, click-track objects.', h: 'Cloud Run', u: RUN('video-analysis'), r: 'explainsims/video-analysis', v: 'public' },
+            { g: 'Teaching & school tools', n: 'research-question-builder', d: 'Helps students build a research question.', h: 'Cloud Run', u: RUN('research-question-builder'), r: 'lennoxmeldrum/research-question-builder', v: 'public', ai: true },
+            { g: 'Teaching & school tools', n: 'science-lab-inventory-assistant', d: 'AI assistant for the science lab inventory.', h: 'Cloud Run', u: RUN('science-lab-inventory-assistant'), r: 'lennoxmeldrum/science-lab-inventory-assistant', v: 'private', ai: true, x: 'There is also an "-updated" version below.' },
+            { g: 'Teaching & school tools', n: 'science-lab-inventory-assistant-updated', d: 'Newer version of the science lab inventory assistant.', h: 'Cloud Run', u: RUN('science-lab-inventory-assistant-updated'), r: 'lennoxmeldrum/science-lab-inventory-assistant-updated', v: 'public', ai: true },
+            { g: 'Teaching & school tools', n: 'sds-lab-assistant', d: 'Safety Data Sheet (SDS) lab assistant.', h: 'Cloud Run', u: RUN('sds-lab-assistant'), r: 'lennoxmeldrum/sds-lab-assistant', v: 'private', ai: true },
+            { g: 'Teaching & school tools', n: 'ask-ssis', d: 'Ask SSIS — AI questions and answers about SSIS.', h: 'Cloud Run', u: RUN('ask-ssis'), r: 'explainsims/ask-ssis', v: 'public', ai: true },
+            { g: 'Teaching & school tools', n: 'advisory-hub', d: 'SSIS HS Advisory Hub.', h: 'Cloud Run', u: RUN('advisory-hub'), r: 'explainsims/advisory-hub', v: 'public' },
+            { g: 'Teaching & school tools', n: 'ssis-ai-hub', d: 'SSIS AI Hub app.', h: 'Cloud Run', u: RUN('ssis-ai-hub'), r: 'lennoxmeldrum/ssis-ai-hub', v: 'private', ai: true, x: 'The public info site is the ssis-ai-hub.github.io repo (below).' },
+            { g: 'Teaching & school tools', n: 'learn-names-2026', d: 'Learn Names — practise learning student names (Google sign-in).', h: 'Cloud Run', u: RUN('learn-names-2026'), r: 'explainsims/learn-names-2026', v: 'public' },
+            { g: 'Teaching & school tools', n: 'sticklet', d: 'StickyBoard — shared sticky-note rooms for @ssis.edu.vn accounts.', h: 'Cloud Run', u: RUN('sticklet'), r: 'lennoxmeldrum/sticklet', v: 'public', x: 'Data: rooms.' },
+            { g: 'Teaching & school tools', n: 'fun-jeopardy-app', d: 'Jeopardy game builder for class review.', h: 'Cloud Run', u: RUN('fun-jeopardy-app'), r: 'lennoxmeldrum/fun-jeopardy-app', v: 'private', x: 'Static copy on explainsims.com (Fun tab).' },
+            { g: 'Teaching & school tools', n: 'credibility-quest', d: 'Game-style lesson on judging the credibility of sources.', h: 'Cloud Run', u: RUN('credibility-quest'), r: 'lennoxmeldrum/credibility-quest', v: 'private', ai: true },
+            { g: 'Teaching & school tools', n: 'ethical-quest', d: 'Game-style lesson on ethical reasoning.', h: 'Cloud Run', u: RUN('ethical-quest'), r: 'lennoxmeldrum/ethical-quest', v: 'private', ai: true },
+            { g: 'Teaching & school tools', n: 'nuclear-binding-energy', d: 'Nuclear binding energy.', h: 'Cloud Run', u: RUN('nuclear-binding-energy'), r: 'explainsims/nuclear-binding-energy', v: 'private' },
+            { g: 'Teaching & school tools', n: 'radioactive-decay-question', d: 'Radioactive decay practice question.', h: 'Cloud Run', u: RUN('radioactive-decay-question'), r: 'explainsims/radioactive-decay-question', v: 'private', ai: true },
+            { g: 'Teaching & school tools', n: 'fiba-2027', d: 'FIBA 2027 app (Google sign-in, Firebase).', h: 'Cloud Run', u: RUN('fiba-2027'), r: 'explainsims/fiba-2027', v: 'private' },
+            { g: 'Teaching & school tools', n: 'extraction', d: 'Extraction tool (purpose unclear from the name).', h: 'Cloud Run', u: RUN('extraction'), r: 'explainsims/extraction', v: 'private', ai: true },
+
+            // ---- ISR & Applied Physics ----
+            { g: 'ISR & Applied Physics', n: 'isr-final-feedback', d: 'ISR — final feedback generator.', h: 'Cloud Run', u: RUN('isr-final-feedback'), r: 'lennoxmeldrum/isr-final-feedback', v: 'private', ai: true },
+            { g: 'ISR & Applied Physics', n: 'isr-semester1-grader', d: 'ISR — semester 1 grader.', h: 'Cloud Run', u: RUN('isr-semester1-grader'), r: 'lennoxmeldrum/isr-semester1-grader', v: 'private', ai: true },
+            { g: 'ISR & Applied Physics', n: 'isr-science-simplifier', d: 'ISR — simplifies scientific text.', h: 'Cloud Run', u: RUN('isr-science-simplifier'), r: 'lennoxmeldrum/ISR-science-simplifier', v: 'private', ai: true },
+            { g: 'ISR & Applied Physics', n: 'isr-q2-submission', d: 'ISR — quarter 2 submission.', h: 'Cloud Run', u: RUN('isr-q2-submission'), r: 'lennoxmeldrum/ISR-Q2-submission', v: 'private', ai: true },
+            { g: 'ISR & Applied Physics', n: 'appphys-astrophysics', d: 'Applied Physics — astrophysics unit app.', h: 'Cloud Run', u: RUN('appphys-astrophysics'), r: 'lennoxmeldrum/appphys-astrophysics', v: 'private', ai: true, x: 'Probably uses the astrophysics_progress data.' },
+            { g: 'ISR & Applied Physics', n: 'appphys-sharktank-questions', d: 'Applied Physics "Shark Tank" project — question generator.', h: 'Cloud Run', u: RUN('appphys-sharktank-questions'), r: 'lennoxmeldrum/appphys-sharktank-questions', v: 'private', ai: true },
+            { g: 'ISR & Applied Physics', n: 'appphys-sharktank-grader', d: 'Applied Physics "Shark Tank" project — grader.', h: 'Cloud Run', u: RUN('appphys-sharktank-grader'), r: 'lennoxmeldrum/appphys-sharktank-grader', v: 'private', ai: true },
+            { g: 'ISR & Applied Physics', n: 'appphys-sharktank-feedback', d: 'Applied Physics "Shark Tank" project — feedback.', h: 'Cloud Run', u: RUN('appphys-sharktank-feedback'), r: 'lennoxmeldrum/appphys-sharktank-feedback', v: 'private', ai: true },
+
+            // ---- Personal ----
+            { g: 'Personal', n: 'cat-blood-sugar', d: 'Log and chart your cat\'s blood-sugar readings.', h: 'Cloud Run', u: RUN('cat-blood-sugar'), r: 'lennoxmeldrum/cat-blood-sugar', v: 'private', imp: true, x: 'Data: catReadings.' },
+            { g: 'Personal', n: 'retirement-planner', d: 'Retirement Cost Planner — rent map, cost-of-living builder, projections, multi-currency.', h: 'Cloud Run', u: RUN('retirement-planner'), r: 'lennoxmeldrum/retirement-planner', v: 'public', ai: true },
+            { g: 'Personal', n: 'student-payment-log', d: 'Log of student payments.', h: 'Cloud Run', u: RUN('student-payment-log'), r: 'lennoxmeldrum/student-payment-log', v: 'private', ai: true },
+            { g: 'Personal', n: 'folks-i-know', d: 'Keep track of people you know.', h: 'Cloud Run', u: RUN('folks-i-know'), r: 'lennoxmeldrum/folks-I-know', v: 'private', ai: true, x: 'Has its own storage bucket (folks-i-know-bucket).' },
+            { g: 'Personal', n: 'rsvp-reader', d: 'Speed-reading (RSVP) reader.', h: 'Cloud Run', u: RUN('rsvp-reader'), r: 'lennoxmeldrum/RSVP-reader', v: 'private' },
+
+            // ---- Websites & static projects ----
+            { g: 'Websites & repo-only projects', n: 'dls-digest', d: 'The DLS Digest — daily AI and EdTech curation.', h: 'GitHub Pages', u: 'https://explainsims.com/dls-digest/', r: 'explainsims/dls-digest', v: 'public', imp: true, x: 'The one site that stays public.' },
+            { g: 'Websites & repo-only projects', n: 'explainsims.github.io', d: 'This website (explainsims.com).', h: 'GitHub Pages', u: 'https://explainsims.com/', r: 'explainsims/explainsims.github.io', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'panphy.github.io', d: 'PanPhy Labs — fork of the PanPhy physics tools site.', h: 'GitHub Pages', r: 'explainsims/panphy.github.io', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'lennoxmeldrum.github.io', d: 'Older copy of the ExplAIn Sims / PanPhy site on your personal account.', h: 'GitHub Pages', r: 'lennoxmeldrum/lennoxmeldrum.github.io', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'ssis-ai-hub.github.io', d: 'SSIS AI Hub — AI information site.', h: 'GitHub Pages', r: 'ssis-ai-hub/ssis-ai-hub.github.io', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'change-leadership', d: 'CHanGE on-call framework — installable web app for Nick Haywood.', h: 'Repo', r: 'explainsims/change-leadership', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'trip-form-demo', d: 'Trip Absence Workflow — clickable front-end prototype.', h: 'Repo', r: 'explainsims/trip-form-demo', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'xkcd-radiation', d: 'XKCD radiation dose explorer.', h: 'Repo', r: 'explainsims/xkcd-radiation', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'nuclear-energy', d: 'Applied Physics — Nuclear Energy (AI Studio app).', h: 'Repo', r: 'explainsims/nuclear-energy', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'nuclear-reactor', d: 'Nuclear reactor anatomy (AI Studio app).', h: 'Repo', r: 'explainsims/nuclear-reactor', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'nuclear-decay-chain', d: 'Nuclear decay chain visualiser (AI Studio app).', h: 'Repo', r: 'explainsims/nuclear-decay-chain', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'nuclear-calculations', d: 'Nuclear calculations practice (AI Studio app).', h: 'Repo', r: 'explainsims/nuclear-calculations', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'friction-lab', d: 'Friction Lab — inclined-plane experiment.', h: 'Repo', r: 'lennoxmeldrum/friction-lab', v: 'public', x: 'Live as a static page on explainsims.com (AP PCM tab).' },
+            { g: 'Websites & repo-only projects', n: 'physical-pendulum', d: 'Physical pendulum (duplicate of appcm-physical-pendulum).', h: 'Repo', r: 'lennoxmeldrum/physical-pendulum', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'appsci-astrophysics-podcast', d: 'Webpage for the Applied Physics astrophysics podcast project.', h: 'Repo', r: 'lennoxmeldrum/appsci-astrophysics-podcast', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'g12www-wellbeing', d: 'Grade 12 wellbeing sessions.', h: 'Repo', r: 'lennoxmeldrum/g12www-wellbeing', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'g12www-adulting', d: 'Grade 12 adulting sessions.', h: 'Repo', r: 'lennoxmeldrum/g12www-adulting', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'mongol-expansion', d: 'Mongol Empire explorer (AI Studio app).', h: 'Repo', r: 'lennoxmeldrum/mongol-expansion', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'gravity-ramp', d: 'Gravity ramp simulation.', h: 'Repo', r: 'lennoxmeldrum/gravity-ramp', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'gratitude', d: 'Gratitude app.', h: 'Repo', r: 'lennoxmeldrum/gratitude', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'applied-physics-review-examplar', d: 'Applied Physics review exemplar.', h: 'Repo', r: 'lennoxmeldrum/applied-physics-review-examplar', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'em-basic-demo', d: 'Electricity and magnetism basic demo.', h: 'Repo', r: 'lennoxmeldrum/em-basic-demo', v: 'private' },
+            { g: 'Websites & repo-only projects', n: 'worksheet-builder-working', d: 'Older working copy of the worksheet builder.', h: 'Repo', r: 'lennoxmeldrum/worksheet-builder-working', v: 'private' },
+            { g: 'Websites & repo-only projects', n: 'claude-web-skills', d: 'Your Claude Code skills collection.', h: 'Repo', r: 'lennoxmeldrum/claude-web-skills', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'Lennox-Meldrum', d: 'GitHub profile README.', h: 'Repo', r: 'lennoxmeldrum/Lennox-Meldrum', v: 'public' },
+            { g: 'Websites & repo-only projects', n: 'vietslam-website', d: 'VietSlam website.', h: 'Repo', r: 'lennoxmeldrum/vietslam-website', v: 'private' },
+            { g: 'Websites & repo-only projects', n: 'master-estate-backup', d: 'Backup repository.', h: 'Repo', r: 'lennoxmeldrum/master-estate-backup', v: 'private' },
+
+            // ---- explainsims.com pages ----
+            { g: 'explainsims.com pages', n: 'Physical Pendulum', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/physical_pendulum.html' },
+            { g: 'explainsims.com pages', n: 'Elevator Physics', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/elevator_physics.html' },
+            { g: 'explainsims.com pages', n: 'Conical Pendulum', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/conical_pendulum.html' },
+            { g: 'explainsims.com pages', n: 'Gravitas', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/gravitas.html' },
+            { g: 'explainsims.com pages', n: 'Banked Track', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/banked_track.html' },
+            { g: 'explainsims.com pages', n: 'Friction Lab', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/friction_lab.html' },
+            { g: 'explainsims.com pages', n: 'Conservation of Energy Lab', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/cons_energy_systems.html' },
+            { g: 'explainsims.com pages', n: 'Spring System Explorer', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/cons_spring_energy_systems.html' },
+            { g: 'explainsims.com pages', n: 'Power', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/power.html' },
+            { g: 'explainsims.com pages', n: 'Rotational Motion', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/rotational_motion.html' },
+            { g: 'explainsims.com pages', n: 'Rotational Atwood', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/rotational_atwood.html' },
+            { g: 'explainsims.com pages', n: 'Parallel-Axis Theorem', d: 'AP PCM tab.', h: 'explainsims.com', u: '/appcm/parallel_axis.html' },
+            { g: 'explainsims.com pages', n: 'Data Plotting & Fitting', d: 'PanPhy tab.', h: 'explainsims.com', u: '/panphy/panphyplot.html' },
+            { g: 'explainsims.com pages', n: 'Motion Tracker', d: 'PanPhy tab.', h: 'explainsims.com', u: '/panphy/motion_tracker.html' },
+            { g: 'explainsims.com pages', n: 'Wave Superposition', d: 'PanPhy tab.', h: 'explainsims.com', u: '/panphy/superposition.html' },
+            { g: 'explainsims.com pages', n: 'Lorentz Transform', d: 'PanPhy tab.', h: 'explainsims.com', u: '/panphy/lorentz.html' },
+            { g: 'explainsims.com pages', n: 'Exam Timer', d: 'PanPhy tab.', h: 'explainsims.com', u: '/panphy/timer.html' },
+            { g: 'explainsims.com pages', n: 'Camera Visualizer', d: 'PanPhy tab.', h: 'explainsims.com', u: '/panphy/visualizer.html' },
+            { g: 'explainsims.com pages', n: 'Chatbot to Docs', d: 'Tools tab.', h: 'explainsims.com', u: '/tools/chatbot_to_docs.html' },
+            { g: 'explainsims.com pages', n: 'PDF Splitter', d: 'Tools tab.', h: 'explainsims.com', u: '/tools/pdf_splitter.html' },
+            { g: 'explainsims.com pages', n: 'Docs Tab Builder', d: 'Tools tab.', h: 'explainsims.com', u: '/tools/multi-doc.html' },
+            { g: 'explainsims.com pages', n: 'PDF to Markdown', d: 'Tools tab. The visitor supplies their own AI key.', h: 'explainsims.com', u: '/tools/pdf_to_markdown.html' },
+            { g: 'explainsims.com pages', n: 'Command Term Wordle', d: 'Fun tab.', h: 'explainsims.com', u: '/fun/cmdterm_wordle.html' },
+            { g: 'explainsims.com pages', n: 'Fun Jeopardy', d: 'Fun tab.', h: 'explainsims.com', u: '/fun/jeopardy.html' },
+
+            // ---- Data ----
+            { g: 'Data (shared Firebase project)', n: 'frqs', d: 'Saved FRQs from the Infinite FRQ Generators.', h: 'Firestore', imp: true },
+            { g: 'Data (shared Firebase project)', n: 'frq-archive (Storage)', d: 'FRQ PDFs served by the FRQ archive site.', h: 'Storage', imp: true },
+            { g: 'Data (shared Firebase project)', n: 'catReadings', d: 'Cat blood-sugar readings.', h: 'Firestore', imp: true },
+            { g: 'Data (shared Firebase project)', n: 'boomers_campaigns', d: 'Campaign data for the "boomers" app (plus boomers-bucket in Storage).', h: 'Firestore', imp: true },
+            { g: 'Data (shared Firebase project)', n: 'apr-students', d: 'AP Review student list and PINs.', h: 'Firestore', imp: true },
+            { g: 'Data (shared Firebase project)', n: 'apr-users', d: 'AP Review per-student progress.', h: 'Firestore', imp: true },
+            { g: 'Data (shared Firebase project)', n: 'credentials', d: 'Logins for an older app.', h: 'Firestore' },
+            { g: 'Data (shared Firebase project)', n: 'users', d: 'User records for an older app.', h: 'Firestore' },
+            { g: 'Data (shared Firebase project)', n: 'astrophysics_progress', d: 'Progress data, probably from the astrophysics app.', h: 'Firestore' },
+            { g: 'Data (shared Firebase project)', n: 'meta', d: 'App flags.', h: 'Firestore' },
+            { g: 'Data (shared Firebase project)', n: 'momentum-tracker', d: 'Data for the momentum-tracker app.', h: 'Firestore' },
+            { g: 'Data (shared Firebase project)', n: 'people', d: 'People records (possibly folks-i-know).', h: 'Firestore' },
+            { g: 'Data (shared Firebase project)', n: 'rooms', d: 'StickyBoard rooms and notes.', h: 'Firestore' },
+            { g: 'Data (shared Firebase project)', n: 'Public image buckets', d: 'boomers-bucket, folks-i-know-bucket, friction-frq-app-assets, login-page-gifs.', h: 'Storage' },
+
+            // ---- Google Cloud projects ----
+            { g: 'Google Cloud projects', n: 'unique-sentinel-423412-q3', d: '"AIStudio app migration" — hosts 76 Cloud Run apps and the shared Firebase data.', h: 'GCP project', imp: true },
+            { g: 'Google Cloud projects', n: 'ssis-lab-portfolio', d: 'Lab Portfolio app and its data.', h: 'GCP project' },
+            { g: 'Google Cloud projects', n: 'gen-lang-client-0413679463', d: '"AP Review App" — Firebase project (StickyBoard config points here).', h: 'GCP project' },
+            { g: 'Google Cloud projects', n: 'gen-lang-client-0092092883', d: '"Gemini API" — AI Studio key project.', h: 'GCP project' },
+            { g: 'Google Cloud projects', n: 'sample-firebase-ai-app7-feb24', d: 'Firebase AI sample app.', h: 'GCP project' },
+            { g: 'Google Cloud projects', n: 'api-project-160064068361', d: '"API Project" — nothing found running.', h: 'GCP project' },
+            { g: 'Google Cloud projects', n: 'online-world-fpf99', d: 'Unknown — the audit account could not see inside.', h: 'GCP project' },
+            { g: 'Google Cloud projects', n: 'gen-lang-client-0530890956', d: 'Unknown — the audit account had partial access only.', h: 'GCP project' },
+            { g: 'Google Cloud projects', n: 'gen-lang-client-0236732736', d: 'Firebase project used by learn-names-2026; not visible to the audit.', h: 'GCP project' }
+        ];
+
+
+        var ACTIONS = [
+            ['keep', 'Keep'],
+            ['retire', 'Retire app'],
+            ['deldata', 'Delete data'],
+            ['archive', 'Archive repo'],
+            ['private', 'Make private'],
+            ['ssis', 'Move to ssis-apps'],
+            ['work', 'Needs work'],
+            ['done', 'Done']
+        ];
+        var STORAGE_KEY = 'my-apps-tracker-v1';
+        var state = {};
+        try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catch (e) { state = {}; }
+
+        function save() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
+        }
+        function keyOf(a) { return a.g + '::' + a.n; }
+        function entry(k) { return state[k] || (state[k] = { c: {}, note: '' }); }
+        function anyTicked(k) {
+            var s = state[k];
+            if (!s) return false;
+            for (var id in s.c) { if (s.c[id]) return true; }
+            return false;
+        }
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, function (ch) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+            });
+        }
+
+        var groups = [];
+        APPS.forEach(function (a) { if (groups.indexOf(a.g) === -1) groups.push(a.g); });
+        var groupSel = document.getElementById('group-filter');
+        groupSel.innerHTML = '<option value="all">All groups (' + APPS.length + ')</option>' +
+            groups.map(function (g) {
+                var n = APPS.filter(function (a) { return a.g === g; }).length;
+                return '<option value="' + esc(g) + '">' + esc(g) + ' (' + n + ')</option>';
+            }).join('');
+
+        var qInput = document.getElementById('q');
+        var statusSel = document.getElementById('status-filter');
+        var list = document.getElementById('list');
+
+        function matches(a) {
+            var q = qInput.value.trim().toLowerCase();
+            if (q && (a.n + ' ' + a.d + ' ' + (a.r || '') + ' ' + (a.x || '')).toLowerCase().indexOf(q) === -1) return false;
+            if (groupSel.value !== 'all' && a.g !== groupSel.value) return false;
+            var k = keyOf(a), done = !!(state[k] && state[k].c.done);
+            if (statusSel.value === 'undecided' && anyTicked(k)) return false;
+            if (statusSel.value === 'open' && done) return false;
+            if (statusSel.value === 'done' && !done) return false;
+            return true;
+        }
+
+        function rowHtml(a, i) {
+            var k = keyOf(a), s = state[k] || { c: {}, note: '' };
+            var pills = '<span class="pill">' + esc(a.h) + '</span>';
+            if (a.ai) pills += '<span class="pill ai">AI</span>';
+            if (a.v === 'public') pills += '<span class="pill public">Public repo</span>';
+            if (a.imp) pills += '<span class="pill imp">Important</span>';
+            var links = [];
+            if (a.u) links.push('<a href="' + esc(a.u) + '" target="_blank" rel="noopener noreferrer">Open</a>');
+            if (a.r) links.push('<a href="https://github.com/' + esc(a.r) + '" target="_blank" rel="noopener noreferrer">github.com/' + esc(a.r) + '</a>');
+            var checks = ACTIONS.map(function (act) {
+                var id = 'c' + i + '-' + act[0];
+                return '<label class="check" for="' + id + '"><input type="checkbox" id="' + id + '" data-i="' + i +
+                    '" data-act="' + act[0] + '"' + (s.c[act[0]] ? ' checked' : '') + '>' + act[1] + '</label>';
+            }).join('');
+            return '<div class="app-row' + (s.c.done ? ' is-done' : '') + '" data-i="' + i + '">' +
+                '<div class="app-head"><span class="app-name">' + esc(a.n) + '</span>' + pills + '</div>' +
+                '<div class="app-desc">' + esc(a.d) + '</div>' +
+                (a.x ? '<div class="app-extra">' + esc(a.x) + '</div>' : '') +
+                (links.length ? '<div class="app-links">' + links.join('') + '</div>' : '') +
+                '<div class="checks">' + checks + '</div>' +
+                '<input class="note-input" type="text" data-i="' + i + '" placeholder="Notes…" aria-label="Notes for ' + esc(a.n) + '" value="' + esc(s.note || '') + '">' +
+                '</div>';
+        }
+
+        function render() {
+            var html = '', shown = 0;
+            groups.forEach(function (g) {
+                var rows = '';
+                var n = 0;
+                APPS.forEach(function (a, i) {
+                    if (a.g !== g || !matches(a)) return;
+                    rows += rowHtml(a, i);
+                    n++;
+                });
+                if (n) {
+                    html += '<h2 class="group-title">' + esc(g) + ' <span class="count">' + n + '</span></h2>' + rows;
+                    shown += n;
+                }
+            });
+            list.innerHTML = html || '<p class="empty">Nothing matches.</p>';
+            renderTally(shown);
+        }
+
+        function renderTally(shown) {
+            var decided = 0, done = 0;
+            APPS.forEach(function (a) {
+                var k = keyOf(a);
+                if (anyTicked(k)) decided++;
+                if (state[k] && state[k].c.done) done++;
+            });
+            document.getElementById('tally').textContent =
+                'Showing ' + shown + ' of ' + APPS.length + ' · ' + decided + ' with a decision · ' + done + ' done';
+        }
+
+        list.addEventListener('change', function (e) {
+            var t = e.target;
+            if (t.type !== 'checkbox') return;
+            var a = APPS[+t.dataset.i], s = entry(keyOf(a));
+            s.c[t.dataset.act] = t.checked;
+            save();
+            if (t.dataset.act === 'done') t.closest('.app-row').classList.toggle('is-done', t.checked);
+            renderTally(list.querySelectorAll('.app-row').length);
+        });
+        list.addEventListener('input', function (e) {
+            var t = e.target;
+            if (!t.classList.contains('note-input')) return;
+            entry(keyOf(APPS[+t.dataset.i])).note = t.value;
+            save();
+        });
+        [qInput, groupSel, statusSel].forEach(function (el) {
+            el.addEventListener(el === qInput ? 'input' : 'change', render);
+        });
+
+        document.getElementById('export-btn').addEventListener('click', function () {
+            var blob = new Blob([JSON.stringify(state, null, 1)], { type: 'application/json' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'my-apps-tracker-' + new Date().toISOString().slice(0, 10) + '.json';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        });
+        var importFile = document.getElementById('import-file');
+        document.getElementById('import-btn').addEventListener('click', function () { importFile.click(); });
+        importFile.addEventListener('change', function () {
+            var f = importFile.files[0];
+            if (!f) return;
+            f.text().then(function (txt) {
+                var data = JSON.parse(txt);
+                if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('bad file');
+                if (!confirm('Replace the ticks and notes in this browser with the ones in "' + f.name + '"?')) return;
+                state = data;
+                save();
+                render();
+            }).catch(function () {
+                alert('That file could not be read. Choose a file made with Export.');
+            }).finally(function () { importFile.value = ''; });
+        });
+
+        render();
+
+        // --- Help panel ---
+        (function () {
+            var panel = document.getElementById('help-panel');
+            var backdrop = document.getElementById('help-backdrop');
+            function openHelp() { panel.classList.add('open'); backdrop.classList.add('open'); }
+            function closeHelp() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
+            document.getElementById('help-btn').addEventListener('click', openHelp);
+            document.getElementById('help-close').addEventListener('click', closeHelp);
+            backdrop.addEventListener('click', closeHelp);
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeHelp(); });
+        })();
+    </script>
+
+    <script>
+        // Theme Toggle Functionality
+        const themeButton = document.getElementById('theme-button');
+        const DARK_THEME_KEY = "theme-dark";
+        const LIGHT_THEME_KEY = "theme-light";
+
+        const currentTheme = localStorage.getItem(DARK_THEME_KEY) ?
+            "dark" :
+            localStorage.getItem(LIGHT_THEME_KEY) ?
+                "light" :
+                "light";
+
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateAppChromeTheme(currentTheme);
+        updateButtonEmoji(currentTheme);
+
+        function updateAppChromeTheme(theme) {
+            const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+            const appleStatusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            const isDarkTheme = theme === 'dark';
+
+            if (themeColorMeta) {
+                themeColorMeta.setAttribute('content', isDarkTheme ? '#111118' : '#F4F4F8');
+            }
+
+            if (appleStatusBarMeta) {
+                appleStatusBarMeta.setAttribute('content', isDarkTheme ? 'black-translucent' : 'default');
+            }
+        }
+
+        window.addEventListener('pageshow', function () {
+            updateAppChromeTheme(document.documentElement.getAttribute('data-theme'));
+        });
+
+        function updateButtonEmoji(theme) {
+            themeButton.textContent = theme === 'dark' ? '🌙' : '☀️';
+        }
+
+        themeButton.addEventListener('click', function () {
+            let theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem(DARK_THEME_KEY, 'true');
+                localStorage.removeItem(LIGHT_THEME_KEY);
+                updateAppChromeTheme('dark');
+                updateButtonEmoji('dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem(LIGHT_THEME_KEY, 'true');
+                localStorage.removeItem(DARK_THEME_KEY);
+                updateAppChromeTheme('light');
+                updateButtonEmoji('light');
+            }
+        });
+
+    </script>
+    <script>
+        // Apply gradient text effect, skip on Brave iOS where background-clip:text is broken
+        (function () {
+            var h1 = document.querySelector('header h1');
+            if (!h1) return;
+            var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+            var isBrave = !!navigator.brave;
+            if (!(isIOS && isBrave)) {
+                h1.classList.add('gradient-text');
+            }
+        })();
+    </script>
+</body>
+
+</html>
